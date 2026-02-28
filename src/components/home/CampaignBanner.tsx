@@ -61,7 +61,7 @@ export function CampaignBanner() {
   const b = banners[current];
 
   return (
-    <section className="relative max-w-screen-md mx-auto my-3 px-3">
+    <section className="relative max-w-[860px] w-full mx-auto my-3 px-3">
       <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '4/1' }}>
 
         {/* 背景写真 */}
