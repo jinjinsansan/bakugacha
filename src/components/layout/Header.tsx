@@ -1,6 +1,17 @@
 import Link from 'next/link';
+import { getServiceSupabase } from '@/lib/supabase/service';
+import { getUserFromSession } from '@/lib/data/session';
+import { logoutAction } from '@/app/(auth)/actions';
 
-export function Header() {
+export async function Header() {
+  let user: Record<string, unknown> | null = null;
+  try {
+    const supabase = getServiceSupabase();
+    user = await getUserFromSession(supabase);
+  } catch {
+    // 未ログイン時は null のまま
+  }
+
   return (
     <header
       className="sticky z-50 top-0"
@@ -26,16 +37,31 @@ export function Header() {
 
         {/* Buttons */}
         <div className="flex items-center gap-2">
-          <Link href="/register">
-            <button className="btn-gold text-xs px-5 py-2 rounded-full">
-              新規登録
-            </button>
-          </Link>
-          <Link href="/login">
-            <button className="btn-silver text-xs px-5 py-2 rounded-full">
-              ログイン
-            </button>
-          </Link>
+          {user ? (
+            <>
+              {/* コイン残高 */}
+              <Link href="/purchase" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black"
+                style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)' }}>
+                <span>🪙</span>
+                <span className="text-gold">{(user.coins as number).toLocaleString()}</span>
+              </Link>
+              <Link href="/mypage">
+                <button className="btn-silver text-xs px-4 py-2 rounded-full">マイページ</button>
+              </Link>
+              <form action={logoutAction}>
+                <button type="submit" className="btn-outline text-xs px-4 py-2 rounded-full">ログアウト</button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link href="/register">
+                <button className="btn-gold text-xs px-5 py-2 rounded-full">新規登録</button>
+              </Link>
+              <Link href="/login">
+                <button className="btn-silver text-xs px-5 py-2 rounded-full">ログイン</button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
