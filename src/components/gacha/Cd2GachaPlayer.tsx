@@ -129,44 +129,135 @@ function FreezeOverlay() {
   );
 }
 
-// ── 結果カード ────────────────────────────────────────────────
+// ── 結果カード（オリパワン型） ───────────────────────────────
 function ResultCard({
-  isWin, prizeName, onClose, onRetry,
+  isWin, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost,
+  onClose, onRetry, onReplayAnimation,
 }: {
   isWin: boolean;
   prizeName?: string;
+  prizeImageUrl?: string;
+  prizeEmoji?: string;
+  prizeGradient?: string;
+  coinCost?: number;
   onClose?: () => void;
   onRetry?: () => void;
+  onReplayAnimation?: () => void;
 }) {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/92 px-6">
-      <p className="text-[10px] uppercase tracking-[0.5em] text-white/50">COUNTDOWN CHALLENGE 2</p>
+    <div className="absolute inset-0 flex flex-col" style={{ background: '#f2f2ed' }}>
 
-      {isWin ? (
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-5xl font-black text-yellow-300 drop-shadow-[0_0_20px_rgba(250,204,21,0.8)]">
-            当たり！
-          </p>
-          <div className="flex h-64 w-44 flex-col items-center justify-center rounded-2xl border-2 border-yellow-400/60 bg-gradient-to-br from-yellow-900/60 to-amber-950/80 shadow-[0_0_40px_rgba(250,204,21,0.4)]">
-            <p className="text-4xl">🏆</p>
-            <p className="mt-3 text-center text-sm font-bold text-yellow-200">
-              {prizeName ?? '当たりカード'}
-            </p>
+      {/* ── ヘッダー ── */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white"
+        style={{ borderBottom: '1px solid #e8e8e8' }}>
+        <div className="w-12" />
+        <h2 className="text-sm font-bold" style={{ color: '#1a1a2e' }}>ガチャ結果</h2>
+        <button
+          className="text-sm font-medium"
+          style={{ color: '#888' }}
+          onClick={onClose}
+        >
+          あとで
+        </button>
+      </div>
+
+      {/* ── 当選バナー（当たり時のみ） ── */}
+      {isWin && (
+        <button
+          className="flex items-center gap-3 w-full text-left px-4 py-3"
+          style={{ background: '#e53935', color: '#fff' }}
+          onClick={onReplayAnimation}
+        >
+          <span className="text-2xl flex-shrink-0">🏆</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-sm leading-tight">当選おめでとう！</p>
+            <p className="text-xs mt-0.5" style={{ opacity: 0.85 }}>ガチャ演出をもう一度見る</p>
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-4xl font-black text-zinc-400">ハズレ</p>
-          <div className="flex h-64 w-44 flex-col items-center justify-center rounded-2xl border-2 border-zinc-600/60 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80">
-            <p className="text-4xl">💀</p>
-            <p className="mt-3 text-center text-sm font-bold text-zinc-400">またチャレンジ！</p>
-          </div>
-        </div>
+          <span className="text-xl flex-shrink-0" style={{ opacity: 0.8 }}>›</span>
+        </button>
       )}
 
-      <div className="flex gap-3">
-        <RoundMetalButton label="もう一度" subLabel="RETRY" onClick={onRetry ?? onClose} />
-        <RoundMetalButton label="閉じる"   subLabel="CLOSE"  onClick={onClose} />
+      {/* ── スクロールコンテンツ ── */}
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+
+        {/* 結果カード行 */}
+        <div className="bg-white rounded-2xl p-3 flex gap-3"
+          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+
+          {/* 商品画像 */}
+          <div
+            className="w-20 flex-shrink-0 rounded-xl overflow-hidden flex items-center justify-center"
+            style={{
+              aspectRatio: '3/4',
+              background: prizeGradient ?? 'linear-gradient(135deg,#1a1a2e,#16213e)',
+            }}
+          >
+            {prizeImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={prizeImageUrl}
+                alt={prizeName ?? ''}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span style={{ fontSize: 28 }}>{prizeEmoji ?? '🎰'}</span>
+            )}
+          </div>
+
+          {/* 商品情報 */}
+          <div className="flex-1 flex flex-col justify-between min-w-0">
+            <div>
+              <span
+                className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
+                style={{
+                  background: isWin ? '#fff3cd' : '#f0f0f0',
+                  color: isWin ? '#92400e' : '#666',
+                  border: isWin ? '1px solid #f59e0b' : '1px solid #ddd',
+                }}
+              >
+                {isWin ? '当選' : '未当選'}
+              </span>
+              <p className="text-sm font-bold leading-snug" style={{ color: '#1a1a2e' }}>
+                {prizeName ?? (isWin ? '当たりカード' : 'またチャレンジ！')}
+              </p>
+            </div>
+            {coinCost != null && (
+              <div
+                className="mt-2 py-2 px-3 rounded-lg text-sm font-bold flex items-center gap-1.5"
+                style={{ background: '#f5f5f0', color: '#555' }}
+              >
+                🪙 {coinCost.toLocaleString()}コイン
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ハズレ時メッセージ */}
+        {!isWin && (
+          <p className="text-center text-sm mt-4" style={{ color: '#999' }}>
+            次回のチャレンジに期待しましょう！
+          </p>
+        )}
+      </div>
+
+      {/* ── 下部ボタン ── */}
+      <div className="px-4 pb-8 pt-3 flex flex-col gap-3 bg-white"
+        style={{ borderTop: '1px solid #e8e8e8' }}>
+        <a href="/purchase" className="block">
+          <button
+            className="w-full py-3 rounded-xl font-black text-sm"
+            style={{ background: 'linear-gradient(135deg,#e8cc7a,#c9a84c)', color: '#1a1200' }}
+          >
+            コインを購入する
+          </button>
+        </a>
+        <button
+          className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+          style={{ border: '2px solid #ddd', color: '#555', background: '#fff' }}
+          onClick={onRetry}
+        >
+          もう一度引く 🪙 {coinCost?.toLocaleString() ?? 0}
+        </button>
       </div>
     </div>
   );
@@ -174,11 +265,15 @@ function ResultCard({
 
 // ── メインプレイヤー ──────────────────────────────────────────
 function ActivePlayer({
-  onClose, onRetry, prizeName, productId,
+  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId,
 }: {
   onClose?: () => void;
   onRetry?: () => void;
   prizeName?: string;
+  prizeImageUrl?: string;
+  prizeEmoji?: string;
+  prizeGradient?: string;
+  coinCost?: number;
   productId: string;
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
@@ -305,6 +400,17 @@ function ActivePlayer({
     setVideoReady(false); setIndex(next);
   }, [index, queue.length, clearVideoSrc]);
 
+  // 演出をもう一度見る（API再コールなし）
+  const handleReplayAnimation = useCallback(() => {
+    clearVideoSrc();
+    allowUnmuteRef.current = false;
+    stickyUrlRef.current = null;
+    lastReadyKeyRef.current = null;
+    setShowResult(false);
+    setVideoReady(false);
+    setIndex(0);
+  }, [clearVideoSrc]);
+
   const isFreezeStep = Boolean(current?.isFreeze);
   const isAutoStep   = Boolean(current?.autoAdvance);
   const nextDisabled = !videoReady || playState.status !== 'ready' || isFreezeStep;
@@ -363,7 +469,17 @@ function ActivePlayer({
         )}
 
         {showResult && playState.status === 'ready' && (
-          <ResultCard isWin={isWin} prizeName={prizeName} onClose={onClose} onRetry={onRetry} />
+          <ResultCard
+            isWin={isWin}
+            prizeName={prizeName}
+            prizeImageUrl={prizeImageUrl}
+            prizeEmoji={prizeEmoji}
+            prizeGradient={prizeGradient}
+            coinCost={coinCost}
+            onClose={onClose}
+            onRetry={onRetry}
+            onReplayAnimation={handleReplayAnimation}
+          />
         )}
       </div>
 
@@ -379,12 +495,16 @@ function ActivePlayer({
 
 // ── Portal ────────────────────────────────────────────────────
 export function Cd2GachaPlayer({
-  open, onClose, onRetry, prizeName, productId,
+  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId,
 }: {
   open: boolean;
   onClose?: () => void;
   onRetry?: () => void;
   prizeName?: string;
+  prizeImageUrl?: string;
+  prizeEmoji?: string;
+  prizeGradient?: string;
+  coinCost?: number;
   productId: string;
 }) {
   useEffect(() => {
@@ -396,5 +516,17 @@ export function Cd2GachaPlayer({
 
   const portalTarget = typeof window === 'undefined' ? null : document.body;
   if (!open || !portalTarget) return null;
-  return createPortal(<ActivePlayer onClose={onClose} onRetry={onRetry} prizeName={prizeName} productId={productId} />, portalTarget);
+  return createPortal(
+    <ActivePlayer
+      onClose={onClose}
+      onRetry={onRetry}
+      prizeName={prizeName}
+      prizeImageUrl={prizeImageUrl}
+      prizeEmoji={prizeEmoji}
+      prizeGradient={prizeGradient}
+      coinCost={coinCost}
+      productId={productId}
+    />,
+    portalTarget,
+  );
 }

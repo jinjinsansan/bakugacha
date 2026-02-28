@@ -8,9 +8,15 @@ type Props = {
   productTitle: string;
   price: number;
   isLoggedIn: boolean;
+  prizeImageUrl?: string;
+  prizeEmoji?: string;
+  prizeGradient?: string;
 };
 
-export function GachaPlayButton({ productId, productTitle, price, isLoggedIn }: Props) {
+export function GachaPlayButton({
+  productId, productTitle, price, isLoggedIn,
+  prizeImageUrl, prizeEmoji, prizeGradient,
+}: Props) {
   const [open, setOpen] = useState(false);
 
   if (!isLoggedIn) {
@@ -37,6 +43,10 @@ export function GachaPlayButton({ productId, productTitle, price, isLoggedIn }: 
         onClose={() => setOpen(false)}
         onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
         prizeName={productTitle}
+        prizeImageUrl={prizeImageUrl}
+        prizeEmoji={prizeEmoji}
+        prizeGradient={prizeGradient}
+        coinCost={price}
         productId={productId}
       />
     </>

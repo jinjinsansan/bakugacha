@@ -111,6 +111,9 @@ export default async function GachaDetailPage({ params }: Props) {
             productTitle={title}
             price={price}
             isLoggedIn={isLoggedIn}
+            prizeImageUrl={imageUrl || undefined}
+            prizeEmoji={row.thumbnail_emoji ?? undefined}
+            prizeGradient={row.thumbnail_gradient ?? undefined}
           />
         )}
 
