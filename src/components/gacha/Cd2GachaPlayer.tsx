@@ -174,11 +174,12 @@ function ResultCard({
 
 // ── メインプレイヤー ──────────────────────────────────────────
 function ActivePlayer({
-  onClose, onRetry, prizeName,
+  onClose, onRetry, prizeName, productId,
 }: {
   onClose?: () => void;
   onRetry?: () => void;
   prizeName?: string;
+  productId: string;
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
   const [queue, setQueue]         = useState<VideoItem[]>([]);
@@ -196,7 +197,7 @@ function ActivePlayer({
     let cancelled = false;
     (async () => {
       try {
-        const res = await startCd2Gacha();
+        const res = await startCd2Gacha(productId);
         if (cancelled) return;
         setQueue(buildQueue(res.sequence, res.videoBasePath));
         setPlayState({ status: 'ready', ...res });
@@ -378,12 +379,13 @@ function ActivePlayer({
 
 // ── Portal ────────────────────────────────────────────────────
 export function Cd2GachaPlayer({
-  open, onClose, onRetry, prizeName,
+  open, onClose, onRetry, prizeName, productId,
 }: {
   open: boolean;
   onClose?: () => void;
   onRetry?: () => void;
   prizeName?: string;
+  productId: string;
 }) {
   useEffect(() => {
     if (!open || typeof document === 'undefined') return undefined;
@@ -394,5 +396,5 @@ export function Cd2GachaPlayer({
 
   const portalTarget = typeof window === 'undefined' ? null : document.body;
   if (!open || !portalTarget) return null;
-  return createPortal(<ActivePlayer onClose={onClose} onRetry={onRetry} prizeName={prizeName} />, portalTarget);
+  return createPortal(<ActivePlayer onClose={onClose} onRetry={onRetry} prizeName={prizeName} productId={productId} />, portalTarget);
 }

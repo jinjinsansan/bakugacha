@@ -17,10 +17,14 @@ function fetchWithTimeout(url: string, options: RequestInit, ms: number): Promis
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-export async function startCd2Gacha(): Promise<Cd2PlayResponse> {
+export async function startCd2Gacha(productId: string): Promise<Cd2PlayResponse> {
   let res: Response;
   try {
-    res = await fetchWithTimeout('/api/cd2-gacha/play', { method: 'POST' }, 30000);
+    res = await fetchWithTimeout(
+      '/api/cd2-gacha/play',
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId }) },
+      30000,
+    );
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
       throw new Error('通信がタイムアウトしました。再試行してください。');

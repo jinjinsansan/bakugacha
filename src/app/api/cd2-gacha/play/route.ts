@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
+import { fetchProductById } from '@/lib/data/gacha';
+import { getUserFromSession } from '@/lib/data/session';
+import { deductCoins } from '@/lib/data/coins';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
@@ -63,7 +66,6 @@ function buildSequence(isWin: boolean, isDonden: boolean, isPatlite: boolean, is
   for (let n = 4; n > 3; n--) seq.push(`red_${n}` as Cd2Step);
 
   if (isDonden) {
-    // どんでん: 一度LOSSに見せてから逆転
     const fakeDecision = pickDecisionPoint();
     appendEnding(seq, fakeDecision, false);
     seq.push('donden');
@@ -75,8 +77,11 @@ function buildSequence(isWin: boolean, isDonden: boolean, isPatlite: boolean, is
   return seq;
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const body = await request.json().catch(() => ({}));
+    const productId = typeof body?.productId === 'string' ? body.productId : null;
+
     const supabase = getServiceSupabase();
     const settings = await fetchCd2Settings(supabase);
 
@@ -87,6 +92,29 @@ export async function POST() {
       );
     }
 
+    // 商品・ユーザー情報を並行取得
+    const [product, user] = await Promise.all([
+      productId ? fetchProductById(supabase, productId) : Promise.resolve(null),
+      getUserFromSession(supabase),
+    ]);
+
+    const price: number = product?.price ?? 0;
+
+    // コイン不足チェック
+    if (price > 0) {
+      if (!user) {
+        return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
+      }
+      const userCoins = (user.coins as number) ?? 0;
+      if (userCoins < price) {
+        return NextResponse.json(
+          { success: false, error: `コインが不足しています。（必要: ${price}、所持: ${userCoins}）` },
+          { status: 400 },
+        );
+      }
+    }
+
+    // 勝敗決定
     const rawLoss = Math.random() * 100 < settings.lossRate;
     let isDonden = false;
     let isWin: boolean;
@@ -107,6 +135,31 @@ export async function POST() {
 
     const sequence = buildSequence(isWin, isDonden, isPatlite, isFreeze);
     const expectationStars = computeExpectationStars(isWin, isDonden);
+
+    // コイン消費 & 結果保存（非同期・失敗しても結果は返す）
+    if (user && productId) {
+      const savePromises: Promise<unknown>[] = [];
+
+      if (price > 0) {
+        savePromises.push(
+          deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error),
+        );
+      }
+
+      savePromises.push(
+        Promise.resolve(
+          supabase.from('gacha_results').insert({
+            user_id: user.id,
+            product_id: productId,
+            result: isWin ? 'win' : 'loss',
+            prize_name: product?.title ?? productId,
+            coins_spent: price,
+          }),
+        ).then(({ error }) => { if (error) console.error('[gacha_results insert]', error); }),
+      );
+
+      await Promise.all(savePromises);
+    }
 
     return NextResponse.json({
       success: true,

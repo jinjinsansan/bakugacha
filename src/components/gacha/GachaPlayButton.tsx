@@ -37,6 +37,7 @@ export function GachaPlayButton({ productId, productTitle, price, isLoggedIn }: 
         onClose={() => setOpen(false)}
         onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
         prizeName={productTitle}
+        productId={productId}
       />
     </>
   );
