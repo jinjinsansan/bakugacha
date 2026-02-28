@@ -45,7 +45,7 @@ const ENCODED_MAP: Array<{ src: string; key: string; srcDir?: string }> = [
   { src: '1秒赤０.mp4',                    key: 'cd2/red_0.mp4' },
   // 当たり
   // ※ 当たり系は元フォルダの最新版を使用（_reencoded ではなく BASE_DIR）
-  { src: '1秒赤３当たり.mp4',              key: 'cd2/red_3_win.mp4', srcDir: BASE_DIR },
+  { src: '1秒赤３当たり再修正版.mp4',       key: 'cd2/red_3_win.mp4' },
   { src: '1秒赤２当たり.mp4',              key: 'cd2/red_2_win.mp4', srcDir: BASE_DIR },
   { src: '1秒赤１当たり.mp4',              key: 'cd2/red_1_win.mp4', srcDir: BASE_DIR },
   { src: '1秒赤０当たり.mp4',              key: 'cd2/red_0_win.mp4', srcDir: BASE_DIR },
