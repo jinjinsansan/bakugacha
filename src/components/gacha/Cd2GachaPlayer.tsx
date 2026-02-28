@@ -6,7 +6,7 @@ import { StarOverlay } from '@/components/gacha/overlays/StarOverlay';
 import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startCd2Gacha } from '@/lib/api/cd2-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
-import { buildCommonAssetPath, buildGachaAssetPath } from '@/lib/gacha/assets';
+import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 type VideoItem = {
@@ -36,7 +36,6 @@ type PlayState =
 const VIDEO_VERSION = '1';
 
 function buildQueue(sequence: Cd2Step[], basePath: string): VideoItem[] {
-  const standbyBase = buildCommonAssetPath('standby');
   const items: VideoItem[] = [];
 
   sequence.forEach((step, i) => {
@@ -48,7 +47,8 @@ function buildQueue(sequence: Cd2Step[], basePath: string): VideoItem[] {
         'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
       ];
       const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
-      items.push({ key, src: `${standbyBase}/${picked}`, loop: true, step });
+      const standbyUrl = buildGachaAssetPath('cd2', 'standby', picked);
+      items.push({ key, src: standbyUrl, loop: true, step });
       return;
     }
 

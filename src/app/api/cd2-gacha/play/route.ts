@@ -65,11 +65,14 @@ function buildSequence(isWin: boolean, isDonden: boolean, isPatlite: boolean, is
 
   for (let n = 4; n > 3; n--) seq.push(`red_${n}` as Cd2Step);
 
+  // どんでん返し: ハズレ演出 → patlite(自動) → donden(自動) → 2週目10→4 → 必ず当たり
   if (isDonden) {
-    const fakeDecision = pickDecisionPoint();
-    appendEnding(seq, fakeDecision, false);
-    seq.push('donden');
+    const lossAt = pickDecisionPoint();
+    appendEnding(seq, lossAt, false);
+    seq.push('patlite', 'donden');
+    seq.push('red_10', 'red_9', 'red_8', 'red_7', 'red_6', 'red_5', 'red_4');
     appendEnding(seq, pickDecisionPoint(), true);
+    return seq;
   } else {
     appendEnding(seq, pickDecisionPoint(), isWin);
   }
