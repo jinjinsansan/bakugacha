@@ -93,7 +93,7 @@ function buildQueue(sequence: Cd2Step[], basePath: string): VideoItem[] {
 }
 
 // ── フリーズオーバーレイ ─────────────────────────────────────
-const FREEZE_CARD_SRCS = Array.from({ length: 11 }, (_, i) => buildGachaAssetPath('cd2', 'freeze-cards', `cd_red_anime_${i}.png`));
+const FREEZE_CARD_SRCS = Array.from({ length: 11 }, (_, i) => buildGachaAssetPath('cd2', 'freeze-cards', `cd_red_anime_${i}.webp`));
 
 function FreezeOverlay() {
   const [cardIdx, setCardIdx] = useState(0);
@@ -511,7 +511,13 @@ export function Cd2GachaPlayer({
     if (!open || typeof document === 'undefined') return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    const nav = document.querySelector('nav') as HTMLElement | null;
+    const prevNav = nav?.style.display;
+    if (nav) nav.style.display = 'none';
+    return () => {
+      document.body.style.overflow = prev;
+      if (nav) nav.style.display = prevNav ?? '';
+    };
   }, [open]);
 
   const portalTarget = typeof window === 'undefined' ? null : document.body;

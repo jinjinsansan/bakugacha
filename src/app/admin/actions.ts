@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { requireAdmin } from '@/lib/auth/admin';
+import { upsertCd2Settings } from '@/lib/data/cd2-gacha';
 
 // ── 商品作成 ──────────────────────────────────────────────────
 export async function createProduct(formData: FormData) {
@@ -78,16 +79,19 @@ export async function updateCd2Settings(formData: FormData) {
   await requireAdmin();
   const supabase = getServiceSupabase();
 
-  const CD2_ID = '00000000-0000-0000-0000-000000000005';
-  await supabase.from('cd2_gacha_settings').upsert({
-    id:          CD2_ID,
-    is_enabled:  formData.get('is_enabled') === 'on',
-    loss_rate:   Number(formData.get('loss_rate')   ?? 60),
-    donden_rate: Number(formData.get('donden_rate') ?? 10),
-    patlite_rate: Number(formData.get('patlite_rate') ?? 5),
-    freeze_rate: Number(formData.get('freeze_rate') ?? 2),
-    updated_at:  new Date().toISOString(),
-  });
+  try {
+    await upsertCd2Settings(supabase, {
+      isEnabled:   formData.get('is_enabled') === 'on',
+      lossRate:    Number(formData.get('loss_rate')    ?? 60),
+      dondenRate:  Number(formData.get('donden_rate')  ?? 10),
+      patliteRate: Number(formData.get('patlite_rate') ?? 5),
+      freezeRate:  Number(formData.get('freeze_rate')  ?? 2),
+    });
+  } catch (err) {
+    console.error('[admin] updateCd2Settings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
 
   revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
 }

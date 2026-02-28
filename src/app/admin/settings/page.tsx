@@ -2,13 +2,29 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
 import { updateCd2Settings } from '@/app/admin/actions';
 
-export default async function AdminSettingsPage() {
+export default async function AdminSettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ saved?: string; error?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = getServiceSupabase();
   const settings = await fetchCd2Settings(supabase);
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">CD2ガチャ設定</h1>
+
+      {params?.saved && (
+        <div className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3">
+          <p className="text-sm font-semibold text-emerald-300">✅ 保存しました</p>
+        </div>
+      )}
+      {params?.error && (
+        <div className="rounded-xl border border-red-400/40 bg-red-400/10 px-4 py-3">
+          <p className="text-sm font-semibold text-red-300">❌ 保存に失敗しました。再度お試しください。</p>
+        </div>
+      )}
 
       <form action={updateCd2Settings} className="card-premium p-6 flex flex-col gap-6">
         <label className="flex items-center gap-3 cursor-pointer">

@@ -9,9 +9,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // ── 設定 ──────────────────────────────────────────────────────
-const BASE_DIR     = 'E:/dev/Cusor/tensei/炎映像/カウントダウンチャレンジ２ガチャ';
-const ENCODED_DIR  = `${BASE_DIR}/_reencoded`;   // エンコード済み動画
-const FREEZE_DIR   = `${BASE_DIR}/フリーズ当たり用カードシャッフル`;
+const BASE_DIR     = '/mnt/e/dev/Cusor/tensei/炎映像/カウントダウンチャレンジ２ガチャ';
+const ENCODED_DIR  = `${BASE_DIR}/_reencoded`;   // エンコード済み動画（回転修正版）
+const FREEZE_DIR   = '/mnt/e/dev/Cusor/tensei/public/cd2/freeze-cards'; // WebP変換済みカード
+const STANDBY_DIR  = '/mnt/e/dev/Cusor/tensei/public/videos/common/standby'; // 共通スタンバイ
 const ACCOUNT_ID   = '954dcc10adf822b50ccceedef0aa97e6';
 const ACCESS_KEY   = 'eaa0aa3d33af2b2d635d73218e633514';
 const SECRET_KEY   = '4275dc9a87fb942bc5e28974b31abed5fcbc2b920512869b059ab0e882e6462e';
@@ -43,7 +44,7 @@ const ENCODED_MAP: Array<{ src: string; key: string }> = [
   { src: '1秒赤１.mp4',                    key: 'cd2/red_1.mp4' },
   { src: '1秒赤０.mp4',                    key: 'cd2/red_0.mp4' },
   // 当たり
-  { src: '1秒赤３当たり.mp4',              key: 'cd2/red_3_win.mp4' },
+  { src: '1秒赤３当たり.mp4',              key: 'cd2/red_3_win.mp4' },  // _reencoded版（回転修正済）
   { src: '1秒赤２当たり.mp4',              key: 'cd2/red_2_win.mp4' },
   { src: '1秒赤１当たり.mp4',              key: 'cd2/red_1_win.mp4' },
   { src: '1秒赤０当たり.mp4',              key: 'cd2/red_0_win.mp4' },
@@ -58,7 +59,7 @@ const ENCODED_MAP: Array<{ src: string; key: string }> = [
   { src: '1秒ジャックポット映像.mp4',      key: 'cd2/jackpot.mp4' },
 ];
 
-// スタンバイ動画は _reencoded に含まれないため親フォルダから
+// スタンバイ動画: tensei/public/videos/common/standby/ から取得
 const STANDBY_MAP: Array<{ src: string; key: string }> = [
   { src: 'blackstandby.mp4',   key: 'cd2/standby/blackstandby.mp4' },
   { src: 'bluestandby.mp4',    key: 'cd2/standby/bluestandby.mp4' },
@@ -109,16 +110,16 @@ async function main() {
     await upload(path.join(ENCODED_DIR, src), key, 'video/mp4', force);
   }
 
-  console.log('\n── スタンバイ動画（親フォルダ）──');
+  console.log('\n── スタンバイ動画（tensei/public/videos/common/standby/）──');
   for (const { src, key } of STANDBY_MAP) {
-    await upload(path.join(BASE_DIR, src), key, 'video/mp4', force);
+    await upload(path.join(STANDBY_DIR, src), key, 'video/mp4', force);
   }
 
-  console.log('\n── フリーズカード（.png）──');
+  console.log('\n── フリーズカード（WebP: tensei/public/cd2/freeze-cards/）──');
   if (fs.existsSync(FREEZE_DIR)) {
-    const files = fs.readdirSync(FREEZE_DIR).filter((f) => f.endsWith('.png')).sort();
+    const files = fs.readdirSync(FREEZE_DIR).filter((f) => f.endsWith('.webp')).sort();
     for (const file of files) {
-      await upload(path.join(FREEZE_DIR, file), `cd2/freeze-cards/${file}`, 'image/png', force);
+      await upload(path.join(FREEZE_DIR, file), `cd2/freeze-cards/${file}`, 'image/webp', force);
     }
   } else {
     console.warn(`  ⚠️  フォルダが見つかりません: ${FREEZE_DIR}`);

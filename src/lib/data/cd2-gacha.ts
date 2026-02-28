@@ -24,3 +24,24 @@ export async function fetchCd2Settings(client: SupabaseClient): Promise<Cd2Setti
     freezeRate: Number(row.freeze_rate ?? 2),
   };
 }
+
+export async function upsertCd2Settings(
+  client: SupabaseClient,
+  updates: Partial<Omit<Cd2Settings, 'id'>>,
+): Promise<void> {
+  const patch: Record<string, unknown> = {
+    id: CD2_SETTINGS_ID,
+    updated_at: new Date().toISOString(),
+  };
+  if (updates.isEnabled  !== undefined) patch.is_enabled   = updates.isEnabled;
+  if (updates.lossRate   !== undefined) patch.loss_rate    = updates.lossRate;
+  if (updates.dondenRate !== undefined) patch.donden_rate  = updates.dondenRate;
+  if (updates.patliteRate !== undefined) patch.patlite_rate = updates.patliteRate;
+  if (updates.freezeRate !== undefined) patch.freeze_rate  = updates.freezeRate;
+
+  const { error } = await client.from('cd2_gacha_settings').upsert(patch, { onConflict: 'id' });
+  if (error) {
+    console.error('[cd2-gacha] upsertCd2Settings failed:', error);
+    throw new Error(`設定の保存に失敗しました: ${error.message}`);
+  }
+}
