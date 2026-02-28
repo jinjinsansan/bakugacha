@@ -33,7 +33,7 @@ type PlayState =
       expectationStars: number;
     };
 
-const VIDEO_VERSION = '1';
+const VIDEO_VERSION = '2';
 
 function buildQueue(sequence: Cd2Step[], basePath: string): VideoItem[] {
   const items: VideoItem[] = [];
