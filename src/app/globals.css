@@ -1,26 +1,213 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base:    #05050f;
+  --bg-card:    #0a0a1c;
+  --bg-elevated:#0f0f28;
+  --gold:       #c9a84c;
+  --gold-light: #e8cc7a;
+  --gold-dark:  #9a7a2e;
+  --blue:       #2060f0;
+  --blue-light: #4a8aff;
+  --blue-glow:  rgba(32,96,240,0.5);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+  background-color: var(--bg-base);
+  color: #e8e8f0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* ── シルバーボタン ── */
+.btn-silver {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(175deg,
+    #dce8f0 0%, #a8b8c8 25%, #7890a4 60%, #607080 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -2px 0 rgba(0,0,0,0.35),
+    0 8px 24px rgba(80,110,140,0.45),
+    0 2px 6px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(180,200,220,0.2);
+  border: none;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #0a1020;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-silver::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%; width: 45%; height: 100%;
+  background: linear-gradient(100deg,
+    transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+.btn-silver:hover::before { left: 120%; }
+.btn-silver:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -2px 0 rgba(0,0,0,0.3),
+    0 12px 32px rgba(80,110,140,0.55),
+    0 4px 12px rgba(0,0,0,0.5);
+  transform: translateY(-2px);
+}
+.btn-silver:active { transform: translateY(0); }
+
+/* ── ブロンズボタン ── */
+.btn-bronze {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(175deg,
+    #d4956a 0%, #a06030 25%, #7a4820 60%, #5c3418 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -2px 0 rgba(0,0,0,0.4),
+    0 8px 24px rgba(120,72,32,0.5),
+    0 2px 6px rgba(0,0,0,0.65),
+    0 0 0 1px rgba(180,120,60,0.25);
+  border: none;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #f5e0c8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-bronze::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%; width: 45%; height: 100%;
+  background: linear-gradient(100deg,
+    transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+.btn-bronze:hover::before { left: 120%; }
+.btn-bronze:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 0 rgba(0,0,0,0.35),
+    0 12px 32px rgba(120,72,32,0.6),
+    0 4px 12px rgba(0,0,0,0.55);
+  transform: translateY(-2px);
+}
+.btn-bronze:active { transform: translateY(0); }
+
+/* ── ゴールドアクセントボタン ── */
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(175deg,
+    #e8cc7a 0%, #c9a84c 30%, #a8882c 65%, #8a6e1e 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -2px 0 rgba(0,0,0,0.35),
+    0 8px 24px rgba(180,140,40,0.55),
+    0 2px 6px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(200,168,60,0.4);
+  border: none;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #1a1200;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-gold::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%; width: 45%; height: 100%;
+  background: linear-gradient(100deg,
+    transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%
+  );
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+.btn-gold:hover::before { left: 120%; }
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 12px 32px rgba(180,140,40,0.65),
+    0 4px 12px rgba(0,0,0,0.5);
+}
+.btn-gold:active { transform: translateY(0); }
+
+/* ── アウトライン（シルバー調） ── */
+.btn-outline {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(168,184,200,0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 4px 12px rgba(0,0,0,0.4);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: #a8b8c8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-outline:hover {
+  border-color: rgba(200,220,240,0.6);
+  color: #d8e8f4;
+  background: rgba(168,184,200,0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 6px 18px rgba(0,0,0,0.4),
+    0 0 16px rgba(168,184,200,0.12);
+  transform: translateY(-2px);
+}
+
+/* ── プレミアムカードボーダー ── */
+.card-premium {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow:
+    0 4px 24px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+}
+.card-premium:hover {
+  border-color: rgba(74,138,255,0.3);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(74,138,255,0.2),
+    0 0 24px rgba(32,96,240,0.12);
+  transform: translateY(-3px);
+}
+
+/* ── ゴールドテキスト ── */
+.text-gold {
+  background: linear-gradient(135deg, #e8cc7a, #c9a84c, #e8cc7a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── セクション区切り線 ── */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent, rgba(201,168,76,0.4), rgba(201,168,76,0.6),
+    rgba(201,168,76,0.4), transparent
+  );
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
