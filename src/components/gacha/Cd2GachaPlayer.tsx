@@ -93,7 +93,7 @@ function buildQueue(sequence: Cd2Step[], basePath: string): VideoItem[] {
 }
 
 // ── フリーズオーバーレイ ─────────────────────────────────────
-const FREEZE_CARD_SRCS = Array.from({ length: 11 }, (_, i) => buildGachaAssetPath('cd2', 'freeze-cards', `cd_red_anime_${i}.webp`));
+const FREEZE_CARD_SRCS = Array.from({ length: 11 }, (_, i) => buildGachaAssetPath('cd2', 'freeze-cards', `cd_red_anime_${i}.png`));
 
 function FreezeOverlay() {
   const [cardIdx, setCardIdx] = useState(0);
