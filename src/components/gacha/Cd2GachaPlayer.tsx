@@ -6,7 +6,7 @@ import { StarOverlay } from '@/components/gacha/overlays/StarOverlay';
 import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startCd2Gacha } from '@/lib/api/cd2-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
-import { buildCommonAssetPath } from '@/lib/gacha/assets';
+import { buildCommonAssetPath, buildGachaAssetPath } from '@/lib/gacha/assets';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 type VideoItem = {
@@ -93,7 +93,7 @@ function buildQueue(sequence: Cd2Step[], basePath: string): VideoItem[] {
 }
 
 // ── フリーズオーバーレイ ─────────────────────────────────────
-const FREEZE_CARD_SRCS = Array.from({ length: 11 }, (_, i) => `/cd2/freeze-cards/cd_red_anime_${i}.webp`);
+const FREEZE_CARD_SRCS = Array.from({ length: 11 }, (_, i) => buildGachaAssetPath('cd2', 'freeze-cards', `cd_red_anime_${i}.webp`));
 
 function FreezeOverlay() {
   const [cardIdx, setCardIdx] = useState(0);
