@@ -9,26 +9,25 @@ export async function GET(request: NextRequest) {
   const user = await getUserFromSession(supabase);
   const origin = new URL(request.url).origin;
 
-  if (!user) {
-    return NextResponse.redirect(`${origin}/login`);
-  }
-
   const { LINE_LOGIN_CHANNEL_ID } = getServerEnv();
   if (!LINE_LOGIN_CHANNEL_ID) {
     console.error('LINE_LOGIN_CHANNEL_ID is not configured');
-    return NextResponse.redirect(`${origin}/mypage/line?status=line-login-disabled`);
+    const fallback = user ? '/mypage/line' : '/login';
+    return NextResponse.redirect(`${origin}${fallback}?status=line-login-disabled`);
   }
 
   const state = crypto.randomBytes(16).toString('hex');
   const nonce = crypto.randomBytes(16).toString('hex');
 
+  // user_id は未認証の場合 null（LINEログイン / LINE登録）
   const { error } = await supabase
     .from('line_link_states')
-    .insert({ user_id: user.id, state, nonce });
+    .insert({ user_id: user?.id ?? null, state, nonce });
 
   if (error) {
     console.error('Failed to create LINE link state', error);
-    return NextResponse.redirect(`${origin}/mypage/line?status=line-login-error`);
+    const fallback = user ? '/mypage/line' : '/login';
+    return NextResponse.redirect(`${origin}${fallback}?status=line-login-error`);
   }
 
   const redirectUri = `${origin}/api/line/login/callback`;

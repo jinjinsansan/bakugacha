@@ -10,6 +10,8 @@ const inputClass =
 
 const labelClass = 'text-[11px] font-bold tracking-[0.3em] uppercase text-gray-500';
 
+const lineLoginEnabled = Boolean(process.env.LINE_LOGIN_CHANNEL_ID);
+
 export default async function LoginPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
   const error = params.error;
@@ -28,6 +30,27 @@ export default async function LoginPage({ searchParams }: Props) {
           style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)' }}>
           {decodeURIComponent(error)}
         </div>
+      )}
+
+      {lineLoginEnabled && (
+        <>
+          <a
+            href="/api/line/login/start"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black tracking-wider text-sm text-white transition hover:opacity-90"
+            style={{
+              background: 'linear-gradient(135deg, #06c755, #00a64f)',
+              boxShadow: '0 4px 20px rgba(6,199,85,0.3)',
+            }}
+          >
+            LINEでログイン
+          </a>
+
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-[10px] font-bold tracking-[0.3em] text-gray-600 uppercase">or</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+        </>
       )}
 
       <form action={loginAction} className="space-y-5">
@@ -65,7 +88,7 @@ export default async function LoginPage({ searchParams }: Props) {
       <p className="text-center text-xs text-gray-500">
         アカウントをお持ちでない方は{' '}
         <Link href="/register" className="text-gold hover:text-yellow-300 font-bold transition-colors">
-          新規登録（300コイン無料）
+          メールで新規登録
         </Link>
       </p>
     </>

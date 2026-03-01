@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerEnv } from '@/lib/env';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { grantCoins } from '@/lib/data/coins';
+import { findUserByLineId, createLineUser, touchLastLogin } from '@/lib/data/users';
+import { createSession } from '@/lib/data/session';
+import { getOrCreateSessionToken } from '@/lib/session/cookie';
 
 const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
@@ -67,11 +70,11 @@ export async function GET(request: NextRequest) {
   const errorParam = url.searchParams.get('error');
 
   if (errorParam) {
-    return NextResponse.redirect(`${origin}/mypage/line?status=line-login-denied`);
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINEでの承認がキャンセルされました。')}`);
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(`${origin}/mypage/line?status=line-login-error`);
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINE認証エラーが発生しました。')}`);
   }
 
   const supabase = getServiceSupabase();
@@ -85,22 +88,18 @@ export async function GET(request: NextRequest) {
 
   if (stateError || !stateRow) {
     console.error('LINE state not found', stateError);
-    return NextResponse.redirect(`${origin}/mypage/line?status=line-login-error`);
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINE認証エラーが発生しました。')}`);
   }
 
-  if (stateRow.rewarded_at) {
-    return NextResponse.redirect(`${origin}/mypage/line?status=already-linked`);
-  }
-
-  const { LINE_LOGIN_CHANNEL_ID, LINE_CHANNEL_SECRET } = getServerEnv();
-  if (!LINE_LOGIN_CHANNEL_ID || !LINE_CHANNEL_SECRET) {
+  const { LINE_LOGIN_CHANNEL_ID, LINE_LOGIN_CHANNEL_SECRET } = getServerEnv();
+  if (!LINE_LOGIN_CHANNEL_ID || !LINE_LOGIN_CHANNEL_SECRET) {
     console.error('LINE login env is not fully configured');
-    return NextResponse.redirect(`${origin}/mypage/line?status=line-login-disabled`);
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINE連携は現在準備中です。')}`);
   }
 
   try {
     const redirectUri = `${origin}/api/line/login/callback`;
-    const token = await exchangeCodeForToken(code, redirectUri, LINE_LOGIN_CHANNEL_ID, LINE_CHANNEL_SECRET);
+    const token = await exchangeCodeForToken(code, redirectUri, LINE_LOGIN_CHANNEL_ID, LINE_LOGIN_CHANNEL_SECRET);
     const profile = await fetchLineProfile(token.access_token);
     const lineUserId = profile.userId;
 
@@ -108,39 +107,100 @@ export async function GET(request: NextRequest) {
       throw new Error('LINE profile missing userId');
     }
 
-    // 重複チェック（他ユーザーが同じLINEアカウントで連携済み）
-    const { data: duplicate } = await supabase
-      .from('line_link_states')
-      .select('id, user_id, rewarded_at')
-      .eq('line_user_id', lineUserId)
-      .not('rewarded_at', 'is', null)
-      .maybeSingle();
+    const existingUserId: string | null = stateRow.user_id ?? null;
 
-    if (duplicate) {
-      if (duplicate.user_id !== stateRow.user_id) {
-        return NextResponse.redirect(`${origin}/mypage/line?status=line-user-already-linked`);
+    // ─── パターン3: ログイン済みユーザーが LINE 連携 ───
+    if (existingUserId) {
+      // 重複チェック（他ユーザーが同じLINEアカウントで連携済み）
+      const { data: duplicate } = await supabase
+        .from('line_link_states')
+        .select('id, user_id, rewarded_at')
+        .eq('line_user_id', lineUserId)
+        .not('rewarded_at', 'is', null)
+        .maybeSingle();
+
+      if (duplicate) {
+        if (duplicate.user_id !== existingUserId) {
+          return NextResponse.redirect(`${origin}/mypage/line?status=line-user-already-linked`);
+        }
+        return NextResponse.redirect(`${origin}/mypage/line?status=already-linked`);
       }
-      return NextResponse.redirect(`${origin}/mypage/line?status=already-linked`);
+
+      // app_users に LINE 情報を保存
+      await supabase
+        .from('app_users')
+        .update({
+          line_user_id: lineUserId,
+          line_display_name: profile.displayName,
+          line_picture_url: profile.pictureUrl ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingUserId);
+
+      // コイン付与
+      if (LINE_REWARD_COINS > 0) {
+        await grantCoins(supabase, existingUserId, LINE_REWARD_COINS, `LINE連携ボーナス (+${LINE_REWARD_COINS}コイン)`);
+      }
+
+      // 連携完了記録
+      await supabase
+        .from('line_link_states')
+        .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
+        .eq('id', stateRow.id);
+
+      return NextResponse.redirect(`${origin}/mypage/line?status=success&coins=${LINE_REWARD_COINS}`);
     }
 
-    // コイン付与
+    // ─── パターン1 & 2: 未認証 OAuth（LINE ログイン / LINE 登録）───
+    const existingLineUser = await findUserByLineId(supabase, lineUserId);
+
+    if (existingLineUser) {
+      // パターン2: 既存 LINE ユーザーとしてログイン
+      const sessionToken = await getOrCreateSessionToken();
+      await createSession(supabase, sessionToken, existingLineUser.id as string);
+      await touchLastLogin(supabase, existingLineUser.id as string);
+
+      // state 行にも記録
+      await supabase
+        .from('line_link_states')
+        .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
+        .eq('id', stateRow.id);
+
+      return NextResponse.redirect(`${origin}/home`);
+    }
+
+    // パターン1: 新規ユーザー作成（LINE 経由）
+    const newUser = await createLineUser(supabase, {
+      lineUserId,
+      displayName: profile.displayName,
+      pictureUrl: profile.pictureUrl,
+      initialCoins: LINE_REWARD_COINS,
+    });
+
+    // ボーナスコイントランザクション記録
     if (LINE_REWARD_COINS > 0) {
-      await grantCoins(supabase, stateRow.user_id, LINE_REWARD_COINS, `LINE連携ボーナス (+${LINE_REWARD_COINS}コイン)`);
+      await supabase.from('coin_transactions').insert({
+        user_id: newUser.id,
+        type: 'bonus',
+        amount: LINE_REWARD_COINS,
+        balance_after: LINE_REWARD_COINS,
+        description: 'LINE登録ボーナス',
+      });
     }
 
-    // 連携完了記録
-    const { error: finalizeError } = await supabase
+    // セッション作成
+    const sessionToken = await getOrCreateSessionToken();
+    await createSession(supabase, sessionToken, newUser.id as string);
+
+    // state 行に記録
+    await supabase
       .from('line_link_states')
-      .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
+      .update({ user_id: newUser.id, line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
       .eq('id', stateRow.id);
 
-    if (finalizeError) {
-      throw finalizeError;
-    }
-
-    return NextResponse.redirect(`${origin}/mypage/line?status=success&coins=${LINE_REWARD_COINS}`);
+    return NextResponse.redirect(`${origin}/home`);
   } catch (error) {
     console.error('LINE callback error', error);
-    return NextResponse.redirect(`${origin}/mypage/line?status=line-login-error`);
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINE認証中にエラーが発生しました。')}`);
   }
 }

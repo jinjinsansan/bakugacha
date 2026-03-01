@@ -96,6 +96,11 @@ export async function loginAction(formData: FormData) {
     errorRedirect('/login', 'メールアドレスまたはパスワードが正しくありません。');
   }
 
+  // LINE 専用ユーザー（password_hash が null）はメールログイン不可
+  if (!user.password_hash) {
+    errorRedirect('/login', 'このアカウントはLINEでログインしてください。');
+  }
+
   const ok = await verifyPassword(password, user.password_hash as string);
   if (!ok) {
     errorRedirect('/login', 'メールアドレスまたはパスワードが正しくありません。');

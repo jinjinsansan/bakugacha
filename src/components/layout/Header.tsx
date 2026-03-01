@@ -3,6 +3,8 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { logoutAction } from '@/app/(auth)/actions';
 
+const lineLoginEnabled = Boolean(process.env.LINE_LOGIN_CHANNEL_ID);
+
 export async function Header() {
   let user: Record<string, unknown> | null = null;
   try {
@@ -54,9 +56,18 @@ export async function Header() {
             </>
           ) : (
             <>
-              <Link href="/register">
-                <button className="btn-gold text-xs px-5 py-2 rounded-full">新規登録</button>
-              </Link>
+              {lineLoginEnabled && (
+                <a
+                  href="/api/line/login/start"
+                  className="text-xs px-5 py-2 rounded-full font-black text-white transition hover:opacity-90"
+                  style={{
+                    background: 'linear-gradient(135deg, #06c755, #00a64f)',
+                    boxShadow: '0 2px 12px rgba(6,199,85,0.3)',
+                  }}
+                >
+                  LINEでログイン
+                </a>
+              )}
               <Link href="/login">
                 <button className="btn-silver text-xs px-5 py-2 rounded-full">ログイン</button>
               </Link>

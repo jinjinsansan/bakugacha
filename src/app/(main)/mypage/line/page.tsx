@@ -28,21 +28,14 @@ export default async function LinePerkPage({ searchParams }: LinePageProps) {
 
   const userId = user.id as string;
 
-  // LINE連携状態を取得
-  const { data: linkState } = await supabase
-    .from('line_link_states')
-    .select('rewarded_at, created_at')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // app_users.line_user_id で連携判定
+  const isLinked = Boolean(user.line_user_id);
+  const linkedAt = isLinked && user.updated_at
+    ? new Date(user.updated_at as string).toLocaleString('ja-JP')
+    : null;
 
   const lineUrl = getPublicEnv().NEXT_PUBLIC_LINE_OFFICIAL_URL;
-  const linkedAt = linkState?.rewarded_at
-    ? new Date(linkState.rewarded_at as string).toLocaleString('ja-JP')
-    : null;
   const lineLoginEnabled = Boolean(process.env.LINE_LOGIN_CHANNEL_ID);
-  const isLinked = Boolean(linkState?.rewarded_at);
 
   const coinsFromQuery = params?.coins ? Number(params.coins) : undefined;
   const resolvedCoins =

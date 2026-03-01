@@ -68,6 +68,47 @@ export async function updateCoins(
   if (error) throw error;
 }
 
+export async function findUserByLineId(
+  client: SupabaseClient,
+  lineUserId: string,
+): Promise<AppUser | null> {
+  const { data } = await client
+    .from('app_users')
+    .select('*')
+    .eq('line_user_id', lineUserId)
+    .maybeSingle();
+  return data ?? null;
+}
+
+export async function createLineUser(
+  client: SupabaseClient,
+  payload: {
+    lineUserId: string;
+    displayName?: string;
+    pictureUrl?: string;
+    initialCoins?: number;
+  },
+): Promise<AppUser> {
+  const now = new Date().toISOString();
+  const { data, error } = await client
+    .from('app_users')
+    .insert({
+      line_user_id: payload.lineUserId,
+      line_display_name: payload.displayName ?? null,
+      line_picture_url: payload.pictureUrl ?? null,
+      display_name: payload.displayName ?? null,
+      coins: payload.initialCoins ?? 0,
+      referral_code: randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase(),
+      created_at: now,
+      updated_at: now,
+    })
+    .select('*')
+    .single();
+
+  if (error || !data) throw error ?? new Error('ユーザー作成に失敗しました。');
+  return data;
+}
+
 export async function touchLastLogin(
   client: SupabaseClient,
   userId: string,
