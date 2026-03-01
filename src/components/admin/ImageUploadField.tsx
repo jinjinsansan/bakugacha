@@ -21,14 +21,12 @@ export function ImageUploadField({
   const [preview, setPreview] = useState(defaultValue ?? '');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const hiddenRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setError('');
     setUploading(true);
 
-    // クライアント側プレビュー
     const localUrl = URL.createObjectURL(file);
     setPreview(localUrl);
 
@@ -42,14 +40,12 @@ export function ImageUploadField({
 
       if (!res.ok) {
         setError(data.error ?? 'アップロードに失敗しました');
-        setPreview(url); // 元に戻す
+        setPreview(url);
         return;
       }
 
       setUrl(data.url);
       setPreview(data.url);
-      // DOM を直接更新して FormData に確実に反映させる
-      if (hiddenRef.current) hiddenRef.current.value = data.url;
     } catch {
       setError('アップロードに失敗しました');
       setPreview(url);
@@ -60,14 +56,16 @@ export function ImageUploadField({
   };
 
   return (
-    <div className="flex flex-col gap-2" data-uploading={uploading || undefined}>
+    <div
+      className="flex flex-col gap-2"
+      data-uploading={uploading || undefined}
+      data-field-name={name}
+      data-field-value={url}
+    >
       <label className="text-xs text-white/60">
         {label}
         {aspectHint && <span className="ml-2 text-white/30">{aspectHint}</span>}
       </label>
-
-      {/* hidden input: Server Action が読み取る値 */}
-      <input type="hidden" name={name} ref={hiddenRef} defaultValue={defaultValue ?? ''} />
 
       {/* プレビュー */}
       {preview && (
@@ -82,7 +80,7 @@ export function ImageUploadField({
         <button
           type="button"
           disabled={uploading}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => fileRef.current?.click()}
           className="px-4 py-2 rounded-lg text-sm font-bold bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-50"
         >
           {uploading ? 'アップロード中…' : '画像を選択'}
@@ -95,7 +93,7 @@ export function ImageUploadField({
 
       {/* ファイル入力（非表示） */}
       <input
-        ref={inputRef}
+        ref={fileRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         className="hidden"

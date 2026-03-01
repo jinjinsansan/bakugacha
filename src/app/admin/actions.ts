@@ -50,12 +50,14 @@ export async function updateProduct(id: string, formData: FormData) {
   const stockTotal = Number(stockTotalRaw);
   const stockRemaining = formData.get('stock_remaining') ? Number(formData.get('stock_remaining')) : null;
 
-  await supabase.from('gacha_products').update({
+  const imageUrl = formData.get('image_url') ? String(formData.get('image_url')) : null;
+
+  const { error: updateError } = await supabase.from('gacha_products').update({
     title:               String(formData.get('title') ?? ''),
     category:            String(formData.get('category') ?? 'その他'),
     price:               Number(formData.get('price') ?? 0),
     description:         formData.get('description') ? String(formData.get('description')) : null,
-    image_url:           formData.get('image_url') ? String(formData.get('image_url')) : null,
+    image_url:           imageUrl,
     thumbnail_emoji:     formData.get('thumbnail_emoji') ? String(formData.get('thumbnail_emoji')) : null,
     thumbnail_gradient:  formData.get('thumbnail_gradient') ? String(formData.get('thumbnail_gradient')) : null,
     thumbnail_label:     formData.get('thumbnail_label') ? String(formData.get('thumbnail_label')) : null,
@@ -66,7 +68,10 @@ export async function updateProduct(id: string, formData: FormData) {
     sort_order:          Number(formData.get('sort_order') ?? 0),
   }).eq('id', id);
 
+  if (updateError) console.error('[updateProduct]', updateError);
+
   revalidatePath('/admin/products');
+  revalidatePath(`/admin/products/${id}`);
   redirect('/admin/products');
 }
 

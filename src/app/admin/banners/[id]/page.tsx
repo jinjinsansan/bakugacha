@@ -3,6 +3,7 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchBannerById } from '@/lib/data/banners';
 import { updateBanner } from '@/app/admin/actions';
 import { BannerFormFields } from '../new/BannerFormFields';
+import { AdminForm } from '@/components/admin/AdminForm';
 
 export default async function AdminBannerEditPage({
   params,
@@ -20,7 +21,7 @@ export default async function AdminBannerEditPage({
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">バナー編集</h1>
-      <form action={action} className="card-premium p-6 flex flex-col gap-4">
+      <AdminForm action={action}>
         <BannerFormFields defaults={banner as unknown as Record<string, unknown>} />
         <div className="flex gap-3 pt-2">
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
@@ -30,7 +31,7 @@ export default async function AdminBannerEditPage({
             キャンセル
           </a>
         </div>
-      </form>
+      </AdminForm>
     </div>
   );
 }
