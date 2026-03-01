@@ -1,10 +1,62 @@
+import crypto from 'crypto';
+import { headers } from 'next/headers';
+import { getServiceSupabase } from '@/lib/supabase/service';
+import { getServerEnv } from '@/lib/env';
+
 type Props = {
   searchParams?: Promise<{ error?: string }>;
 };
 
+/**
+ * LINE認証URLをサーバー側で事前生成し、<a href> に直接埋め込む。
+ * iOS ではサーバー302リダイレクト経由だと Universal Links が機能せず
+ * LINEアプリが起動しないため、直接リンクにする必要がある。
+ */
+async function buildLineAuthorizeUrl(): Promise<string | null> {
+  try {
+    const { LINE_LOGIN_CHANNEL_ID } = getServerEnv();
+    if (!LINE_LOGIN_CHANNEL_ID) return null;
+
+    const headersList = await headers();
+    const host = headersList.get('host');
+    const proto = headersList.get('x-forwarded-proto') ?? 'https';
+    const origin = `${proto}://${host}`;
+
+    const state = crypto.randomBytes(16).toString('hex');
+    const nonce = crypto.randomBytes(16).toString('hex');
+
+    const supabase = getServiceSupabase();
+    const { error } = await supabase
+      .from('line_link_states')
+      .insert({ user_id: null, state, nonce });
+
+    if (error) {
+      console.error('Failed to create LINE link state', error);
+      return null;
+    }
+
+    const url = new URL('https://access.line.me/oauth2/v2.1/authorize');
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('client_id', LINE_LOGIN_CHANNEL_ID);
+    url.searchParams.set('redirect_uri', `${origin}/api/line/login/callback`);
+    url.searchParams.set('state', state);
+    url.searchParams.set('scope', 'profile openid');
+    url.searchParams.set('nonce', nonce);
+    url.searchParams.set('prompt', 'consent');
+    url.searchParams.set('bot_prompt', 'normal');
+
+    return url.toString();
+  } catch (e) {
+    console.error('buildLineAuthorizeUrl failed', e);
+    return null;
+  }
+}
+
 export default async function LoginPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
   const error = params.error;
+
+  const lineUrl = await buildLineAuthorizeUrl();
 
   return (
     <>
@@ -26,7 +78,7 @@ export default async function LoginPage({ searchParams }: Props) {
       )}
 
       <a
-        href="/api/line/login/start"
+        href={lineUrl ?? '/api/line/login/start'}
         className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-black tracking-wider text-sm text-white transition hover:opacity-90"
         style={{
           background: 'linear-gradient(135deg, #06c755, #00a64f)',
