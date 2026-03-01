@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin';
 const NAV = [
   { href: '/admin',          label: '📊 ダッシュボード' },
   { href: '/admin/products', label: '🎁 商品管理' },
+  { href: '/admin/banners',  label: '🖼️ バナー管理' },
   { href: '/admin/settings', label: '⚙️ CD2設定' },
   { href: '/admin/results',  label: '📋 結果一覧' },
 ];

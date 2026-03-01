@@ -6,12 +6,29 @@ import { ProductGrid } from '@/components/home/ProductGrid';
 import { NewsSection } from '@/components/home/NewsSection';
 import { WinnerFeed } from '@/components/home/WinnerFeed';
 import { RankingSection } from '@/components/home/RankingSection';
+import { getServiceSupabase } from '@/lib/supabase/service';
+import { fetchActiveBanners } from '@/lib/data/banners';
+import type { BannerData } from '@/components/home/CampaignBanner';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = getServiceSupabase();
+  const dbBanners = await fetchActiveBanners(supabase);
+
+  const banners: BannerData[] = dbBanners.map((b) => ({
+    id: b.id,
+    title: b.title,
+    subtitle: b.subtitle,
+    tag: b.tag,
+    badge: b.badge,
+    badge_color: b.badge_color,
+    image_url: b.image_url,
+    overlay: b.overlay,
+  }));
+
   return (
     <>
       <HeroSection />
-      <CampaignBanner />
+      <CampaignBanner banners={banners.length > 0 ? banners : undefined} />
       <CategoryTabs />
       <div className="py-4 px-0">
         <section aria-label="ガチャ商品一覧">

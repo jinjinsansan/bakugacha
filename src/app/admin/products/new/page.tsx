@@ -1,4 +1,5 @@
 import { createProduct } from '@/app/admin/actions';
+import { ImageUploadField } from '@/components/admin/ImageUploadField';
 
 const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト券', 'ゲーム機', 'その他'];
 
@@ -42,7 +43,13 @@ export function ProductFormFields({
       </div>
 
       <Field name="description" label="説明文" multiline defaultValue={defaults?.description as string} />
-      <Field name="image_url" label="画像URL" type="url" defaultValue={defaults?.image_url as string} />
+      <ImageUploadField
+        name="image_url"
+        label="商品画像"
+        prefix="thumbnails"
+        aspectHint="16:9 推奨 (640×360px)"
+        defaultValue={defaults?.image_url as string}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Field name="thumbnail_emoji" label="サムネイル絵文字" placeholder="🎰" defaultValue={defaults?.thumbnail_emoji as string} />
