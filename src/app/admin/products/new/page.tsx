@@ -58,7 +58,7 @@ export function ProductFormFields({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Field name="stock_total" label="在庫総数" type="number" placeholder="空欄=無制限" defaultValue={defaults?.stock_total as string} />
+        <Field name="stock_total" label="在庫総数" type="number" required defaultValue={defaults?.stock_total as string} />
         <Field name="stock_remaining" label="残り在庫" type="number" placeholder="空欄=在庫総数と同じ" defaultValue={defaults?.stock_remaining as string} />
         <Field name="sort_order" label="表示順" type="number" defaultValue={(defaults?.sort_order as string) ?? '0'} />
       </div>

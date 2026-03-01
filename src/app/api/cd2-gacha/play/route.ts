@@ -103,6 +103,14 @@ export async function POST(request: Request) {
 
     const price: number = product?.price ?? 0;
 
+    // 在庫切れチェック
+    if (product && product.stock_remaining != null && product.stock_remaining <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'この商品は売り切れです。' },
+        { status: 400 },
+      );
+    }
+
     // コイン不足チェック
     if (price > 0) {
       if (!user) {
@@ -162,6 +170,17 @@ export async function POST(request: Request) {
       );
 
       await Promise.all(savePromises);
+
+      // 在庫デクリメント & sold-out 自動化
+      if (product && product.stock_remaining != null) {
+        const newRemaining = (product.stock_remaining as number) - 1;
+        const update: Record<string, unknown> = { stock_remaining: newRemaining };
+        if (newRemaining <= 0) update.status = 'sold-out';
+        await supabase
+          .from('gacha_products')
+          .update(update)
+          .eq('id', productId);
+      }
     }
 
     return NextResponse.json({

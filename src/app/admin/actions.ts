@@ -14,7 +14,9 @@ export async function createProduct(formData: FormData) {
   const id = String(formData.get('id') ?? '').trim();
   if (!id) throw new Error('ID は必須です');
 
-  const stockTotal    = formData.get('stock_total') ? Number(formData.get('stock_total'))    : null;
+  const stockTotalRaw = formData.get('stock_total');
+  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') throw new Error('在庫総数は必須です');
+  const stockTotal = Number(stockTotalRaw);
   const stockRemaining = formData.get('stock_remaining') ? Number(formData.get('stock_remaining')) : stockTotal;
 
   await supabase.from('gacha_products').insert({
@@ -43,7 +45,9 @@ export async function updateProduct(id: string, formData: FormData) {
   await requireAdmin();
   const supabase = getServiceSupabase();
 
-  const stockTotal    = formData.get('stock_total') ? Number(formData.get('stock_total'))    : null;
+  const stockTotalRaw = formData.get('stock_total');
+  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') throw new Error('在庫総数は必須です');
+  const stockTotal = Number(stockTotalRaw);
   const stockRemaining = formData.get('stock_remaining') ? Number(formData.get('stock_remaining')) : null;
 
   await supabase.from('gacha_products').update({
