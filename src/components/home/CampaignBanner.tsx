@@ -86,8 +86,8 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
       );
 
   return (
-    <section className="relative max-w-[860px] w-full mx-auto my-3 px-3">
-      <Wrapper className="relative overflow-hidden rounded-xl block" style={{ aspectRatio: '4/1' }}>
+    <section className="relative max-w-[860px] w-full mx-auto my-3 px-1 sm:px-3">
+      <Wrapper className="relative overflow-hidden rounded-xl block" style={{ aspectRatio: '3/1' }}>
 
         {/* 背景写真 */}
         {b.image_url && (
@@ -111,7 +111,7 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
         />
 
         {/* コンテンツ */}
-        <div className="relative z-10 h-full flex items-center justify-between px-6 md:px-8">
+        <div className="relative z-10 h-full flex items-center justify-between px-4 sm:px-6 md:px-8">
           <div>
             {b.tag && (
               <span className="text-[10px] font-bold tracking-[0.25em] uppercase mb-1 block text-gold">
@@ -119,7 +119,7 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
               </span>
             )}
             <h3
-              className="text-white font-black text-lg md:text-2xl leading-tight mb-1"
+              className="text-white font-black text-base sm:text-lg md:text-2xl leading-tight mb-1"
               style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
             >
               {b.title}

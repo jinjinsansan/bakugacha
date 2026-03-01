@@ -18,7 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const cat = product.category ? categoryStyle[product.category] : null;
 
   return (
-    <div className="card-premium relative overflow-hidden rounded-2xl">
+    <div className="card-premium relative overflow-hidden rounded-xl sm:rounded-2xl">
 
       {/* 価格リボン */}
       {product.price !== null && (
@@ -99,7 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       {/* 情報 */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         <p className="text-sm font-bold text-gray-200 leading-snug mb-4 tracking-wide line-clamp-2">
           {product.title}
         </p>
