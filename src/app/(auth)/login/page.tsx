@@ -2,15 +2,14 @@ import crypto from 'crypto';
 import { headers } from 'next/headers';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getServerEnv } from '@/lib/env';
+import { LineLoginButton } from '@/components/auth/LineLoginButton';
 
 type Props = {
   searchParams?: Promise<{ error?: string }>;
 };
 
 /**
- * LINE認証URLをサーバー側で事前生成し、<a href> に直接埋め込む。
- * iOS ではサーバー302リダイレクト経由だと Universal Links が機能せず
- * LINEアプリが起動しないため、直接リンクにする必要がある。
+ * LIFF未設定時のフォールバック: 従来のOAuth認証URLを生成
  */
 async function buildLineAuthorizeUrl(): Promise<string | null> {
   try {
@@ -42,8 +41,6 @@ async function buildLineAuthorizeUrl(): Promise<string | null> {
     url.searchParams.set('state', state);
     url.searchParams.set('scope', 'profile openid');
     url.searchParams.set('nonce', nonce);
-    // prompt=consent を除去: この設定があるとiOSモバイルで
-    // LINEアプリが起動せずブラウザの同意画面が強制表示される
     url.searchParams.set('bot_prompt', 'normal');
 
     return url.toString();
@@ -57,7 +54,10 @@ export default async function LoginPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
   const error = params.error;
 
-  const lineUrl = await buildLineAuthorizeUrl();
+  const liffId = process.env.NEXT_PUBLIC_LIFF_ID ?? '';
+
+  // LIFFが設定されていなければ従来のOAuth URLをフォールバックとして生成
+  const fallbackUrl = liffId ? null : await buildLineAuthorizeUrl();
 
   return (
     <>
@@ -78,16 +78,7 @@ export default async function LoginPage({ searchParams }: Props) {
         </div>
       )}
 
-      <a
-        href={lineUrl ?? '/api/line/login/start'}
-        className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-black tracking-wider text-sm text-white transition hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #06c755, #00a64f)',
-          boxShadow: '0 4px 20px rgba(6,199,85,0.3)',
-        }}
-      >
-        LINEでログイン / 登録
-      </a>
+      <LineLoginButton liffId={liffId} fallbackUrl={fallbackUrl} />
 
       <p className="text-center text-xs text-gray-600 mt-6">
         初回ログイン時にアカウントが自動作成されます
