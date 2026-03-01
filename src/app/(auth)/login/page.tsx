@@ -42,7 +42,8 @@ async function buildLineAuthorizeUrl(): Promise<string | null> {
     url.searchParams.set('state', state);
     url.searchParams.set('scope', 'profile openid');
     url.searchParams.set('nonce', nonce);
-    url.searchParams.set('prompt', 'consent');
+    // prompt=consent を除去: この設定があるとiOSモバイルで
+    // LINEアプリが起動せずブラウザの同意画面が強制表示される
     url.searchParams.set('bot_prompt', 'normal');
 
     return url.toString();

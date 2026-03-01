@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   authorizeUrl.searchParams.set('state', state);
   authorizeUrl.searchParams.set('scope', 'profile openid');
   authorizeUrl.searchParams.set('nonce', nonce);
-  authorizeUrl.searchParams.set('prompt', 'consent');
+  // prompt=consent を除去: iOSでLINEアプリが起動せずブラウザログインになる原因
   authorizeUrl.searchParams.set('bot_prompt', 'normal');
 
   return NextResponse.redirect(authorizeUrl.toString());
