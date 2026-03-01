@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerEnv } from '@/lib/env';
 import { getServiceSupabase } from '@/lib/supabase/service';
-import { grantCoins } from '@/lib/data/coins';
 import { findUserByLineId, createLineUser, touchLastLogin } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
-
-const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
 type LineTokenResponse = {
   access_token: string;
@@ -137,18 +134,13 @@ export async function GET(request: NextRequest) {
         })
         .eq('id', existingUserId);
 
-      // コイン付与
-      if (LINE_REWARD_COINS > 0) {
-        await grantCoins(supabase, existingUserId, LINE_REWARD_COINS, `LINE連携ボーナス (+${LINE_REWARD_COINS}コイン)`);
-      }
-
       // 連携完了記録
       await supabase
         .from('line_link_states')
         .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
         .eq('id', stateRow.id);
 
-      return NextResponse.redirect(`${origin}/mypage/line?status=success&coins=${LINE_REWARD_COINS}`);
+      return NextResponse.redirect(`${origin}/home`);
     }
 
     // ─── パターン1 & 2: 未認証 OAuth（LINE ログイン / LINE 登録）───
@@ -169,24 +161,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/home`);
     }
 
-    // パターン1: 新規ユーザー作成（LINE 経由）
+    // パターン1: 新規ユーザー作成（LINE 経由、コインは0）
     const newUser = await createLineUser(supabase, {
       lineUserId,
       displayName: profile.displayName,
       pictureUrl: profile.pictureUrl,
-      initialCoins: LINE_REWARD_COINS,
+      initialCoins: 0,
     });
-
-    // ボーナスコイントランザクション記録
-    if (LINE_REWARD_COINS > 0) {
-      await supabase.from('coin_transactions').insert({
-        user_id: newUser.id,
-        type: 'bonus',
-        amount: LINE_REWARD_COINS,
-        balance_after: LINE_REWARD_COINS,
-        description: 'LINE登録ボーナス',
-      });
-    }
 
     // セッション作成
     const sessionToken = await getOrCreateSessionToken();

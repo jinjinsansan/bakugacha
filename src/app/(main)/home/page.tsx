@@ -1,4 +1,5 @@
 import { HeroSection } from '@/components/home/HeroSection';
+import { LineFriendBanner } from '@/components/home/LineFriendBanner';
 import { CampaignBanner } from '@/components/home/CampaignBanner';
 import { CategoryTabs } from '@/components/home/CategoryTabs';
 import { FilterTags } from '@/components/home/FilterTags';
@@ -28,6 +29,7 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
+      <LineFriendBanner />
       <CampaignBanner banners={banners.length > 0 ? banners : undefined} />
       <CategoryTabs />
       <div className="py-4 px-0">
