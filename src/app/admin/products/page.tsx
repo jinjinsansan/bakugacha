@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { deleteProduct } from '@/app/admin/actions';
+import { DeleteButton } from './DeleteButton';
 
 export default async function AdminProductsPage() {
   const supabase = getServiceSupabase();
@@ -59,13 +60,10 @@ export default async function AdminProductsPage() {
                         className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white text-xs transition-colors">
                         編集
                       </Link>
-                      <form action={deleteProduct.bind(null, product.id as string)}>
-                        <button type="submit"
-                          className="px-2 py-1 rounded bg-red-900/50 hover:bg-red-800/70 text-red-300 text-xs transition-colors"
-                          onClick={(e) => { if (!confirm(`「${product.title}」を削除しますか？`)) e.preventDefault(); }}>
-                          削除
-                        </button>
-                      </form>
+                      <DeleteButton
+                        title={product.title as string}
+                        deleteAction={deleteProduct.bind(null, product.id as string)}
+                      />
                     </div>
                   </td>
                 </tr>
