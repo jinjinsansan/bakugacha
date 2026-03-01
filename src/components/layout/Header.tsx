@@ -55,23 +55,16 @@ export async function Header() {
               </form>
             </>
           ) : (
-            <>
-              {lineLoginEnabled && (
-                <a
-                  href="/api/line/login/start"
-                  className="text-xs px-5 py-2 rounded-full font-black text-white transition hover:opacity-90"
-                  style={{
-                    background: 'linear-gradient(135deg, #06c755, #00a64f)',
-                    boxShadow: '0 2px 12px rgba(6,199,85,0.3)',
-                  }}
-                >
-                  LINEでログイン
-                </a>
-              )}
-              <Link href="/login">
-                <button className="btn-silver text-xs px-5 py-2 rounded-full">ログイン</button>
-              </Link>
-            </>
+            <a
+              href={lineLoginEnabled ? '/api/line/login/start' : '/login'}
+              className="text-xs px-5 py-2 rounded-full font-black text-white transition hover:opacity-90"
+              style={{
+                background: 'linear-gradient(135deg, #06c755, #00a64f)',
+                boxShadow: '0 2px 12px rgba(6,199,85,0.3)',
+              }}
+            >
+              ログイン / 登録
+            </a>
           )}
         </div>
       </div>
