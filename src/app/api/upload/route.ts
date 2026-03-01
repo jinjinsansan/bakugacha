@@ -14,8 +14,12 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
   }
+  const email = user.email as string | undefined;
+  const lineId = user.line_user_id as string | undefined;
   const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean);
-  if (!adminEmails.includes(user.email as string)) {
+  const adminLineIds = (process.env.ADMIN_LINE_IDS ?? '').split(',').map((e) => e.trim()).filter(Boolean);
+  const isAdmin = (!!email && adminEmails.includes(email)) || (!!lineId && adminLineIds.includes(lineId));
+  if (!isAdmin) {
     return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 });
   }
 
