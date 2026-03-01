@@ -52,7 +52,7 @@ export default async function AdminProductsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {product.stock_total ? `${(product.stock_remaining as number).toLocaleString()} / ${(product.stock_total as number).toLocaleString()}` : '∞'}
+                    {product.stock_total != null ? `${((product.stock_remaining as number) ?? 0).toLocaleString()} / ${(product.stock_total as number).toLocaleString()}` : '∞'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">

@@ -12,10 +12,10 @@ export async function createProduct(formData: FormData) {
   const supabase = getServiceSupabase();
 
   const id = String(formData.get('id') ?? '').trim();
-  if (!id) throw new Error('ID は必須です');
+  if (!id) redirect('/admin/products/new?error=' + encodeURIComponent('ID は必須です'));
 
   const stockTotalRaw = formData.get('stock_total');
-  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') throw new Error('在庫総数は必須です');
+  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') redirect('/admin/products/new?error=' + encodeURIComponent('在庫総数は必須です'));
   const stockTotal = Number(stockTotalRaw);
   const stockRemaining = formData.get('stock_remaining') ? Number(formData.get('stock_remaining')) : stockTotal;
 
@@ -46,7 +46,7 @@ export async function updateProduct(id: string, formData: FormData) {
   const supabase = getServiceSupabase();
 
   const stockTotalRaw = formData.get('stock_total');
-  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') throw new Error('在庫総数は必須です');
+  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') redirect(`/admin/products/${id}?error=` + encodeURIComponent('在庫総数は必須です'));
   const stockTotal = Number(stockTotalRaw);
   const stockRemaining = formData.get('stock_remaining') ? Number(formData.get('stock_remaining')) : null;
 
