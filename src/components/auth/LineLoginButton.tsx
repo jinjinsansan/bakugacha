@@ -18,6 +18,7 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
   const [error, setError] = useState<string | null>(null);
   const [liffReady, setLiffReady] = useState(false);
   const isInClientRef = useRef(false);
+  const autoLoginTriedRef = useRef(false);
 
   const processLiffLogin = useCallback(async () => {
     setProcessing(true);
@@ -29,12 +30,17 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
         return;
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
       const res = await fetch('/api/line/login/liff', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({ accessToken }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (res.ok) {
         window.location.href = '/home';
@@ -45,7 +51,11 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
       }
     } catch (e) {
       console.error('LIFF login error', e);
-      setError('ログイン中にエラーが発生しました。');
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        setError('ログイン処理がタイムアウトしました。もう一度お試しください。');
+      } else {
+        setError('ログイン中にエラーが発生しました。');
+      }
       setProcessing(false);
     }
   }, []);
@@ -59,17 +69,18 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
     // liff.init() がハングした場合の安全タイムアウト
     const timer = setTimeout(() => {
       setLiffReady(true);
+      setError((prev) => prev ?? '初期化に時間がかかっています。ボタンを押して続行してください。');
     }, 10000);
 
     liff
       .init({ liffId })
       .then(() => {
         clearTimeout(timer);
+        setLiffReady(true);
         isInClientRef.current = liff.isInClient();
-        if (liff.isLoggedIn()) {
+        if (liff.isLoggedIn() && !autoLoginTriedRef.current) {
+          autoLoginTriedRef.current = true;
           processLiffLogin();
-        } else {
-          setLiffReady(true);
         }
       })
       .catch((err) => {
@@ -104,7 +115,7 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
         className="flex items-center justify-center w-full py-4 rounded-xl font-black text-sm text-white/50"
         style={{ background: 'linear-gradient(135deg, #06c755, #00a64f)', opacity: 0.6 }}
       >
-        読み込み中...
+        読み込み中...（最大10秒）
       </div>
     );
   }
