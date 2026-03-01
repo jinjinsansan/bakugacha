@@ -11,10 +11,10 @@ function rowToProduct(row: Record<string, any>): Product {
     imageSrc: row.image_url ?? '',
     imageSizes: '',
     price: row.price,
-    stock: row.stock_total
+    stock: row.stock_total != null
       ? {
-          text: `残り${(row.stock_remaining as number).toLocaleString()}/${(row.stock_total as number).toLocaleString()}`,
-          progressClass: buildProgressClass(row.stock_remaining, row.stock_total),
+          text: `残り${((row.stock_remaining ?? 0) as number).toLocaleString()}/${(row.stock_total as number).toLocaleString()}`,
+          progressClass: buildProgressClass(row.stock_remaining ?? 0, row.stock_total),
         }
       : null,
     buttons: row.status === 'sold-out' ? null : buildButtons(row.price),
