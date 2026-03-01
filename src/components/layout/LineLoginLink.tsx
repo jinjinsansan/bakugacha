@@ -8,17 +8,22 @@ export function LineLoginLink({
   fallbackHref: string;
 }) {
   const handleClick = () => {
+    // LINE内ブラウザ: line://app/ はループするため /login へ誘導
+    if (/Line\//i.test(navigator.userAgent)) {
+      window.location.href = '/login';
+      return;
+    }
+
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (liffId && isMobile) {
-      // line:// URL Scheme → ブラウザ種別に関係なくLINEアプリを起動
+      // 外部モバイルブラウザ: line:// URL Scheme でLINEアプリを直接起動
       let appOpened = false;
       const onVisibility = () => { if (document.hidden) appOpened = true; };
       document.addEventListener('visibilitychange', onVisibility, { once: true });
 
       window.location.href = `line://app/${liffId}`;
 
-      // LINEが未インストールの場合は2秒後にフォールバック
       setTimeout(() => {
         document.removeEventListener('visibilitychange', onVisibility);
         if (!appOpened) {

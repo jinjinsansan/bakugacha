@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import liff from '@line/liff';
 
 interface LineLoginButtonProps {
@@ -8,10 +8,16 @@ interface LineLoginButtonProps {
   fallbackUrl: string | null;
 }
 
+// LINEアプリ内ブラウザかどうかをUAで判定
+function isLineInAppBrowser(): boolean {
+  return typeof navigator !== 'undefined' && /Line\//i.test(navigator.userAgent);
+}
+
 export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [liffReady, setLiffReady] = useState(false);
+  const isInClientRef = useRef(false);
 
   const processLiffLogin = useCallback(async () => {
     setProcessing(true);
@@ -50,21 +56,29 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
       return;
     }
 
+    // liff.init() がハングした場合の安全タイムアウト
+    const timer = setTimeout(() => {
+      setLiffReady(true);
+    }, 10000);
+
     liff
       .init({ liffId })
       .then(() => {
+        clearTimeout(timer);
+        isInClientRef.current = liff.isInClient();
         if (liff.isLoggedIn()) {
-          // LIFF URL経由でLINEアプリ内ブラウザから開かれた
-          // → 自動的にログイン処理を実行
           processLiffLogin();
         } else {
           setLiffReady(true);
         }
       })
       .catch((err) => {
+        clearTimeout(timer);
         console.error('LIFF init error', err);
         setLiffReady(true);
       });
+
+    return () => clearTimeout(timer);
   }, [liffId, processLiffLogin]);
 
   // LIFF処理中（LINEアプリ内で認証→セッション作成中）
@@ -96,11 +110,17 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
   }
 
   // ── LIFF設定済み ──
-  // line:// URL Scheme でLINEアプリを直接起動（ブラウザ種別を問わない）
   if (liffId) {
     const handleClick = () => {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      // LINE内ブラウザの場合: line://app/ は再度LINEを開こうとしてループするため
+      // liff.login() を直接呼ぶ
+      if (isInClientRef.current || isLineInAppBrowser()) {
+        liff.login();
+        return;
+      }
 
+      // 外部モバイルブラウザ: line:// URL Scheme でLINEアプリを直接起動
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
         let appOpened = false;
         const onVisibility = () => { if (document.hidden) appOpened = true; };
