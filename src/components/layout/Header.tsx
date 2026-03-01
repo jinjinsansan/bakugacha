@@ -4,6 +4,7 @@ import { getUserFromSession } from '@/lib/data/session';
 import { logoutAction } from '@/app/(auth)/actions';
 
 const lineLoginEnabled = Boolean(process.env.LINE_LOGIN_CHANNEL_ID);
+const liffId = process.env.NEXT_PUBLIC_LIFF_ID ?? '';
 
 export async function Header() {
   let user: Record<string, unknown> | null = null;
@@ -56,7 +57,13 @@ export async function Header() {
             </>
           ) : (
             <a
-              href={lineLoginEnabled ? '/api/line/login/start' : '/login'}
+              href={
+                liffId
+                  ? `https://liff.line.me/${liffId}`
+                  : lineLoginEnabled
+                  ? '/api/line/login/start'
+                  : '/login'
+              }
               className="text-xs px-5 py-2 rounded-full font-black text-white transition hover:opacity-90"
               style={{
                 background: 'linear-gradient(135deg, #06c755, #00a64f)',
