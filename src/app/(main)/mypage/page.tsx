@@ -86,6 +86,23 @@ export default async function MyPage() {
         </div>
       </div>
 
+      {/* LINE連携ボーナス */}
+      <div className="rounded-2xl p-5 mb-6"
+        style={{ background: '#0a0a1c', border: '1px solid rgba(6,199,85,0.25)' }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-1">LINE特典</p>
+            <p className="text-sm text-white/70">LINE連携でコインをGET</p>
+          </div>
+          <Link href="/mypage/line">
+            <button className="px-4 py-2 rounded-xl text-xs font-black text-white transition hover:scale-[1.02]"
+              style={{ background: 'linear-gradient(135deg, #06c755, #00a64f)' }}>
+              詳細を見る
+            </button>
+          </Link>
+        </div>
+      </div>
+
       {/* ガチャ履歴 */}
       <div className="rounded-2xl overflow-hidden mb-6"
         style={{ background: '#0a0a1c', border: '1px solid rgba(255,255,255,0.07)' }}>
