@@ -21,8 +21,8 @@ export function HeroSection() {
           <div className="flex-shrink-0 md:order-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/baku_gacha_logo.gif"
-              alt="爆ガチャ"
+              src="/baku_gacha_logo_final.png"
+              alt="爆ガチャロゴ"
               className="w-[240px] h-[240px] md:w-[280px] md:h-[280px] object-contain drop-shadow-[0_0_40px_rgba(201,168,76,0.4)]"
             />
           </div>

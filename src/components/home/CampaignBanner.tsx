@@ -87,7 +87,10 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
 
   return (
     <section className="relative max-w-[860px] w-full mx-auto my-3 px-1 sm:px-3">
-      <Wrapper className="relative overflow-hidden rounded-xl block" style={{ aspectRatio: '3/1' }}>
+      <Wrapper
+        className="relative overflow-hidden rounded-xl block"
+        style={{ aspectRatio: '4 / 1', maxHeight: '220px' }}
+      >
 
         {/* 背景写真 */}
         {b.image_url && (

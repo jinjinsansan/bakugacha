@@ -30,10 +30,11 @@ export async function WinnerFeed() {
 
   return (
     <section className="px-4 py-6">
-      <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--gold)' }}>
-        🏆 最近の当選者
-      </h2>
-      <div className="flex flex-col gap-2">
+      <div className="max-w-[860px] w-full mx-auto">
+        <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--gold)' }}>
+          🏆 最近の当選者
+        </h2>
+        <div className="flex flex-col gap-2">
         {data.map((row) => {
           type UserRow = { display_name: string | null; email: string };
           type ProductRow = { title: string };
@@ -55,6 +56,7 @@ export async function WinnerFeed() {
             </div>
           );
         })}
+        </div>
       </div>
     </section>
   );

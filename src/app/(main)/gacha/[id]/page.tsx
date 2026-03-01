@@ -34,7 +34,7 @@ export default async function GachaDetailPage({ params }: Props) {
       : null;
 
   return (
-    <main className="min-h-screen pb-20" style={{ background: 'var(--bg-base)' }}>
+    <main className="min-h-screen pb-20 pt-6 md:pt-10" style={{ background: 'var(--bg-base)' }}>
       {/* ヒーロー画像 */}
       <div className="relative w-full aspect-video max-w-lg mx-auto overflow-hidden">
         {imageUrl ? (
