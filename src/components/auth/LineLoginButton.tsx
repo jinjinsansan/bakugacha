@@ -9,9 +9,10 @@ interface LineLoginButtonProps {
 }
 
 export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
-  const [ready, setReady] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [liffReady, setLiffReady] = useState(false);
+  const [isInLiff, setIsInLiff] = useState(false);
 
   const processLiffLogin = useCallback(async () => {
     setProcessing(true);
@@ -31,7 +32,12 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
       });
 
       if (res.ok) {
-        window.location.href = '/home';
+        // LINE内ブラウザの場合は /home に遷移、外部ブラウザならウィンドウを閉じる
+        if (liff.isInClient()) {
+          window.location.href = '/home';
+        } else {
+          window.location.href = '/home';
+        }
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? 'ログインに失敗しました。');
@@ -46,41 +52,30 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
 
   useEffect(() => {
     if (!liffId) {
-      setReady(true);
+      setLiffReady(true);
       return;
     }
 
     liff
       .init({ liffId })
       .then(() => {
+        setIsInLiff(liff.isInClient());
+
         if (liff.isLoggedIn()) {
-          // LINEアプリから戻ってきた → サーバーにトークンを送信してセッション作成
+          // LIFF URL経由でLINEアプリ内ブラウザから開かれた
+          // → 自動的にログイン処理を実行
           processLiffLogin();
         } else {
-          setReady(true);
+          setLiffReady(true);
         }
       })
       .catch((err) => {
         console.error('LIFF init error', err);
-        // LIFF初期化失敗 → フォールバックURLがあればそれを使う
-        setReady(true);
+        setLiffReady(true);
       });
   }, [liffId, processLiffLogin]);
 
-  const handleLogin = () => {
-    if (liffId) {
-      try {
-        liff.login({ redirectUri: window.location.href });
-      } catch {
-        // LIFF login failed, try fallback
-        if (fallbackUrl) window.location.href = fallbackUrl;
-      }
-    } else if (fallbackUrl) {
-      window.location.href = fallbackUrl;
-    }
-  };
-
-  // LIFF処理中（LINEアプリから戻ってセッション作成中）
+  // LIFF処理中（LINEアプリ内で認証→セッション作成中）
   if (processing) {
     return (
       <div
@@ -97,7 +92,7 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
   }
 
   // 初期化中
-  if (!ready) {
+  if (!liffReady) {
     return (
       <div
         className="flex items-center justify-center w-full py-4 rounded-xl font-black text-sm text-white/50"
@@ -108,8 +103,58 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
     );
   }
 
-  // LIFFなし → 従来のOAuth直接リンク
-  if (!liffId && fallbackUrl) {
+  // ── LIFF設定済み ──
+  // LINE内ブラウザにいる場合は liff.login() を使う
+  // 外部ブラウザ（Safari等）からは LIFF URL に直接遷移
+  //   → liff.line.me URL をタップするとLINEアプリが起動する
+  if (liffId) {
+    const href = isInLiff
+      ? undefined
+      : `https://liff.line.me/${liffId}`;
+
+    const handleClick = isInLiff
+      ? () => liff.login({ redirectUri: window.location.href })
+      : undefined;
+
+    return (
+      <>
+        {error && (
+          <div
+            className="mb-4 rounded-xl px-4 py-3 text-sm text-red-300"
+            style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)' }}
+          >
+            {error}
+          </div>
+        )}
+        {href ? (
+          <a
+            href={href}
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-black tracking-wider text-sm text-white transition hover:opacity-90"
+            style={{
+              background: 'linear-gradient(135deg, #06c755, #00a64f)',
+              boxShadow: '0 4px 20px rgba(6,199,85,0.3)',
+            }}
+          >
+            LINEでログイン / 登録
+          </a>
+        ) : (
+          <button
+            onClick={handleClick}
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-black tracking-wider text-sm text-white transition hover:opacity-90"
+            style={{
+              background: 'linear-gradient(135deg, #06c755, #00a64f)',
+              boxShadow: '0 4px 20px rgba(6,199,85,0.3)',
+            }}
+          >
+            LINEでログイン / 登録
+          </button>
+        )}
+      </>
+    );
+  }
+
+  // ── LIFFなし → 従来のOAuth直接リンク ──
+  if (fallbackUrl) {
     return (
       <a
         href={fallbackUrl}
@@ -124,26 +169,5 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
     );
   }
 
-  return (
-    <>
-      {error && (
-        <div
-          className="mb-4 rounded-xl px-4 py-3 text-sm text-red-300"
-          style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)' }}
-        >
-          {error}
-        </div>
-      )}
-      <button
-        onClick={handleLogin}
-        className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-black tracking-wider text-sm text-white transition hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #06c755, #00a64f)',
-          boxShadow: '0 4px 20px rgba(6,199,85,0.3)',
-        }}
-      >
-        LINEでログイン / 登録
-      </button>
-    </>
-  );
+  return null;
 }
