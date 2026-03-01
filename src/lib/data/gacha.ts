@@ -13,7 +13,7 @@ function rowToProduct(row: Record<string, any>): Product {
     price: row.price,
     stock: row.stock_total != null
       ? {
-          text: `残り${((row.stock_remaining ?? 0) as number).toLocaleString()}/${(row.stock_total as number).toLocaleString()}`,
+          text: `残り${((row.stock_remaining ?? 0) as number).toLocaleString()}回 / ${(row.stock_total as number).toLocaleString()}回`,
           progressClass: buildProgressClass(row.stock_remaining ?? 0, row.stock_total),
         }
       : null,

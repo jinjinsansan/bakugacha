@@ -30,7 +30,7 @@ export default async function AdminProductsPage() {
                 <th className="px-4 py-3">カテゴリ</th>
                 <th className="px-4 py-3">価格</th>
                 <th className="px-4 py-3">ステータス</th>
-                <th className="px-4 py-3">在庫</th>
+                <th className="px-4 py-3">提供回数</th>
                 <th className="px-4 py-3">操作</th>
               </tr>
             </thead>
@@ -52,7 +52,7 @@ export default async function AdminProductsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {product.stock_total != null ? `${((product.stock_remaining as number) ?? 0).toLocaleString()} / ${(product.stock_total as number).toLocaleString()}` : '∞'}
+                    {product.stock_total != null ? `${((product.stock_remaining as number) ?? 0).toLocaleString()}回 / ${(product.stock_total as number).toLocaleString()}回` : '∞'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
