@@ -22,6 +22,7 @@ export function ImageUploadField({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const hiddenRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setError('');
@@ -47,6 +48,8 @@ export function ImageUploadField({
 
       setUrl(data.url);
       setPreview(data.url);
+      // DOM を直接更新して FormData に確実に反映させる
+      if (hiddenRef.current) hiddenRef.current.value = data.url;
     } catch {
       setError('アップロードに失敗しました');
       setPreview(url);
@@ -57,14 +60,14 @@ export function ImageUploadField({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-uploading={uploading || undefined}>
       <label className="text-xs text-white/60">
         {label}
         {aspectHint && <span className="ml-2 text-white/30">{aspectHint}</span>}
       </label>
 
       {/* hidden input: Server Action が読み取る値 */}
-      <input type="hidden" name={name} value={url} />
+      <input type="hidden" name={name} ref={hiddenRef} defaultValue={defaultValue ?? ''} />
 
       {/* プレビュー */}
       {preview && (
