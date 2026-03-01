@@ -96,9 +96,29 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
   }
 
   // ── LIFF設定済み ──
-  // 外部ブラウザ・LINE内ブラウザどちらでも liff.login() を呼ぶ。
-  // モバイル（LINE インストール済み）では LINE アプリが起動して認証される。
+  // line:// URL Scheme でLINEアプリを直接起動（ブラウザ種別を問わない）
   if (liffId) {
+    const handleClick = () => {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        let appOpened = false;
+        const onVisibility = () => { if (document.hidden) appOpened = true; };
+        document.addEventListener('visibilitychange', onVisibility, { once: true });
+
+        window.location.href = `line://app/${liffId}`;
+
+        setTimeout(() => {
+          document.removeEventListener('visibilitychange', onVisibility);
+          if (!appOpened) {
+            liff.login();
+          }
+        }, 2000);
+      } else {
+        liff.login();
+      }
+    };
+
     return (
       <>
         {error && (
@@ -110,7 +130,7 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
           </div>
         )}
         <button
-          onClick={() => liff.login()}
+          onClick={handleClick}
           className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-black tracking-wider text-sm text-white transition hover:opacity-90"
           style={{
             background: 'linear-gradient(135deg, #06c755, #00a64f)',

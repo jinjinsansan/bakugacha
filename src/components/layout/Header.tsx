@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { logoutAction } from '@/app/(auth)/actions';
+import { LineLoginLink } from '@/components/layout/LineLoginLink';
 
 const lineLoginEnabled = Boolean(process.env.LINE_LOGIN_CHANNEL_ID);
 const liffId = process.env.NEXT_PUBLIC_LIFF_ID ?? '';
@@ -56,22 +57,10 @@ export async function Header() {
               </form>
             </>
           ) : (
-            <a
-              href={
-                liffId
-                  ? `https://liff.line.me/${liffId}`
-                  : lineLoginEnabled
-                  ? '/api/line/login/start'
-                  : '/login'
-              }
-              className="text-xs px-5 py-2 rounded-full font-black text-white transition hover:opacity-90"
-              style={{
-                background: 'linear-gradient(135deg, #06c755, #00a64f)',
-                boxShadow: '0 2px 12px rgba(6,199,85,0.3)',
-              }}
-            >
-              ログイン / 登録
-            </a>
+            <LineLoginLink
+              liffId={liffId}
+              fallbackHref={lineLoginEnabled ? '/api/line/login/start' : '/login'}
+            />
           )}
         </div>
       </div>
