@@ -10,7 +10,7 @@ export interface BannerData {
   badge: string | null;
   badge_color: string;
   image_url: string | null;
-  overlay: string;
+  overlay: string | null;
   link_url: string | null;
 }
 
@@ -97,12 +97,12 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
             src={b.image_url}
             alt=""
             className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
-            style={{ filter: 'brightness(0.7) saturate(0.8)' }}
+            style={b.overlay ? { filter: 'brightness(0.7) saturate(0.8)' } : undefined}
           />
         )}
 
         {/* オーバーレイ */}
-        <div className="absolute inset-0" style={{ background: b.overlay }} />
+        {b.overlay && <div className="absolute inset-0" style={{ background: b.overlay }} />}
 
         {/* 光沢エフェクト */}
         <div

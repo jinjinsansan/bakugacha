@@ -118,8 +118,7 @@ export async function updateBanner(id: string, formData: FormData) {
     badge:       formData.get('badge') ? String(formData.get('badge')) : null,
     badge_color: String(formData.get('badge_color') ?? '#c9a84c'),
     image_url:   formData.get('image_url') ? String(formData.get('image_url')) : null,
-    overlay:     formData.get('overlay') ? String(formData.get('overlay'))
-      : 'linear-gradient(90deg, rgba(5,5,20,0.92) 0%, rgba(5,5,20,0.7) 50%, rgba(5,5,20,0.3) 100%)',
+    overlay:     formData.get('overlay') ? String(formData.get('overlay')) : null,
     link_url:    formData.get('link_url') ? String(formData.get('link_url')) : null,
     sort_order:  Number(formData.get('sort_order') ?? 0),
     is_active:   formData.get('is_active') === 'on',
