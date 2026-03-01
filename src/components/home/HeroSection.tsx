@@ -1,26 +1,10 @@
 import Link from 'next/link';
 
-const heroImages = [
-  'https://picsum.photos/seed/hero-cards1/900/600',
-  'https://picsum.photos/seed/hero-game1/900/600',
-  'https://picsum.photos/seed/hero-gift1/900/600',
-];
-
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden" style={{ minHeight: '480px' }}>
-      {/* 背景フルスクリーン写真 */}
-      <img
-        src="https://picsum.photos/seed/hero-bg-dark/1400/600"
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ filter: 'brightness(0.25) saturate(0.6)' }}
-      />
-      {/* 暗いオーバーレイ */}
-      <div
-        className="absolute inset-0"
-        style={{ background: 'linear-gradient(135deg, rgba(5,5,15,0.92) 0%, rgba(5,5,20,0.75) 50%, rgba(5,5,15,0.6) 100%)' }}
-      />
+      {/* 背景 */}
+      <div className="absolute inset-0 bg-[#050510]" />
 
       {/* ゴールドグロー */}
       <div
@@ -64,50 +48,14 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* 右側：フローティング画像カード */}
-          <div className="flex-shrink-0 flex flex-col gap-3">
-            {/* メイン画像 */}
-            <div
-              className="relative rounded-2xl overflow-hidden shadow-2xl"
-              style={{ width: '220px', height: '150px', border: '1px solid rgba(201,168,76,0.3)' }}
-            >
-              <img src={heroImages[0]} alt="" className="w-full h-full object-cover" />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(201,168,76,0.15), transparent)' }} />
-              <span className="absolute bottom-2 left-3 text-xs font-bold text-gold tracking-wider">🎴 カードガチャ</span>
-            </div>
-            {/* サブ画像 2枚横並び */}
-            <div className="flex gap-3">
-              <div
-                className="relative rounded-xl overflow-hidden shadow-xl"
-                style={{ width: '105px', height: '80px', border: '1px solid rgba(255,255,255,0.1)' }}
-              >
-                <img src={heroImages[1]} alt="" className="w-full h-full object-cover" />
-                <span className="absolute bottom-1 left-2 text-[9px] font-bold text-white/80">🕹️ ゲーム機</span>
-              </div>
-              <div
-                className="relative rounded-xl overflow-hidden shadow-xl"
-                style={{ width: '105px', height: '80px', border: '1px solid rgba(255,255,255,0.1)' }}
-              >
-                <img src={heroImages[2]} alt="" className="w-full h-full object-cover" />
-                <span className="absolute bottom-1 left-2 text-[9px] font-bold text-white/80">🎁 ギフト券</span>
-              </div>
-            </div>
-            {/* スタッツ */}
-            <div className="flex gap-2">
-              {[
-                { value: '1,200+', label: 'ガチャ数' },
-                { value: '50万人+', label: '会員数' },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="flex-1 text-center px-3 py-2 rounded-xl"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)' }}
-                >
-                  <p className="text-sm font-black text-white">{s.value}</p>
-                  <p className="text-[9px] tracking-widest text-gray-500 uppercase">{s.label}</p>
-                </div>
-              ))}
-            </div>
+          {/* ロゴ */}
+          <div className="flex-shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/baku_gacha_logo.gif"
+              alt="爆ガチャ"
+              className="w-[200px] h-[200px] md:w-[280px] md:h-[280px] object-contain drop-shadow-[0_0_40px_rgba(201,168,76,0.4)]"
+            />
           </div>
 
         </div>
