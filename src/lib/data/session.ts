@@ -14,10 +14,12 @@ export async function createSession(
   token: string,
   userId: string,
 ): Promise<void> {
-  const { error } = await client.from('sessions').insert({
+  const { error } = await client.from('sessions').upsert({
     token,
     user_id: userId,
     expires_at: expiresAt(),
+  }, {
+    onConflict: 'token',
   });
   if (error) throw error;
 }
