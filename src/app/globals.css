@@ -17,6 +17,11 @@
 @layer base {
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
     background-color: var(--bg-base);
@@ -30,158 +35,105 @@
   ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
 }
 
+/* ── Utility classes ── */
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
 /* ── Component classes (in @layer components so utilities can override) ── */
 @layer components {
 
   /* ── シルバーボタン ── */
   .btn-silver {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(175deg,
-      #dce8f0 0%, #a8b8c8 25%, #7890a4 60%, #607080 100%
-    );
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.5),
-      inset 0 -2px 0 rgba(0,0,0,0.35),
-      0 8px 24px rgba(80,110,140,0.45),
-      0 2px 6px rgba(0,0,0,0.6),
-      0 0 0 1px rgba(180,200,220,0.2);
-    border: none;
-    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    border: 1px solid #94a3b8;
+    color: #0f172a;
     font-weight: 700;
-    color: #0a1020;
-    cursor: pointer;
+    letter-spacing: 0.05em;
     transition: all 0.2s ease;
+    cursor: pointer;
   }
-  .btn-silver::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -60%; width: 45%; height: 100%;
-    background: linear-gradient(100deg,
-      transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%
-    );
-    transform: skewX(-20deg);
-    transition: left 0.6s ease;
-    pointer-events: none;
-  }
-  .btn-silver:hover::before { left: 120%; }
   .btn-silver:hover {
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.55),
-      inset 0 -2px 0 rgba(0,0,0,0.3),
-      0 12px 32px rgba(80,110,140,0.55),
-      0 4px 12px rgba(0,0,0,0.5);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 1);
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   }
-  .btn-silver:active { transform: translateY(0); }
+  .btn-silver:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 
   /* ── ブロンズボタン ── */
   .btn-bronze {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(175deg,
-      #d4956a 0%, #a06030 25%, #7a4820 60%, #5c3418 100%
-    );
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.3),
-      inset 0 -2px 0 rgba(0,0,0,0.4),
-      0 8px 24px rgba(120,72,32,0.5),
-      0 2px 6px rgba(0,0,0,0.65),
-      0 0 0 1px rgba(180,120,60,0.25);
-    border: none;
-    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, #fed7aa 0%, #ea580c 50%, #9a3412 100%);
+    box-shadow: 0 4px 10px rgba(154, 52, 18, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    border: 1px solid #c2410c;
+    color: #fff;
     font-weight: 700;
-    color: #f5e0c8;
-    cursor: pointer;
+    letter-spacing: 0.05em;
     transition: all 0.2s ease;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    cursor: pointer;
   }
-  .btn-bronze::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -60%; width: 45%; height: 100%;
-    background: linear-gradient(100deg,
-      transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%
-    );
-    transform: skewX(-20deg);
-    transition: left 0.6s ease;
-    pointer-events: none;
-  }
-  .btn-bronze:hover::before { left: 120%; }
   .btn-bronze:hover {
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.35),
-      inset 0 -2px 0 rgba(0,0,0,0.35),
-      0 12px 32px rgba(120,72,32,0.6),
-      0 4px 12px rgba(0,0,0,0.55);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(154, 52, 18, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    background: linear-gradient(135deg, #ffedd5 0%, #f97316 50%, #c2410c 100%);
   }
-  .btn-bronze:active { transform: translateY(0); }
+  .btn-bronze:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(154, 52, 18, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
 
   /* ── ゴールドアクセントボタン ── */
   .btn-gold {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(175deg,
-      #e8cc7a 0%, #c9a84c 30%, #a8882c 65%, #8a6e1e 100%
-    );
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.3),
-      inset 0 -2px 0 rgba(0,0,0,0.35),
-      0 8px 24px rgba(180,140,40,0.55),
-      0 2px 6px rgba(0,0,0,0.6),
-      0 0 0 1px rgba(200,168,60,0.4);
-    border: none;
-    letter-spacing: 0.06em;
-    font-weight: 700;
-    color: #1a1200;
-    cursor: pointer;
+    background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
+    box-shadow: 0 4px 10px rgba(180, 83, 9, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    border: 1px solid #d97706;
+    color: #451a03;
+    font-weight: 800;
+    letter-spacing: 0.05em;
     transition: all 0.2s ease;
+    cursor: pointer;
   }
-  .btn-gold::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -60%; width: 45%; height: 100%;
-    background: linear-gradient(100deg,
-      transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%
-    );
-    transform: skewX(-20deg);
-    transition: left 0.6s ease;
-    pointer-events: none;
-  }
-  .btn-gold:hover::before { left: 120%; }
   .btn-gold:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.35),
-      0 12px 32px rgba(180,140,40,0.65),
-      0 4px 12px rgba(0,0,0,0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(180, 83, 9, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    background: linear-gradient(135deg, #fef9c3 0%, #fbbf24 50%, #d97706 100%);
   }
-  .btn-gold:active { transform: translateY(0); }
+  .btn-gold:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 
   /* ── アウトライン（シルバー調） ── */
   .btn-outline {
-    position: relative;
-    overflow: hidden;
     background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(168,184,200,0.35);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.1),
-      0 4px 12px rgba(0,0,0,0.4);
-    letter-spacing: 0.06em;
+    border: 1px solid rgba(168,184,200,0.4);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    letter-spacing: 0.05em;
     font-weight: 600;
-    color: #a8b8c8;
+    color: #e2e8f0;
     cursor: pointer;
     transition: all 0.2s ease;
   }
   .btn-outline:hover {
-    border-color: rgba(200,220,240,0.6);
-    color: #d8e8f4;
-    background: rgba(168,184,200,0.08);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.15),
-      0 6px 18px rgba(0,0,0,0.4),
-      0 0 16px rgba(168,184,200,0.12);
-    transform: translateY(-2px);
+    border-color: #f8fafc;
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 12px rgba(255,255,255,0.1);
+    transform: translateY(-1px);
+  }
+  .btn-outline:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   }
 
   /* ── プレミアムカードボーダー ── */

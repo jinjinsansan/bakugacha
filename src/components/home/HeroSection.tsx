@@ -45,13 +45,13 @@ export function HeroSection() {
               厳選されたガチャがここに集結。今すぐレアをGETしよう。
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-              <Link href="/gacha">
-                <button className="btn-gold px-8 py-3.5 rounded-full text-sm font-bold w-full sm:w-auto">
+              <Link href="/gacha" className="w-full sm:w-auto">
+                <button className="btn-gold px-8 py-4 rounded-full text-sm font-bold w-full shadow-xl">
                   🎰 今すぐガチャを引く
                 </button>
               </Link>
-              <Link href="/gacha">
-                <button className="btn-silver px-8 py-3.5 rounded-full text-sm font-bold w-full sm:w-auto">
+              <Link href="/gacha" className="w-full sm:w-auto">
+                <button className="btn-silver px-8 py-4 rounded-full text-sm font-bold w-full shadow-xl">
                   ガチャ一覧を見る →
                 </button>
               </Link>

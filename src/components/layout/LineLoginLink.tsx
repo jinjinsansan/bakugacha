@@ -1,5 +1,7 @@
 'use client';
 
+import { isLineInAppBrowser, isMobileBrowser, openLineAppWithFallback } from '@/lib/auth/line-client';
+
 export function LineLoginLink({
   liffId,
   fallbackHref,
@@ -9,27 +11,18 @@ export function LineLoginLink({
 }) {
   const handleClick = () => {
     // LINE内ブラウザ: line://app/ はループするため /login へ誘導
-    if (/Line\//i.test(navigator.userAgent)) {
+    if (isLineInAppBrowser()) {
       window.location.href = '/login';
       return;
     }
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isMobile = isMobileBrowser();
 
     if (liffId && isMobile) {
       // 外部モバイルブラウザ: line:// URL Scheme でLINEアプリを直接起動
-      let appOpened = false;
-      const onVisibility = () => { if (document.hidden) appOpened = true; };
-      document.addEventListener('visibilitychange', onVisibility, { once: true });
-
-      window.location.href = `line://app/${liffId}`;
-
-      setTimeout(() => {
-        document.removeEventListener('visibilitychange', onVisibility);
-        if (!appOpened) {
-          window.location.href = `https://liff.line.me/${liffId}`;
-        }
-      }, 2000);
+      openLineAppWithFallback(liffId, () => {
+        window.location.href = `https://liff.line.me/${liffId}`;
+      });
     } else {
       window.location.href = fallbackHref;
     }
@@ -38,7 +31,7 @@ export function LineLoginLink({
   return (
     <button
       onClick={handleClick}
-      className="text-xs px-5 py-2 rounded-full font-black text-white transition hover:opacity-90"
+      className="text-[11px] sm:text-xs px-4 sm:px-5 py-2 rounded-full font-black text-white transition hover:opacity-90 shrink-0 whitespace-nowrap"
       style={{
         background: 'linear-gradient(135deg, #06c755, #00a64f)',
         boxShadow: '0 2px 12px rgba(6,199,85,0.3)',

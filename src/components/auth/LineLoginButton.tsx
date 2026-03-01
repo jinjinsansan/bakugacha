@@ -2,15 +2,11 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import liff from '@line/liff';
+import { isLineInAppBrowser, isMobileBrowser, openLineAppWithFallback } from '@/lib/auth/line-client';
 
 interface LineLoginButtonProps {
   liffId: string;
   fallbackUrl: string | null;
-}
-
-// LINEアプリ内ブラウザかどうかをUAで判定
-function isLineInAppBrowser(): boolean {
-  return typeof navigator !== 'undefined' && /Line\//i.test(navigator.userAgent);
 }
 
 export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
@@ -19,19 +15,26 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
   const [liffReady, setLiffReady] = useState(false);
   const isInClientRef = useRef(false);
   const autoLoginTriedRef = useRef(false);
+  const authInFlightRef = useRef(false);
+  const liffInitializedRef = useRef(false);
 
   const processLiffLogin = useCallback(async () => {
+    if (authInFlightRef.current) return;
+
+    authInFlightRef.current = true;
     setProcessing(true);
+    setError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    let redirected = false;
+
     try {
       const accessToken = liff.getAccessToken();
       if (!accessToken) {
         setError('アクセストークンが取得できませんでした。');
-        setProcessing(false);
         return;
       }
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const res = await fetch('/api/line/login/liff', {
         method: 'POST',
@@ -40,14 +43,13 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
         body: JSON.stringify({ accessToken }),
         signal: controller.signal,
       });
-      clearTimeout(timeoutId);
 
       if (res.ok) {
+        redirected = true;
         window.location.href = '/home';
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? 'ログインに失敗しました。');
-        setProcessing(false);
       }
     } catch (e) {
       console.error('LIFF login error', e);
@@ -56,7 +58,10 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
       } else {
         setError('ログイン中にエラーが発生しました。');
       }
-      setProcessing(false);
+    } finally {
+      clearTimeout(timeoutId);
+      authInFlightRef.current = false;
+      if (!redirected) setProcessing(false);
     }
   }, []);
 
@@ -72,24 +77,33 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
       setError((prev) => prev ?? '初期化に時間がかかっています。ボタンを押して続行してください。');
     }, 10000);
 
+    let cancelled = false;
+
     liff
       .init({ liffId })
       .then(() => {
+        if (cancelled) return;
         clearTimeout(timer);
+        liffInitializedRef.current = true;
         setLiffReady(true);
         isInClientRef.current = liff.isInClient();
         if (liff.isLoggedIn() && !autoLoginTriedRef.current) {
           autoLoginTriedRef.current = true;
-          processLiffLogin();
+          void processLiffLogin();
         }
       })
       .catch((err) => {
+        if (cancelled) return;
         clearTimeout(timer);
         console.error('LIFF init error', err);
         setLiffReady(true);
+        setError((prev) => prev ?? 'LINE初期化に失敗しました。再度お試しください。');
       });
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [liffId, processLiffLogin]);
 
   // LIFF処理中（LINEアプリ内で認証→セッション作成中）
@@ -123,30 +137,36 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
   // ── LIFF設定済み ──
   if (liffId) {
     const handleClick = () => {
+      if (processing) return;
+      setError(null);
+
+      const loginViaLiff = () => {
+        if (!liffInitializedRef.current) {
+          setError('LINE初期化中です。数秒後に再度お試しください。');
+          return;
+        }
+        try {
+          setProcessing(true);
+          liff.login({ redirectUri: `${window.location.origin}/login` });
+        } catch (e) {
+          console.error('LIFF login start error', e);
+          setProcessing(false);
+          setError('LINEログインを開始できませんでした。');
+        }
+      };
+
       // LINE内ブラウザの場合: line://app/ は再度LINEを開こうとしてループするため
       // liff.login() を直接呼ぶ
       if (isInClientRef.current || isLineInAppBrowser()) {
-        liff.login();
+        loginViaLiff();
         return;
       }
 
       // 外部モバイルブラウザ: line:// URL Scheme でLINEアプリを直接起動
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        let appOpened = false;
-        const onVisibility = () => { if (document.hidden) appOpened = true; };
-        document.addEventListener('visibilitychange', onVisibility, { once: true });
-
-        window.location.href = `line://app/${liffId}`;
-
-        setTimeout(() => {
-          document.removeEventListener('visibilitychange', onVisibility);
-          if (!appOpened) {
-            liff.login();
-          }
-        }, 2000);
+      if (isMobileBrowser()) {
+        openLineAppWithFallback(liffId, loginViaLiff);
       } else {
-        liff.login();
+        loginViaLiff();
       }
     };
 
