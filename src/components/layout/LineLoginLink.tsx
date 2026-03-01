@@ -12,7 +12,7 @@ export function LineLoginLink({
   const handleClick = () => {
     // LINE内ブラウザ: line://app/ はループするため /login へ誘導
     if (isLineInAppBrowser()) {
-      window.location.href = '/login';
+      window.location.replace('/login');
       return;
     }
 
@@ -21,10 +21,10 @@ export function LineLoginLink({
     if (liffId && isMobile) {
       // 外部モバイルブラウザ: line:// URL Scheme でLINEアプリを直接起動
       openLineAppWithFallback(liffId, () => {
-        window.location.href = `https://liff.line.me/${liffId}`;
+        window.location.replace(`https://liff.line.me/${liffId}`);
       });
     } else {
-      window.location.href = fallbackHref;
+      window.location.replace(fallbackHref);
     }
   };
 

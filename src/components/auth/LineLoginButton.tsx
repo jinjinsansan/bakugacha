@@ -46,7 +46,8 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
 
       if (res.ok) {
         redirected = true;
-        window.location.href = '/home';
+        // 履歴を汚さないように replace でホームへ遷移
+        window.location.replace('/home');
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? 'ログインに失敗しました。');
