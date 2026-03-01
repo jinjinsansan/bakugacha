@@ -36,13 +36,13 @@ export default async function GachaDetailPage({ params }: Props) {
   return (
     <main className="min-h-screen pb-20" style={{ background: 'var(--bg-base)' }}>
       {/* ヒーロー画像 */}
-      <div className="relative w-full aspect-square max-w-lg mx-auto overflow-hidden">
+      <div className="relative w-full aspect-video max-w-lg mx-auto overflow-hidden">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt={title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         ) : (
           <div
@@ -76,9 +76,9 @@ export default async function GachaDetailPage({ params }: Props) {
         {stockTotal != null && stockRemaining != null && (
           <div className="card-premium p-4 flex flex-col gap-2">
             <div className="flex justify-between text-sm text-white/70">
-              <span>残り在庫</span>
+              <span>残り回数</span>
               <span>
-                {stockRemaining.toLocaleString()} / {stockTotal.toLocaleString()}
+                {stockRemaining.toLocaleString()}回 / {stockTotal.toLocaleString()}回
               </span>
             </div>
             <div className="h-2 rounded-full bg-white/10 overflow-hidden">
