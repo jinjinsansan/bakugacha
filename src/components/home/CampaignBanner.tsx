@@ -11,6 +11,7 @@ export interface BannerData {
   badge_color: string;
   image_url: string | null;
   overlay: string;
+  link_url: string | null;
 }
 
 const FALLBACK_BANNERS: BannerData[] = [
@@ -21,7 +22,7 @@ const FALLBACK_BANNERS: BannerData[] = [
     tag: '🎉 新規登録キャンペーン',
     title: '新規登録で無料ガチャGET！',
     subtitle: '今だけ登録するだけで1回無料',
-    badge: 'TODAY ONLY', badge_color: '#c9a84c',
+    badge: 'TODAY ONLY', badge_color: '#c9a84c', link_url: null,
   },
   {
     id: 'b2',
@@ -30,7 +31,7 @@ const FALLBACK_BANNERS: BannerData[] = [
     tag: '🎴 ポケモンカード',
     title: '新弾入荷！SAR・SR大量封入',
     subtitle: '引くなら今がチャンス',
-    badge: 'NEW', badge_color: '#4ade80',
+    badge: 'NEW', badge_color: '#4ade80', link_url: null,
   },
   {
     id: 'b3',
@@ -39,7 +40,7 @@ const FALLBACK_BANNERS: BannerData[] = [
     tag: '🕹️ 任天堂スイッチ',
     title: '任天堂スイッチが当たる！',
     subtitle: '¥500から挑戦できる超お得ガチャ',
-    badge: '大人気', badge_color: '#f97316',
+    badge: '大人気', badge_color: '#f97316', link_url: null,
   },
   {
     id: 'b4',
@@ -48,7 +49,7 @@ const FALLBACK_BANNERS: BannerData[] = [
     tag: '🎁 Amazonギフト券',
     title: '最大¥50,000分が当たる！',
     subtitle: '毎日引けるチャンス',
-    badge: '毎日更新', badge_color: '#60a5fa',
+    badge: '毎日更新', badge_color: '#60a5fa', link_url: null,
   },
   {
     id: 'b5',
@@ -57,7 +58,7 @@ const FALLBACK_BANNERS: BannerData[] = [
     tag: '⚔️ 遊戯王',
     title: '激レアカード確定パック登場！',
     subtitle: 'ブラックマジシャン・青眼が確定入り',
-    badge: '限定', badge_color: '#e879f9',
+    badge: '限定', badge_color: '#e879f9', link_url: null,
   },
 ];
 
@@ -76,9 +77,17 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
 
   const b = banners[current];
 
+  const Wrapper = b.link_url
+    ? ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
+        <a href={b.link_url!} target="_blank" rel="noreferrer" className={className} style={style}>{children}</a>
+      )
+    : ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
+        <div className={className} style={style}>{children}</div>
+      );
+
   return (
     <section className="relative max-w-[860px] w-full mx-auto my-3 px-3">
-      <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '4/1' }}>
+      <Wrapper className="relative overflow-hidden rounded-xl block" style={{ aspectRatio: '4/1' }}>
 
         {/* 背景写真 */}
         {b.image_url && (
@@ -137,22 +146,23 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
           )}
         </div>
 
-        {/* 前後ボタン */}
-        <button
-          onClick={() => setCurrent((c) => (c - 1 + banners.length) % banners.length)}
-          className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center z-20 transition-colors"
-          style={{ background: 'rgba(0,0,0,0.5)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
-        >
-          ‹
-        </button>
-        <button
-          onClick={() => setCurrent((c) => (c + 1) % banners.length)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center z-20 transition-colors"
-          style={{ background: 'rgba(0,0,0,0.5)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
-        >
-          ›
-        </button>
-      </div>
+      </Wrapper>
+
+      {/* 前後ボタン */}
+      <button
+        onClick={() => setCurrent((c) => (c - 1 + banners.length) % banners.length)}
+        className="absolute left-5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center z-20 transition-colors"
+        style={{ background: 'rgba(0,0,0,0.5)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+      >
+        ‹
+      </button>
+      <button
+        onClick={() => setCurrent((c) => (c + 1) % banners.length)}
+        className="absolute right-5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center z-20 transition-colors"
+        style={{ background: 'rgba(0,0,0,0.5)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+      >
+        ›
+      </button>
 
       {/* ドット */}
       <div className="flex justify-center gap-1.5 mt-2">

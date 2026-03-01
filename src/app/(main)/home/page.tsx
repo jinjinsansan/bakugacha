@@ -1,5 +1,4 @@
 import { HeroSection } from '@/components/home/HeroSection';
-import { LineFriendBanner } from '@/components/home/LineFriendBanner';
 import { CampaignBanner } from '@/components/home/CampaignBanner';
 import { CategoryTabs } from '@/components/home/CategoryTabs';
 import { FilterTags } from '@/components/home/FilterTags';
@@ -24,12 +23,12 @@ export default async function HomePage() {
     badge_color: b.badge_color,
     image_url: b.image_url,
     overlay: b.overlay,
+    link_url: b.link_url,
   }));
 
   return (
     <>
       <HeroSection />
-      <LineFriendBanner />
       <CampaignBanner banners={banners.length > 0 ? banners : undefined} />
       <CategoryTabs />
       <div className="py-4 px-0">
