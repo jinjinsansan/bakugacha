@@ -241,16 +241,8 @@ function ResultCard({
       </div>
 
       {/* ── 下部ボタン ── */}
-      <div className="px-4 pb-8 pt-3 flex flex-col gap-3 bg-white"
-        style={{ borderTop: '1px solid #e8e8e8' }}>
-        <a href="/purchase" className="block">
-          <button
-            className="w-full py-3 rounded-xl font-black text-sm"
-            style={{ background: 'linear-gradient(135deg,#e8cc7a,#c9a84c)', color: '#1a1200' }}
-          >
-            コインを購入する
-          </button>
-        </a>
+      <div className="px-4 pt-3 flex flex-col gap-3 bg-white"
+        style={{ borderTop: '1px solid #e8e8e8', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
         <button
           className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
           style={{ border: '2px solid #ddd', color: '#555', background: '#fff' }}
@@ -258,6 +250,20 @@ function ResultCard({
         >
           もう一度引く 🪙 {coinCost?.toLocaleString() ?? 0}
         </button>
+        <div className="grid grid-cols-4 gap-2">
+          {([
+            { href: '/home',           icon: '🏠', label: '爆ガチャ' },
+            { href: '/mypage#history', icon: '🎁', label: '獲得商品' },
+            { href: '/purchase',       icon: '🪙', label: 'コイン' },
+            { href: '/mypage',         icon: '👤', label: 'マイページ' },
+          ] as const).map(({ href, icon, label }) => (
+            <a key={label} href={href} className="flex flex-col items-center gap-1 py-2 rounded-xl"
+              style={{ background: '#f5f5f0' }}>
+              <span style={{ fontSize: 20 }}>{icon}</span>
+              <span className="text-[10px] font-bold" style={{ color: '#555' }}>{label}</span>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );
