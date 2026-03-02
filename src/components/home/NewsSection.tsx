@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { newsItems } from '@/lib/data/newsItems';
 
 export function NewsSection() {
@@ -12,23 +11,12 @@ export function NewsSection() {
         {newsItems.map((item, index) => (
           <li key={item.id} className={`py-2 ${index !== 0 ? 'border-t border-white/5' : ''}`}>
             <time className="text-xs text-gray-500 block">{item.date}</time>
-            <Link
-              href={item.href}
-              className="text-gold text-sm font-medium hover:text-yellow-300 transition-colors"
-            >
+            <span className="text-gold text-sm font-medium">
               {item.title}
-            </Link>
+            </span>
           </li>
         ))}
       </ul>
-      <div className="flex justify-center pt-4">
-        <Link
-          href="/news"
-          className="text-sm font-medium text-gray-400 hover:text-gold transition-colors px-4 py-2"
-        >
-          もっと見る →
-        </Link>
-      </div>
     </section>
   );
 }

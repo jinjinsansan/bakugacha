@@ -32,14 +32,18 @@ export default async function HomePage() {
       <CampaignBanner banners={banners.length > 0 ? banners : undefined} />
       <CategoryTabs />
       <div className="py-4 px-0">
-        <section aria-label="ガチャ商品一覧">
+        <section id="products" aria-label="ガチャ商品一覧">
           <FilterTags />
           <ProductGrid />
         </section>
         <div className="divider-gold mx-4 my-2" />
-        <RankingSection />
+        <section id="ranking">
+          <RankingSection />
+        </section>
         <div className="divider-gold mx-4 my-2" />
-        <WinnerFeed />
+        <section id="winners">
+          <WinnerFeed />
+        </section>
         <NewsSection />
         <div className="h-20 md:h-0" />
       </div>

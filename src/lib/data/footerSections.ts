@@ -25,11 +25,11 @@ export const footerSections: FooterSection[] = [
     id: 'categories',
     title: 'ガチャカテゴリー',
     links: [
-      { id: 'pokemon', label: 'ポケモンカードガチャ', href: '/category/pokemon' },
-      { id: 'onepiece', label: 'ワンピースカードガチャ', href: '/category/onepiece' },
-      { id: 'yugioh', label: '遊戯王ガチャ', href: '/category/yugioh' },
-      { id: 'gift', label: 'Amazonギフト券ガチャ', href: '/category/gift' },
-      { id: 'game', label: 'ゲーム機ガチャ', href: '/category/game' },
+      { id: 'pokemon', label: 'ポケモンカードガチャ', href: '/#products' },
+      { id: 'onepiece', label: 'ワンピースカードガチャ', href: '/#products' },
+      { id: 'yugioh', label: '遊戯王ガチャ', href: '/#products' },
+      { id: 'gift', label: 'Amazonギフト券ガチャ', href: '/#products' },
+      { id: 'game', label: 'ゲーム機ガチャ', href: '/#products' },
     ],
   },
   {

@@ -34,9 +34,9 @@ export async function Header() {
 
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-6 text-xs font-bold tracking-widest text-gray-400 uppercase shrink-0">
-          <Link href="/gacha" className="hover:text-white transition-colors">ガチャ一覧</Link>
-          <Link href="/ranking" className="hover:text-white transition-colors">ランキング</Link>
-          <Link href="/winners" className="hover:text-white transition-colors">当選情報</Link>
+          <Link href="/#products" className="hover:text-white transition-colors">ガチャ一覧</Link>
+          <Link href="/#ranking" className="hover:text-white transition-colors">ランキング</Link>
+          <Link href="/#winners" className="hover:text-white transition-colors">当選情報</Link>
         </nav>
 
         {/* Buttons */}
