@@ -121,12 +121,28 @@ export async function createLineUser(
   return data;
 }
 
+export async function isUserBlocked(
+  client: SupabaseClient,
+  userId: string,
+): Promise<boolean> {
+  const { data } = await client
+    .from('app_users')
+    .select('is_blocked')
+    .eq('id', userId)
+    .maybeSingle();
+  return data?.is_blocked === true;
+}
+
 export async function touchLastLogin(
   client: SupabaseClient,
   userId: string,
 ): Promise<void> {
+  const now = new Date().toISOString();
   await client
     .from('app_users')
-    .update({ last_login_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .update({ last_login_at: now, updated_at: now })
     .eq('id', userId);
+
+  // ログイン履歴を記録
+  await client.from('login_history').insert({ user_id: userId, logged_in_at: now });
 }

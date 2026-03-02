@@ -7,6 +7,7 @@ const NAV = [
   { href: '/admin/banners',  label: '🖼️ バナー管理' },
   { href: '/admin/settings', label: '⚙️ CD2設定' },
   { href: '/admin/results',  label: '📋 結果一覧' },
+  { href: '/admin/users',    label: '👥 ユーザー管理' },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -181,6 +181,64 @@ export async function updateWinnerSettings(formData: FormData) {
   redirect('/admin/settings?saved=1');
 }
 
+// ── ユーザーブロック ─────────────────────────────────────────────
+export async function blockUser(userId: string) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  await supabase
+    .from('app_users')
+    .update({ is_blocked: true, blocked_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', userId);
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath('/admin/users');
+}
+
+// ── ユーザーブロック解除 ─────────────────────────────────────────
+export async function unblockUser(userId: string) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  await supabase
+    .from('app_users')
+    .update({ is_blocked: false, blocked_at: null, updated_at: new Date().toISOString() })
+    .eq('id', userId);
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath('/admin/users');
+}
+
+// ── 配達レコード作成 ─────────────────────────────────────────────
+export async function createDelivery(gachaResultId: string, userId: string) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  await supabase.from('deliveries').insert({
+    user_id: userId,
+    gacha_result_id: gachaResultId,
+    status: 'pending',
+  });
+  revalidatePath(`/admin/users/${userId}`);
+}
+
+// ── 配達ステータス更新 ───────────────────────────────────────────
+export async function updateDeliveryStatus(deliveryId: string, formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  const status = String(formData.get('status') ?? 'pending');
+  const trackingNumber = formData.get('tracking_number') ? String(formData.get('tracking_number')) : null;
+  const notes = formData.get('notes') ? String(formData.get('notes')) : null;
+
+  const update: Record<string, unknown> = {
+    status,
+    tracking_number: trackingNumber,
+    notes,
+    updated_at: new Date().toISOString(),
+  };
+  if (status === 'shipped') update.shipped_at = new Date().toISOString();
+  if (status === 'delivered') update.delivered_at = new Date().toISOString();
+
+  const { data } = await supabase.from('deliveries').select('user_id').eq('id', deliveryId).single();
+  await supabase.from('deliveries').update(update).eq('id', deliveryId);
+  if (data?.user_id) revalidatePath(`/admin/users/${data.user_id}`);
+}
+
 // ── 紹介ボーナス設定更新 ────────────────────────────────────────
 export async function updateAppSettings(formData: FormData) {
   await requireAdmin();

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerEnv } from '@/lib/env';
 import { getServiceSupabase } from '@/lib/supabase/service';
-import { findUserByLineId, createLineUser, touchLastLogin } from '@/lib/data/users';
+import { findUserByLineId, createLineUser, touchLastLogin, isUserBlocked } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
 import { processReferral } from '@/lib/data/referral';
@@ -148,6 +148,11 @@ export async function GET(request: NextRequest) {
     const existingLineUser = await findUserByLineId(supabase, lineUserId);
 
     if (existingLineUser) {
+      // ブロックチェック
+      if (await isUserBlocked(supabase, existingLineUser.id as string)) {
+        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('アカウントがブロックされています。')}`);
+      }
+
       // パターン2: 既存 LINE ユーザーとしてログイン
       const sessionToken = await getOrCreateSessionToken();
       await createSession(supabase, sessionToken, existingLineUser.id as string);

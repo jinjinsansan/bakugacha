@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/service';
-import { findUserByLineId, createLineUser, touchLastLogin } from '@/lib/data/users';
+import { findUserByLineId, createLineUser, touchLastLogin, isUserBlocked } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
 import { processReferral } from '@/lib/data/referral';
@@ -46,6 +46,11 @@ export async function POST(request: NextRequest) {
     const existingUser = await findUserByLineId(supabase, lineUserId);
 
     if (existingUser) {
+      // ブロックチェック
+      if (await isUserBlocked(supabase, existingUser.id as string)) {
+        return NextResponse.json({ error: 'アカウントがブロックされています' }, { status: 403 });
+      }
+
       // 既存ユーザー → セッション作成
       const sessionToken = await getOrCreateSessionToken();
       await createSession(supabase, sessionToken, existingUser.id as string);
