@@ -110,6 +110,12 @@ export async function POST(request: Request) {
 
     const price: number = product?.price ?? 0;
 
+    // 管理者判定（コインチェック・消費をスキップ）
+    const adminLineIds = (process.env.ADMIN_LINE_IDS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const adminEmails  = (process.env.ADMIN_EMAILS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const isAdmin = (!!user?.line_user_id && adminLineIds.includes(user.line_user_id as string))
+                 || (!!user?.email && adminEmails.includes(user.email as string));
+
     // 在庫切れチェック
     if (product && product.stock_remaining != null && product.stock_remaining <= 0) {
       return NextResponse.json(
@@ -118,8 +124,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // コイン不足チェック
-    if (price > 0) {
+    // コイン不足チェック（管理者はスキップ）
+    if (!isAdmin && price > 0) {
       if (!user) {
         return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
       }
@@ -158,7 +164,7 @@ export async function POST(request: Request) {
     if (user && productId) {
       const savePromises: Promise<unknown>[] = [];
 
-      if (price > 0) {
+      if (!isAdmin && price > 0) {
         savePromises.push(
           deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error),
         );
