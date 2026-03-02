@@ -286,6 +286,7 @@ function ActivePlayer({
   const videoRef        = useRef<HTMLVideoElement>(null);
   const lastReadyKeyRef = useRef<string | null>(null);
   const allowUnmuteRef  = useRef(false);
+  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   // APIコール
   useEffect(() => {
@@ -387,9 +388,10 @@ function ActivePlayer({
 
   useEffect(() => {
     if (videoReady || current?.isFreeze || current?.autoAdvance) return undefined;
-    const t = setTimeout(() => setVideoReady(true), 1500);
+    const timeout = isMobile ? 700 : 1500;
+    const t = setTimeout(() => setVideoReady(true), timeout);
     return () => clearTimeout(t);
-  }, [videoReady, videoKey, current?.isFreeze, current?.autoAdvance]);
+  }, [videoReady, videoKey, current?.isFreeze, current?.autoAdvance, isMobile]);
 
   const goNext = useCallback(() => {
     if (!queue.length) return;
