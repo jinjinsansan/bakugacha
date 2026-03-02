@@ -162,6 +162,25 @@ export async function updateCd2Settings(formData: FormData) {
   redirect('/admin/settings?saved=1');
 }
 
+// ── 当選者フィード設定更新 ──────────────────────────────────────
+export async function updateWinnerSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    await upsertAppSettings(supabase, {
+      winnerDummyEnabled: formData.get('winner_dummy_enabled') === 'on',
+    });
+  } catch (err) {
+    console.error('[admin] updateWinnerSettings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  revalidatePath('/');
+  redirect('/admin/settings?saved=1');
+}
+
 // ── 紹介ボーナス設定更新 ────────────────────────────────────────
 export async function updateAppSettings(formData: FormData) {
   await requireAdmin();

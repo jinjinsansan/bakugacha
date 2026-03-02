@@ -1,7 +1,7 @@
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
 import { fetchAppSettings } from '@/lib/data/app-settings';
-import { updateCd2Settings, updateAppSettings } from '@/app/admin/actions';
+import { updateCd2Settings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -84,6 +84,23 @@ export default async function AdminSettingsPage({
             </div>
           </div>
         </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      {/* 当選者フィード設定 */}
+      <h2 className="text-lg font-black text-white mt-4">当選者フィード設定</h2>
+      <form action={updateWinnerSettings} className="card-premium p-6 flex flex-col gap-6">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" name="winner_dummy_enabled" defaultChecked={appSettings.winnerDummyEnabled}
+            className="w-5 h-5 accent-yellow-400" />
+          <div>
+            <p className="text-sm font-bold text-white">ダミー当選者を表示</p>
+            <p className="text-xs text-white/40">実際の当選者が10件未満の場合、ダミーの当選者名を自動生成してフィードを埋めます</p>
+          </div>
+        </label>
 
         <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
           保存

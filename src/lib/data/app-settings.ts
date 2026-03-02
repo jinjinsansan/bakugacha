@@ -6,6 +6,7 @@ export interface AppSettings {
   id: string;
   referralBonusReferrer: number;
   referralBonusReferee: number;
+  winnerDummyEnabled: boolean;
 }
 
 export async function fetchAppSettings(client: SupabaseClient): Promise<AppSettings> {
@@ -16,7 +17,7 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
     .maybeSingle();
 
   if (!data) {
-    return { id: APP_SETTINGS_ID, referralBonusReferrer: 200, referralBonusReferee: 100 };
+    return { id: APP_SETTINGS_ID, referralBonusReferrer: 200, referralBonusReferee: 100, winnerDummyEnabled: false };
   }
 
   const row = data as Record<string, unknown>;
@@ -24,6 +25,7 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
     id: String(row.id ?? APP_SETTINGS_ID),
     referralBonusReferrer: Number(row.referral_bonus_referrer ?? 200),
     referralBonusReferee: Number(row.referral_bonus_referee ?? 100),
+    winnerDummyEnabled: Boolean(row.winner_dummy_enabled ?? false),
   };
 }
 
@@ -37,6 +39,7 @@ export async function upsertAppSettings(
   };
   if (updates.referralBonusReferrer !== undefined) patch.referral_bonus_referrer = updates.referralBonusReferrer;
   if (updates.referralBonusReferee !== undefined) patch.referral_bonus_referee = updates.referralBonusReferee;
+  if (updates.winnerDummyEnabled !== undefined) patch.winner_dummy_enabled = updates.winnerDummyEnabled;
 
   const { error } = await client.from('app_settings').upsert(patch, { onConflict: 'id' });
   if (error) {

@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/service';
 
 function maskName(name: string): string {
-  if (name.length <= 1) return name + '***';
-  if (name.length <= 3) return name[0] + '***';
-  return name.slice(0, 2) + '***';
+  if (!name || name.length === 0) return '***';
+  return name[0] + '**';
 }
 
 function timeAgo(date: string): string {
