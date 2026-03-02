@@ -423,34 +423,109 @@ function ActivePlayer({
 
   const isLowQuality = quality === 'low';
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
-      <div
-        className="relative flex flex-col"
-        style={isLowQuality ? {
-          width: '92vw',
-          maxWidth: 380,
-          height: 'auto',
-          border: '2px solid rgba(255,255,255,0.25)',
-          borderRadius: 16,
-          overflow: 'hidden',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.8)',
-        } : {
-          width: '100%',
-          maxWidth: 430,
-          height: '100%',
-        }}
-      >
+  // ── 軽量モード ────────────────────────────────────────────
+  if (isLowQuality) {
+    return (
+      <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/90">
 
-        {playState.status === 'loading' && (
-          <div style={isLowQuality ? { aspectRatio: '9/16', background: '#000' } : { height: '100%', background: '#000' }} />
+        {/* 結果画面（枠外・フルスクリーン相当） */}
+        {showResult && playState.status === 'ready' && (
+          <div className="fixed inset-0 z-10">
+            <ResultCard
+              isWin={isWin}
+              prizeName={prizeName}
+              prizeImageUrl={prizeImageUrl}
+              prizeEmoji={prizeEmoji}
+              prizeGradient={prizeGradient}
+              coinCost={coinCost}
+              onClose={onClose}
+              onRetry={onRetry}
+              onReplayAnimation={handleReplayAnimation}
+            />
+          </div>
         )}
 
+        {!showResult && (
+          <>
+            {/* 動画枠（枠線あり・縮小） */}
+            <div style={{
+              width: '72vw',
+              maxWidth: 300,
+              borderRadius: 12,
+              overflow: 'hidden',
+              border: '2px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.9)',
+              background: '#000',
+            }}>
+              {playState.status === 'loading' && (
+                <div style={{ aspectRatio: '9/16', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                </div>
+              )}
+              {playState.status === 'error' && (
+                <div style={{ aspectRatio: '9/16', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 16 }}>
+                  <p className="text-white text-sm text-center font-bold">開始できませんでした</p>
+                  <p className="text-white/60 text-xs text-center">{playState.message}</p>
+                </div>
+              )}
+              {playState.status === 'ready' && current && (
+                <div style={{ position: 'relative', aspectRatio: '9/16', width: '100%', background: '#000', WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)' }}>
+                  {isFreezeStep ? (
+                    <FreezeOverlay />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-black" />
+                      <video
+                        ref={videoRef}
+                        src={resolvedSrc ?? undefined}
+                        className="absolute inset-0 block h-full w-full object-cover"
+                        autoPlay muted preload="auto"
+                        loop={Boolean(current.loop)}
+                        playsInline
+                        onCanPlayThrough={handleReady}
+                        onLoadedData={handleReady}
+                        onEnded={handleEnded}
+                        onError={handleError}
+                        style={{ background: '#000' }}
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-black"
+                        style={{ opacity: videoReady ? 0 : 1 }} />
+                      {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* NEXT/SKIPボタン（枠外・独立） */}
+            {showButtons && (
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
+                <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* 先読み */}
+        <div aria-hidden style={{ position: 'fixed', top: -2, left: -2, width: 1, height: 1, opacity: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+          {upcomingVideos.map((src) => (
+            <video key={src} src={src} preload="auto" playsInline muted autoPlay />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── 高画質モード（従来レイアウト） ───────────────────────
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
+      <div className="relative flex h-full w-full max-w-[430px] flex-col">
+
+        {playState.status === 'loading' && <div className="h-full bg-black" />}
+
         {playState.status === 'error' && (
-          <div
-            className="flex flex-col items-center justify-center gap-4 text-center text-white"
-            style={isLowQuality ? { aspectRatio: '9/16' } : { height: '100%' }}
-          >
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center text-white">
             <p className="text-lg font-bold">チャレンジを開始できませんでした</p>
             <p className="text-sm text-white/70">{playState.message}</p>
             <RoundMetalButton label="閉じる" subLabel="CLOSE" onClick={onClose} />
@@ -460,19 +535,10 @@ function ActivePlayer({
         {playState.status === 'ready' && current && !showResult && (
           <>
             {isFreezeStep ? (
-              <div style={isLowQuality ? { aspectRatio: '9/16' } : { height: '100%', width: '100%' }}>
-                <FreezeOverlay />
-              </div>
+              <div className="h-full w-full"><FreezeOverlay /></div>
             ) : (
-              <div
-                className="relative overflow-hidden"
-                style={{
-                  ...(isLowQuality ? { aspectRatio: '9/16', width: '100%' } : { height: '100%', width: '100%' }),
-                  background: '#000',
-                  WebkitTransform: 'translate3d(0,0,0)',
-                  transform: 'translate3d(0,0,0)',
-                }}
-              >
+              <div className="relative h-full w-full overflow-hidden"
+                style={{ background: '#000', WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)' }}>
                 <div className="absolute inset-0 bg-black" />
                 <video
                   ref={videoRef}
@@ -494,13 +560,7 @@ function ActivePlayer({
             )}
 
             {showButtons && (
-              <div
-                className="flex items-center justify-center gap-4"
-                style={isLowQuality
-                  ? { padding: '16px 0', background: 'rgba(0,0,0,0.85)' }
-                  : { position: 'absolute', bottom: 48, left: 0, right: 0 }
-                }
-              >
+              <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
                 <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
                 <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
               </div>
