@@ -78,12 +78,13 @@ export async function WinnerFeed() {
     };
   });
 
-  // If dummy mode enabled and real winners are few, fill with dummy data
+  // ダミーモードONの場合は10件になるよう補完
   let items = realItems;
-  if (appSettings.winnerDummyEnabled && realItems.length < 10) {
-    const dummyCount = 10 - realItems.length;
-    const dummies = generateDummyItems(dummyCount);
-    items = [...realItems, ...dummies];
+  if (appSettings.winnerDummyEnabled) {
+    const needed = Math.max(0, 10 - realItems.length);
+    if (needed > 0) {
+      items = [...realItems, ...generateDummyItems(needed)];
+    }
   }
 
   if (items.length === 0) return null;

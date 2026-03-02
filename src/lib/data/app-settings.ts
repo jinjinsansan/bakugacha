@@ -17,7 +17,7 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
     .maybeSingle();
 
   if (!data) {
-    return { id: APP_SETTINGS_ID, referralBonusReferrer: 200, referralBonusReferee: 100, winnerDummyEnabled: false };
+    return { id: APP_SETTINGS_ID, referralBonusReferrer: 200, referralBonusReferee: 100, winnerDummyEnabled: true };
   }
 
   const row = data as Record<string, unknown>;
@@ -25,7 +25,7 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
     id: String(row.id ?? APP_SETTINGS_ID),
     referralBonusReferrer: Number(row.referral_bonus_referrer ?? 200),
     referralBonusReferee: Number(row.referral_bonus_referee ?? 100),
-    winnerDummyEnabled: Boolean(row.winner_dummy_enabled ?? false),
+    winnerDummyEnabled: Boolean(row.winner_dummy_enabled ?? true),
   };
 }
 

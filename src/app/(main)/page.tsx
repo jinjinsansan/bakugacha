@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { HeroSection } from '@/components/home/HeroSection';
 import { CampaignBanner } from '@/components/home/CampaignBanner';
 import { CategoryTabs } from '@/components/home/CategoryTabs';
