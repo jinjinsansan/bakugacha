@@ -4,8 +4,9 @@ import { WinnerTicker, type WinnerItem } from './WinnerTicker';
 
 function maskName(name: string): string {
   if (!name || name.length === 0) return '***';
-  // Show first character + ** (safe for LINE display names)
-  return name[0] + '**';
+  // 先頭1文字 + 残り文字数分の * (最大3つ)
+  const stars = '*'.repeat(Math.min(name.length - 1, 3));
+  return name[0] + stars;
 }
 
 function timeAgo(date: string): string {
@@ -53,14 +54,14 @@ export async function WinnerFeed() {
   const [{ data }, appSettings] = await Promise.all([
     supabase
       .from('gacha_results')
-      .select('id, played_at, app_users(display_name, email), gacha_products(title)')
+      .select('id, played_at, app_users(display_name, line_display_name, email), gacha_products(title)')
       .eq('result', 'win')
       .order('played_at', { ascending: false })
       .limit(10),
     fetchAppSettings(supabase),
   ]);
 
-  type UserRow = { display_name: string | null; email: string };
+  type UserRow = { display_name: string | null; line_display_name: string | null; email: string };
   type ProductRow = { title: string };
 
   const realItems: WinnerItem[] = (data ?? []).map((row) => {
@@ -68,7 +69,7 @@ export async function WinnerFeed() {
     const u: UserRow | null = (Array.isArray(uRaw) ? uRaw[0] : uRaw) as UserRow | null;
     const pRaw = row.gacha_products as unknown;
     const product: ProductRow | null = (Array.isArray(pRaw) ? pRaw[0] : pRaw) as ProductRow | null;
-    const rawName = u ? (u.display_name ?? u.email.split('@')[0]) : '???';
+    const rawName = u ? (u.line_display_name ?? u.display_name ?? u.email.split('@')[0]) : '???';
     return {
       id: row.id,
       maskedName: maskName(rawName),
