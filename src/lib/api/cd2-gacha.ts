@@ -11,18 +11,24 @@ export type Cd2PlayResponse = {
   expectationStars: number;
 };
 
+export type Cd2Quality = 'high' | 'low';
+
 function fetchWithTimeout(url: string, options: RequestInit, ms: number): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-export async function startCd2Gacha(productId: string): Promise<Cd2PlayResponse> {
+export async function startCd2Gacha(productId: string, quality: Cd2Quality = 'high'): Promise<Cd2PlayResponse> {
   let res: Response;
   try {
     res = await fetchWithTimeout(
       '/api/cd2-gacha/play',
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId }) },
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, quality }),
+      },
       30000,
     );
   } catch (e) {

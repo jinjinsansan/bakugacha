@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Cd2GachaPlayer } from '@/components/gacha/Cd2GachaPlayer';
 
 type Props = {
@@ -19,6 +19,13 @@ export function GachaPlayButton({
   prizeImageUrl, prizeEmoji, prizeGradient,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [quality, setQuality] = useState<'high' | 'low'>('high');
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      setQuality('low');
+    }
+  }, []);
 
   if (!isLoggedIn) {
     return (
@@ -39,6 +46,31 @@ export function GachaPlayButton({
         🎰 ガチャを引く（{price === 0 ? '無料' : `🪙 ${price.toLocaleString()}`}）
       </button>
 
+      <div className="mt-2 flex justify-center gap-2 text-[11px] text-gray-400">
+        <button
+          type="button"
+          onClick={() => setQuality('low')}
+          className={`px-2 py-1 rounded-full border text-[11px] ${
+            quality === 'low'
+              ? 'border-yellow-400 text-yellow-300 bg-yellow-400/10'
+              : 'border-white/10 text-gray-400 bg-white/5'
+          }`}
+        >
+          軽量モード
+        </button>
+        <button
+          type="button"
+          onClick={() => setQuality('high')}
+          className={`px-2 py-1 rounded-full border text-[11px] ${
+            quality === 'high'
+              ? 'border-white text-white bg-white/10'
+              : 'border-white/10 text-gray-400 bg-white/5'
+          }`}
+        >
+          高画質モード
+        </button>
+      </div>
+
       {/* ガチャタイプ別プレイヤー分岐 — 将来新タイプ追加時はここに case を追加 */}
       {gachaType === 'cd2' && (
         <Cd2GachaPlayer
@@ -51,6 +83,7 @@ export function GachaPlayButton({
           prizeGradient={prizeGradient}
           coinCost={price}
           productId={productId}
+          quality={quality}
         />
       )}
     </>

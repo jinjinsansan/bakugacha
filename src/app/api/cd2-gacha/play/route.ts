@@ -10,6 +10,8 @@ import type { Cd2Step } from '@/lib/cd2-gacha/types';
 const WIN_STAR_WEIGHTS  = [5, 10, 20, 30, 35];
 const LOSS_STAR_WEIGHTS = [25, 40, 35, 0, 0];
 
+type Cd2Quality = 'high' | 'low';
+
 function pickWeighted(weights: number[]): number {
   const total = weights.reduce((a, b) => a + b, 0);
   let r = Math.random() * total;
@@ -44,6 +46,10 @@ function appendEnding(seq: Cd2Step[], decisionAt: DecisionPoint, isWin: boolean)
       break;
     }
   }
+}
+
+function normalizeQuality(raw: unknown): Cd2Quality {
+  return raw === 'low' ? 'low' : 'high';
 }
 
 function buildSequence(isWin: boolean, isDonden: boolean, isPatlite: boolean, isFreeze: boolean): Cd2Step[] {
@@ -84,6 +90,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
     const productId = typeof body?.productId === 'string' ? body.productId : null;
+    const quality = normalizeQuality(body?.quality);
 
     const supabase = getServiceSupabase();
     const settings = await fetchCd2Settings(supabase);
@@ -183,10 +190,12 @@ export async function POST(request: Request) {
       }
     }
 
+    const baseFolder = quality === 'low' ? 'cd2-mobile' : 'cd2';
+
     return NextResponse.json({
       success: true,
       isWin, isDonden, isPatlite, isFreeze, sequence,
-      videoBasePath: buildGachaAssetPath('cd2'),
+      videoBasePath: buildGachaAssetPath(baseFolder),
       expectationStars,
     });
   } catch (error) {

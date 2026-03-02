@@ -265,7 +265,7 @@ function ResultCard({
 
 // ── メインプレイヤー ──────────────────────────────────────────
 function ActivePlayer({
-  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId,
+  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
 }: {
   onClose?: () => void;
   onRetry?: () => void;
@@ -275,6 +275,7 @@ function ActivePlayer({
   prizeGradient?: string;
   coinCost?: number;
   productId: string;
+  quality: 'high' | 'low';
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
   const [queue, setQueue]         = useState<VideoItem[]>([]);
@@ -293,7 +294,7 @@ function ActivePlayer({
     let cancelled = false;
     (async () => {
       try {
-        const res = await startCd2Gacha(productId);
+        const res = await startCd2Gacha(productId, quality);
         if (cancelled) return;
         setQueue(buildQueue(res.sequence, res.videoBasePath));
         setPlayState({ status: 'ready', ...res });
@@ -305,7 +306,7 @@ function ActivePlayer({
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [productId, quality]);
 
   const allSources = useMemo(() => queue.map((v) => v.src).filter(Boolean), [queue]);
   const { resolveAssetSrc } = useSignedAssetResolver(allSources);
@@ -497,7 +498,7 @@ function ActivePlayer({
 
 // ── Portal ────────────────────────────────────────────────────
 export function Cd2GachaPlayer({
-  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId,
+  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
 }: {
   open: boolean;
   onClose?: () => void;
@@ -508,6 +509,7 @@ export function Cd2GachaPlayer({
   prizeGradient?: string;
   coinCost?: number;
   productId: string;
+  quality: 'high' | 'low';
 }) {
   useEffect(() => {
     if (!open || typeof document === 'undefined') return undefined;
@@ -534,6 +536,7 @@ export function Cd2GachaPlayer({
       prizeGradient={prizeGradient}
       coinCost={coinCost}
       productId={productId}
+      quality={quality}
     />,
     portalTarget,
   );
