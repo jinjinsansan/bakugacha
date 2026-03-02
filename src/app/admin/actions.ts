@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { requireAdmin } from '@/lib/auth/admin';
 import { upsertCd2Settings } from '@/lib/data/cd2-gacha';
+import { upsertAppSettings } from '@/lib/data/app-settings';
 
 // ── 商品作成 ──────────────────────────────────────────────────
 export async function createProduct(formData: FormData) {
@@ -154,6 +155,25 @@ export async function updateCd2Settings(formData: FormData) {
     });
   } catch (err) {
     console.error('[admin] updateCd2Settings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
+}
+
+// ── 紹介ボーナス設定更新 ────────────────────────────────────────
+export async function updateAppSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    await upsertAppSettings(supabase, {
+      referralBonusReferrer: Number(formData.get('referral_bonus_referrer') ?? 200),
+      referralBonusReferee:  Number(formData.get('referral_bonus_referee')  ?? 100),
+    });
+  } catch (err) {
+    console.error('[admin] updateAppSettings failed:', err);
     redirect('/admin/settings?error=1');
   }
 

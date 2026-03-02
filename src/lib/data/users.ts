@@ -68,6 +68,18 @@ export async function updateCoins(
   if (error) throw error;
 }
 
+export async function findUserByReferralCode(
+  client: SupabaseClient,
+  referralCode: string,
+): Promise<AppUser | null> {
+  const { data } = await client
+    .from('app_users')
+    .select('*')
+    .eq('referral_code', referralCode.trim().toUpperCase())
+    .maybeSingle();
+  return data ?? null;
+}
+
 export async function findUserByLineId(
   client: SupabaseClient,
   lineUserId: string,

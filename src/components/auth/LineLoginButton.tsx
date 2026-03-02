@@ -7,9 +7,10 @@ import { isLineInAppBrowser, isMobileBrowser, openLineAppWithFallback } from '@/
 interface LineLoginButtonProps {
   liffId: string;
   fallbackUrl: string | null;
+  referralCode?: string;
 }
 
-export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
+export function LineLoginButton({ liffId, fallbackUrl, referralCode }: LineLoginButtonProps) {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [liffReady, setLiffReady] = useState(false);
@@ -40,7 +41,7 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ accessToken }),
+        body: JSON.stringify({ accessToken, referralCode: referralCode || undefined }),
         signal: controller.signal,
       });
 
@@ -64,7 +65,7 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
       authInFlightRef.current = false;
       if (!redirected) setProcessing(false);
     }
-  }, []);
+  }, [referralCode]);
 
   useEffect(() => {
     if (!liffId) {
@@ -148,7 +149,9 @@ export function LineLoginButton({ liffId, fallbackUrl }: LineLoginButtonProps) {
         }
         try {
           setProcessing(true);
-          liff.login({ redirectUri: `${window.location.origin}/login` });
+          const loginUrl = new URL(`${window.location.origin}/login`);
+          if (referralCode) loginUrl.searchParams.set('ref', referralCode);
+          liff.login({ redirectUri: loginUrl.toString() });
         } catch (e) {
           console.error('LIFF login start error', e);
           setProcessing(false);

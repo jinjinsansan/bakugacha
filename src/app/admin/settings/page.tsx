@@ -1,6 +1,7 @@
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
-import { updateCd2Settings } from '@/app/admin/actions';
+import { fetchAppSettings } from '@/lib/data/app-settings';
+import { updateCd2Settings, updateAppSettings } from '@/app/admin/actions';
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -9,7 +10,10 @@ export default async function AdminSettingsPage({
 }) {
   const params = await searchParams;
   const supabase = getServiceSupabase();
-  const settings = await fetchCd2Settings(supabase);
+  const [settings, appSettings] = await Promise.all([
+    fetchCd2Settings(supabase),
+    fetchAppSettings(supabase),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,6 +50,39 @@ export default async function AdminSettingsPage({
         <div className="bg-white/5 rounded-xl p-4 text-xs text-white/50 space-y-1">
           <p>実効勝率 ≈ <strong className="text-white/70">{(100 - settings.lossRate + settings.lossRate * settings.dondenRate / 100).toFixed(1)}%</strong></p>
           <p>（ハズレ率 {settings.lossRate}% のうち {settings.dondenRate}% がどんでん返しで逆転）</p>
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      {/* 紹介ボーナス設定 */}
+      <h2 className="text-lg font-black text-white mt-4">紹介ボーナス設定</h2>
+      <form action={updateAppSettings} className="card-premium p-6 flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">紹介者への報酬</label>
+            <p className="text-xs text-white/40 mb-1">友達を紹介したユーザーに付与するコイン数</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="number" name="referral_bonus_referrer" defaultValue={appSettings.referralBonusReferrer} min={0}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+              />
+              <span className="text-sm text-white/50">コイン</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">被紹介者への報酬</label>
+            <p className="text-xs text-white/40 mb-1">紹介されて登録した新規ユーザーに付与するコイン数</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="number" name="referral_bonus_referee" defaultValue={appSettings.referralBonusReferee} min={0}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+              />
+              <span className="text-sm text-white/50">コイン</span>
+            </div>
+          </div>
         </div>
 
         <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">

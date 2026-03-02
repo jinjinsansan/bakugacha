@@ -4,6 +4,7 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { findUserByLineId, createLineUser, touchLastLogin } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
+import { processReferral } from '@/lib/data/referral';
 
 type LineTokenResponse = {
   access_token: string;
@@ -168,6 +169,12 @@ export async function GET(request: NextRequest) {
       pictureUrl: profile.pictureUrl,
       initialCoins: 0,
     });
+
+    // 紹介コードがあれば紹介処理
+    const storedReferralCode = stateRow.referral_code as string | null;
+    if (storedReferralCode) {
+      await processReferral(supabase, newUser.id as string, storedReferralCode);
+    }
 
     // セッション作成
     const sessionToken = await getOrCreateSessionToken();

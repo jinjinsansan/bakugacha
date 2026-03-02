@@ -5,13 +5,13 @@ import { getServerEnv } from '@/lib/env';
 import { LineLoginButton } from '@/components/auth/LineLoginButton';
 
 type Props = {
-  searchParams?: Promise<{ error?: string }>;
+  searchParams?: Promise<{ error?: string; ref?: string }>;
 };
 
 /**
  * LIFF未設定時のフォールバック: 従来のOAuth認証URLを生成
  */
-async function buildLineAuthorizeUrl(): Promise<string | null> {
+async function buildLineAuthorizeUrl(referralCode?: string): Promise<string | null> {
   try {
     const { LINE_LOGIN_CHANNEL_ID } = getServerEnv();
     if (!LINE_LOGIN_CHANNEL_ID) return null;
@@ -27,7 +27,7 @@ async function buildLineAuthorizeUrl(): Promise<string | null> {
     const supabase = getServiceSupabase();
     const { error } = await supabase
       .from('line_link_states')
-      .insert({ user_id: null, state, nonce });
+      .insert({ user_id: null, state, nonce, referral_code: referralCode || null });
 
     if (error) {
       console.error('Failed to create LINE link state', error);
@@ -53,11 +53,12 @@ async function buildLineAuthorizeUrl(): Promise<string | null> {
 export default async function LoginPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
   const error = params.error;
+  const referralCode = params.ref ?? '';
 
   const liffId = process.env.NEXT_PUBLIC_LIFF_ID ?? '';
 
   // LIFFが設定されていなければ従来のOAuth URLをフォールバックとして生成
-  const fallbackUrl = liffId ? null : await buildLineAuthorizeUrl();
+  const fallbackUrl = liffId ? null : await buildLineAuthorizeUrl(referralCode || undefined);
 
   return (
     <>
@@ -78,7 +79,7 @@ export default async function LoginPage({ searchParams }: Props) {
         </div>
       )}
 
-      <LineLoginButton liffId={liffId} fallbackUrl={fallbackUrl} />
+      <LineLoginButton liffId={liffId} fallbackUrl={fallbackUrl} referralCode={referralCode} />
 
       <p className="text-center text-xs text-gray-600 mt-6">
         初回ログイン時にアカウントが自動作成されます

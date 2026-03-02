@@ -3,6 +3,7 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { findUserByLineId, createLineUser, touchLastLogin } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
+import { processReferral } from '@/lib/data/referral';
 
 type LineProfile = {
   userId: string;
@@ -17,7 +18,7 @@ type LineProfile = {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { accessToken } = await request.json();
+    const { accessToken, referralCode } = await request.json();
     if (!accessToken || typeof accessToken !== 'string') {
       return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
     }
@@ -70,6 +71,11 @@ export async function POST(request: NextRequest) {
       pictureUrl: profile.pictureUrl,
       initialCoins: 0,
     });
+
+    // 紹介コードがあれば紹介処理
+    if (referralCode && typeof referralCode === 'string') {
+      await processReferral(supabase, newUser.id as string, referralCode);
+    }
 
     const sessionToken = await getOrCreateSessionToken();
     await createSession(supabase, sessionToken, newUser.id as string);

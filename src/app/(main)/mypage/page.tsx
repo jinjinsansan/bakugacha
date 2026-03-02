@@ -2,7 +2,9 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
+import { fetchAppSettings } from '@/lib/data/app-settings';
 import { logoutAction } from '@/app/(auth)/actions';
+import { CopyReferralLink } from '@/components/referral/CopyReferralLink';
 
 export default async function MyPage() {
   const supabase = getServiceSupabase();
@@ -26,6 +28,7 @@ export default async function MyPage() {
     .limit(10);
 
   const winCount = (history ?? []).filter((h) => h.result === 'win').length;
+  const appSettings = await fetchAppSettings(supabase);
 
   return (
     <div className="max-w-[860px] mx-auto px-4 py-10">
@@ -71,7 +74,7 @@ export default async function MyPage() {
           </p>
           {user.referral_code && (
             <p className="text-xs text-gray-500 mt-2">
-              紹介コード: <span className="text-gold font-bold">{user.referral_code as string}</span>
+              紹介コード: <span className="text-gold font-bold select-all">{user.referral_code as string}</span>
             </p>
           )}
         </div>
@@ -85,6 +88,17 @@ export default async function MyPage() {
           <p className="text-lg font-black mt-2" style={{ color: '#4ade80' }}>{winCount} 当選</p>
         </div>
       </div>
+
+      {/* 友達紹介 */}
+      {user.referral_code && (
+        <div className="rounded-2xl p-5 mb-6"
+          style={{ background: '#0a0a1c', border: '1px solid rgba(201,168,76,0.25)' }}>
+          <CopyReferralLink
+            referralCode={user.referral_code as string}
+            bonusAmount={appSettings.referralBonusReferrer}
+          />
+        </div>
+      )}
 
       {/* LINE連携ボーナス */}
       <div className="rounded-2xl p-5 mb-6"
