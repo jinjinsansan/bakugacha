@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <span className="font-black text-base" style={{ color: 'var(--gold)' }}>爆ガチャ 管理</span>
             <span className="text-xs text-white/30 bg-white/10 rounded px-2 py-0.5">ADMIN</span>
           </div>
-          <Link href="/home" className="text-xs text-white/50 hover:text-white transition-colors">
+          <Link href="/" className="text-xs text-white/50 hover:text-white transition-colors">
             ← サイトに戻る
           </Link>
         </div>

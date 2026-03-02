@@ -74,7 +74,7 @@ export async function registerAction(formData: FormData) {
   const token = await getOrCreateSessionToken();
   await createSession(supabase, token, user.id);
 
-  redirect('/home');
+  redirect('/');
 }
 
 // ── ログイン ──────────────────────────────────────────────────
@@ -111,7 +111,7 @@ export async function loginAction(formData: FormData) {
   await createSession(supabase, token, user.id as string);
   await touchLastLogin(supabase, user.id as string);
 
-  redirect('/home');
+  redirect('/');
 }
 
 // ── ログアウト ────────────────────────────────────────────────

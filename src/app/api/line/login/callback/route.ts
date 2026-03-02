@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
         .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
         .eq('id', stateRow.id);
 
-      return NextResponse.redirect(`${origin}/home`);
+      return NextResponse.redirect(`${origin}/`);
     }
 
     // ─── パターン1 & 2: 未認証 OAuth（LINE ログイン / LINE 登録）───
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
         .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
         .eq('id', stateRow.id);
 
-      return NextResponse.redirect(`${origin}/home`);
+      return NextResponse.redirect(`${origin}/`);
     }
 
     // パターン1: 新規ユーザー作成（LINE 経由、コインは0）
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
       .update({ user_id: newUser.id, line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
       .eq('id', stateRow.id);
 
-    return NextResponse.redirect(`${origin}/home`);
+    return NextResponse.redirect(`${origin}/`);
   } catch (error) {
     console.error('LINE callback error', error);
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINE認証中にエラーが発生しました。')}`);

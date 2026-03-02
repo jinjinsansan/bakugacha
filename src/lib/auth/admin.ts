@@ -17,7 +17,7 @@ export async function requireAdmin(): Promise<Record<string, unknown>> {
 
   const isAdmin = (!!email && adminEmails.includes(email)) || (!!lineId && adminLineIds.includes(lineId));
   if (!isAdmin) {
-    redirect('/home');
+    redirect('/');
   }
 
   return user as Record<string, unknown>;
