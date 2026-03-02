@@ -111,6 +111,7 @@ export default async function GachaDetailPage({ params }: Props) {
             productTitle={title}
             price={price}
             isLoggedIn={isLoggedIn}
+            gachaType={(row.gacha_type as string) ?? 'cd2'}
             prizeImageUrl={imageUrl || undefined}
             prizeEmoji={row.thumbnail_emoji ?? undefined}
             prizeGradient={row.thumbnail_gradient ?? undefined}

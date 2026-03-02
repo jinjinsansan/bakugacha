@@ -4,6 +4,10 @@ import { AdminForm } from '@/components/admin/AdminForm';
 
 const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト券', 'ゲーム機', 'その他'];
 
+export const GACHA_TYPES = [
+  { value: 'cd2', label: 'カウントダウンチャレンジ2' },
+] as const;
+
 export default function AdminProductNewPage() {
   return (
     <div className="flex flex-col gap-6">
@@ -38,6 +42,13 @@ export function ProductFormFields({
           <select name="category" defaultValue={(defaults?.category as string) ?? 'その他'}
             className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50">
             {CATEGORIES.map((c) => <option key={c} value={c} className="bg-zinc-900">{c}</option>)}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-white/60">ガチャタイプ</label>
+          <select name="gacha_type" defaultValue={(defaults?.gacha_type as string) ?? 'cd2'}
+            className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50">
+            {GACHA_TYPES.map((t) => <option key={t.value} value={t.value} className="bg-zinc-900">{t.label}</option>)}
           </select>
         </div>
         <Field name="price" label="価格（コイン）" type="number" defaultValue={(defaults?.price as string) ?? '0'} />

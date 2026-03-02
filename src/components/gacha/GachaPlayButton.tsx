@@ -8,13 +8,14 @@ type Props = {
   productTitle: string;
   price: number;
   isLoggedIn: boolean;
+  gachaType?: string;
   prizeImageUrl?: string;
   prizeEmoji?: string;
   prizeGradient?: string;
 };
 
 export function GachaPlayButton({
-  productId, productTitle, price, isLoggedIn,
+  productId, productTitle, price, isLoggedIn, gachaType = 'cd2',
   prizeImageUrl, prizeEmoji, prizeGradient,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -38,17 +39,20 @@ export function GachaPlayButton({
         🎰 ガチャを引く（{price === 0 ? '無料' : `🪙 ${price.toLocaleString()}`}）
       </button>
 
-      <Cd2GachaPlayer
-        open={open}
-        onClose={() => setOpen(false)}
-        onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
-        prizeName={productTitle}
-        prizeImageUrl={prizeImageUrl}
-        prizeEmoji={prizeEmoji}
-        prizeGradient={prizeGradient}
-        coinCost={price}
-        productId={productId}
-      />
+      {/* ガチャタイプ別プレイヤー分岐 — 将来新タイプ追加時はここに case を追加 */}
+      {gachaType === 'cd2' && (
+        <Cd2GachaPlayer
+          open={open}
+          onClose={() => setOpen(false)}
+          onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
+          prizeName={productTitle}
+          prizeImageUrl={prizeImageUrl}
+          prizeEmoji={prizeEmoji}
+          prizeGradient={prizeGradient}
+          coinCost={price}
+          productId={productId}
+        />
+      )}
     </>
   );
 }

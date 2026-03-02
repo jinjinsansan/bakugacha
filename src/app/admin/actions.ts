@@ -34,6 +34,7 @@ export async function createProduct(formData: FormData) {
     stock_remaining:     stockRemaining,
     status:              String(formData.get('status') ?? 'active'),
     sort_order:          Number(formData.get('sort_order') ?? 0),
+    gacha_type:          String(formData.get('gacha_type') ?? 'cd2'),
   });
 
   revalidatePath('/admin/products');
@@ -66,6 +67,7 @@ export async function updateProduct(id: string, formData: FormData) {
     stock_remaining:     stockRemaining,
     status:              String(formData.get('status') ?? 'active'),
     sort_order:          Number(formData.get('sort_order') ?? 0),
+    gacha_type:          String(formData.get('gacha_type') ?? 'cd2'),
   }).eq('id', id);
 
   if (updateError) console.error('[updateProduct]', updateError);
