@@ -421,14 +421,36 @@ function ActivePlayer({
   const expStars     = playState.status === 'ready' ? playState.expectationStars : 0;
   const isWin        = playState.status === 'ready' ? playState.isWin : false;
 
+  const isLowQuality = quality === 'low';
+
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
-      <div className="relative flex h-full w-full max-w-[430px] flex-col">
+      <div
+        className="relative flex flex-col"
+        style={isLowQuality ? {
+          width: '92vw',
+          maxWidth: 380,
+          height: 'auto',
+          border: '2px solid rgba(255,255,255,0.25)',
+          borderRadius: 16,
+          overflow: 'hidden',
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.8)',
+        } : {
+          width: '100%',
+          maxWidth: 430,
+          height: '100%',
+        }}
+      >
 
-        {playState.status === 'loading' && <div className="h-full bg-black" />}
+        {playState.status === 'loading' && (
+          <div style={isLowQuality ? { aspectRatio: '9/16', background: '#000' } : { height: '100%', background: '#000' }} />
+        )}
 
         {playState.status === 'error' && (
-          <div className="flex h-full flex-col items-center justify-center gap-4 text-center text-white">
+          <div
+            className="flex flex-col items-center justify-center gap-4 text-center text-white"
+            style={isLowQuality ? { aspectRatio: '9/16' } : { height: '100%' }}
+          >
             <p className="text-lg font-bold">チャレンジを開始できませんでした</p>
             <p className="text-sm text-white/70">{playState.message}</p>
             <RoundMetalButton label="閉じる" subLabel="CLOSE" onClick={onClose} />
@@ -438,10 +460,19 @@ function ActivePlayer({
         {playState.status === 'ready' && current && !showResult && (
           <>
             {isFreezeStep ? (
-              <div className="h-full w-full"><FreezeOverlay /></div>
+              <div style={isLowQuality ? { aspectRatio: '9/16' } : { height: '100%', width: '100%' }}>
+                <FreezeOverlay />
+              </div>
             ) : (
-              <div className="relative h-full w-full overflow-hidden"
-                style={{ background: '#000', WebkitTransform: 'translate3d(0,0,0)', transform: 'translate3d(0,0,0)' }}>
+              <div
+                className="relative overflow-hidden"
+                style={{
+                  ...(isLowQuality ? { aspectRatio: '9/16', width: '100%' } : { height: '100%', width: '100%' }),
+                  background: '#000',
+                  WebkitTransform: 'translate3d(0,0,0)',
+                  transform: 'translate3d(0,0,0)',
+                }}
+              >
                 <div className="absolute inset-0 bg-black" />
                 <video
                   ref={videoRef}
@@ -463,7 +494,13 @@ function ActivePlayer({
             )}
 
             {showButtons && (
-              <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
+              <div
+                className="flex items-center justify-center gap-4"
+                style={isLowQuality
+                  ? { padding: '16px 0', background: 'rgba(0,0,0,0.85)' }
+                  : { position: 'absolute', bottom: 48, left: 0, right: 0 }
+                }
+              >
                 <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
                 <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
               </div>
