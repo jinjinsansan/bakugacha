@@ -416,8 +416,7 @@ function ActivePlayer({
 
   const isFreezeStep = Boolean(current?.isFreeze);
   const isAutoStep   = Boolean(current?.autoAdvance);
-  const nextDisabled = !videoReady || playState.status !== 'ready' || isFreezeStep;
-  const showButtons  = !isFreezeStep && !isAutoStep;
+  const nextDisabled = !videoReady || playState.status !== 'ready' || isFreezeStep || isAutoStep;
   const expStars     = playState.status === 'ready' ? playState.expectationStars : 0;
   const isWin        = playState.status === 'ready' ? playState.isWin : false;
 
@@ -447,10 +446,11 @@ function ActivePlayer({
 
         {!showResult && (
           <>
-            {/* 動画枠（枠線あり・縮小） */}
+            {/* 動画枠（枠線あり・固定サイズ） */}
             <div style={{
               width: '72vw',
               maxWidth: 300,
+              flexShrink: 0,
               borderRadius: 12,
               overflow: 'hidden',
               border: '2px solid rgba(255,255,255,0.3)',
@@ -497,13 +497,11 @@ function ActivePlayer({
               )}
             </div>
 
-            {/* NEXT/SKIPボタン（枠外・独立） */}
-            {showButtons && (
-              <div className="flex items-center justify-center gap-4 mt-6">
-                <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
-                <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
-              </div>
-            )}
+            {/* NEXT/SKIPボタン（常時表示・枠外・固定） */}
+            <div className="flex items-center justify-center gap-4 mt-6" style={{ flexShrink: 0 }}>
+              <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
+              <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+            </div>
           </>
         )}
 
@@ -559,7 +557,7 @@ function ActivePlayer({
               </div>
             )}
 
-            {showButtons && (
+            {!isFreezeStep && (
               <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
                 <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
                 <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
