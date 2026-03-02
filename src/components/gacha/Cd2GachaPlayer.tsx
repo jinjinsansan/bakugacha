@@ -47,7 +47,7 @@ function buildQueue(sequence: Cd2Step[], basePath: string): VideoItem[] {
         'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
       ];
       const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
-      const standbyUrl = buildGachaAssetPath('cd2', 'standby', picked);
+      const standbyUrl = `${basePath}/standby/${picked}`;
       items.push({ key, src: standbyUrl, loop: true, step });
       return;
     }
