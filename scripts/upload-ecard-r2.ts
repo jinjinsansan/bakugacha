@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // ── 設定 ──────────────────────────────────────────────────────
-const SOURCE_DIR = path.resolve(__dirname, '..', 'ROYALカード映像');
+const SOURCE_DIR = path.resolve(__dirname, '..', 'ROYALカード映像やり直し版');
 const ACCOUNT_ID = '954dcc10adf822b50ccceedef0aa97e6';
 const ACCESS_KEY = 'eaa0aa3d33af2b2d635d73218e633514';
 const SECRET_KEY = '4275dc9a87fb942bc5e28974b31abed5fcbc2b920512869b059ab0e882e6462e';
@@ -21,8 +21,10 @@ const client = new S3Client({
   credentials: { accessKeyId: ACCESS_KEY, secretAccessKey: SECRET_KEY },
 });
 
+const REVERSE_DIR = path.resolve(SOURCE_DIR, '皇帝奴隷');
+
 // ── ファイルマッピング ─────────────────────────────────────────
-const ECARD_MAP: Array<{ src: string; key: string }> = [
+const ECARD_MAP: Array<{ src: string; key: string; srcDir?: string }> = [
   { src: 'ecard_title.mp4',        key: 'ecard/ecard_title.mp4' },
   { src: 'ecard_my_blackout.mp4',  key: 'ecard/ecard_my_blackout.mp4' },
   { src: 'ecard_opp_blackout.mp4', key: 'ecard/ecard_opp_blackout.mp4' },
@@ -39,7 +41,11 @@ const ECARD_MAP: Array<{ src: string; key: string }> = [
   { src: 'ecard_draw.mp4',         key: 'ecard/ecard_draw.mp4' },
   { src: 'ecard_donten.mp4',       key: 'ecard/ecard_donten.mp4' },
   { src: 'ecard_final_win.mp4',    key: 'ecard/ecard_final_win.mp4' },
-  { src: 'ecard_final_lose.mp4',   key: 'ecard/ecard_final_lose.mp4' },
+  // 皇帝・奴隷 逆再生用動画（皇帝奴隷サブフォルダから）
+  { src: 'ecard_my_emperor_reverse.mp4',  key: 'ecard/ecard_my_emperor_reverse.mp4',  srcDir: REVERSE_DIR },
+  { src: 'ecard_my_slave_reverse.mp4',    key: 'ecard/ecard_my_slave_reverse.mp4',    srcDir: REVERSE_DIR },
+  { src: 'ecard_opp_king_reverse.mp4',    key: 'ecard/ecard_opp_king_reverse.mp4',    srcDir: REVERSE_DIR },
+  { src: 'ecard_opp_joker_reverse.mp4',   key: 'ecard/ecard_opp_joker_reverse.mp4',   srcDir: REVERSE_DIR },
 ];
 
 // ── アップロード関数 ───────────────────────────────────────────
@@ -79,8 +85,9 @@ async function main() {
   console.log(`\n🚀 ecard R2アップロード開始 (force=${force})\n`);
 
   console.log('── ROYALカード動画 ──');
-  for (const { src, key } of ECARD_MAP) {
-    await upload(path.join(SOURCE_DIR, src), key, force);
+  for (const { src, key, srcDir } of ECARD_MAP) {
+    const baseDir = srcDir ?? SOURCE_DIR;
+    await upload(path.join(baseDir, src), key, force);
   }
 
   console.log(`\n${'─'.repeat(50)}`);
