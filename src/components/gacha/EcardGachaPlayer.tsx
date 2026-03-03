@@ -314,10 +314,12 @@ function ActivePlayer({
     const v = videoRef.current;
     if (!v) return undefined;
 
+    let cancelled = false;
     cancelAnimationFrame(reverseAnimRef.current);
     let lastTs: number | null = null;
 
     const stepBack = (ts: number) => {
+      if (cancelled) return;
       if (!lastTs) { lastTs = ts; reverseAnimRef.current = requestAnimationFrame(stepBack); return; }
       const delta = (ts - lastTs) / 1000;
       lastTs = ts;
@@ -331,6 +333,7 @@ function ActivePlayer({
     };
 
     const startReverse = () => {
+      if (cancelled) return;
       v.pause();
       v.muted = true;
       if (v.duration > 0) v.currentTime = v.duration - 0.05;
@@ -343,7 +346,20 @@ function ActivePlayer({
       v.addEventListener('loadeddata', startReverse, { once: true });
     }
 
-    return () => { cancelAnimationFrame(reverseAnimRef.current); };
+    // フォールバック: 5秒以内に完了しなければ強制的にvideoReadyをtrueにする
+    const fallbackTimer = setTimeout(() => {
+      if (!cancelled) {
+        cancelAnimationFrame(reverseAnimRef.current);
+        setVideoReady(true);
+      }
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(reverseAnimRef.current);
+      clearTimeout(fallbackTimer);
+      v.removeEventListener('loadeddata', startReverse);
+    };
   }, [current?.reverse, videoKey]);
 
   useEffect(() => {
@@ -478,7 +494,7 @@ function ActivePlayer({
                     style={{ background: '#000' }}
                   />
                   <div className="pointer-events-none absolute inset-0 bg-black"
-                    style={{ opacity: videoReady ? 0 : 1 }} />
+                    style={{ opacity: (videoReady || current.reverse) ? 0 : 1 }} />
                   {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
                 </div>
               )}
@@ -534,7 +550,7 @@ function ActivePlayer({
                 style={{ background: '#000' }}
               />
               <div className="pointer-events-none absolute inset-0 bg-black"
-                style={{ opacity: videoReady ? 0 : 1 }} />
+                style={{ opacity: (videoReady || current.reverse) ? 0 : 1 }} />
               {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
             </div>
 
