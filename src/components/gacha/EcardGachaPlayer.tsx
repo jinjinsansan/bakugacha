@@ -32,7 +32,7 @@ type PlayState =
       scenarioCode: string;
     };
 
-const VIDEO_VERSION = '2';
+const VIDEO_VERSION = '3';
 
 function buildQueue(sequence: EcardStep[], basePath: string): VideoItem[] {
   const items: VideoItem[] = [];
