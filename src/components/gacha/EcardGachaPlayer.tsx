@@ -16,7 +16,6 @@ type VideoItem = {
   step: EcardStep;
   showOverlay?: boolean;
   autoAdvance?: boolean;
-  reverse?: boolean;
 };
 
 type PlayState =
@@ -65,9 +64,6 @@ function buildQueue(sequence: EcardStep[], basePath: string): VideoItem[] {
     // autoAdvance steps (play through without NEXT button)
     const AUTO_STEPS: EcardStep[] = ['donten', 'final_win', 'final_lose'];
 
-    // 皇帝・奴隷は逆再生版を使用
-    const REVERSE_STEPS: EcardStep[] = ['my_emperor', 'my_slave', 'opp_emperor', 'opp_slave'];
-
     // Map step to file name
     const FILE_MAP: Partial<Record<EcardStep, string>> = {
       my_blackout:  'ecard_my_blackout.mp4',
@@ -95,7 +91,6 @@ function buildQueue(sequence: EcardStep[], basePath: string): VideoItem[] {
         src: `${basePath}/${fileName}?v=${VIDEO_VERSION}`,
         step,
         autoAdvance: AUTO_STEPS.includes(step),
-        reverse: REVERSE_STEPS.includes(step),
       });
     }
   });
@@ -247,7 +242,6 @@ function ActivePlayer({
   const videoRef        = useRef<HTMLVideoElement>(null);
   const lastReadyKeyRef = useRef<string | null>(null);
   const allowUnmuteRef  = useRef(false);
-  const reverseAnimRef  = useRef<number>(0);
   const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   // APIコール
@@ -304,63 +298,8 @@ function ActivePlayer({
     }).catch(() => undefined);
   }, []);
   useEffect(() => {
-    if (current?.reverse) return; // 逆再生は別エフェクトで処理
     syncPlayback();
-  }, [syncPlayback, resolvedSrc, videoKey, current?.reverse]);
-
-  // ── 逆再生処理 ───────────────────────────────────────────────
-  useEffect(() => {
-    if (!current?.reverse) return undefined;
-    const v = videoRef.current;
-    if (!v) return undefined;
-
-    let cancelled = false;
-    cancelAnimationFrame(reverseAnimRef.current);
-    let lastTs: number | null = null;
-
-    const stepBack = (ts: number) => {
-      if (cancelled) return;
-      if (!lastTs) { lastTs = ts; reverseAnimRef.current = requestAnimationFrame(stepBack); return; }
-      const delta = (ts - lastTs) / 1000;
-      lastTs = ts;
-      if (v.currentTime <= 0.05) {
-        v.currentTime = 0;
-        setVideoReady(true);
-        return;
-      }
-      v.currentTime = Math.max(0, v.currentTime - delta);
-      reverseAnimRef.current = requestAnimationFrame(stepBack);
-    };
-
-    const startReverse = () => {
-      if (cancelled) return;
-      v.pause();
-      v.muted = true;
-      if (v.duration > 0) v.currentTime = v.duration - 0.05;
-      reverseAnimRef.current = requestAnimationFrame(stepBack);
-    };
-
-    if (v.readyState >= 2 && v.duration > 0) {
-      startReverse();
-    } else {
-      v.addEventListener('loadeddata', startReverse, { once: true });
-    }
-
-    // フォールバック: 5秒以内に完了しなければ強制的にvideoReadyをtrueにする
-    const fallbackTimer = setTimeout(() => {
-      if (!cancelled) {
-        cancelAnimationFrame(reverseAnimRef.current);
-        setVideoReady(true);
-      }
-    }, 5000);
-
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(reverseAnimRef.current);
-      clearTimeout(fallbackTimer);
-      v.removeEventListener('loadeddata', startReverse);
-    };
-  }, [current?.reverse, videoKey]);
+  }, [syncPlayback, resolvedSrc, videoKey]);
 
   useEffect(() => {
     if (current?.showOverlay) {
@@ -373,18 +312,16 @@ function ActivePlayer({
   }, [current?.showOverlay, videoKey]);
 
   const clearVideoSrc = useCallback(() => {
-    cancelAnimationFrame(reverseAnimRef.current);
     const v = videoRef.current;
     if (!v) return;
     v.pause(); v.src = ''; v.load();
   }, []);
 
   const handleReady = useCallback(() => {
-    if (current?.reverse) return; // 逆再生は専用エフェクトで制御
     if (lastReadyKeyRef.current === videoKey) return;
     lastReadyKeyRef.current = videoKey;
     setVideoReady(true);
-  }, [videoKey, current?.reverse]);
+  }, [videoKey]);
 
   const handleEnded = useCallback(() => {
     lastReadyKeyRef.current = videoKey;
@@ -402,11 +339,11 @@ function ActivePlayer({
   const handleError = useCallback(() => { setVideoReady(true); }, []);
 
   useEffect(() => {
-    if (videoReady || current?.autoAdvance || current?.reverse) return undefined;
+    if (videoReady || current?.autoAdvance) return undefined;
     const timeout = isMobile ? 700 : 1500;
     const t = setTimeout(() => setVideoReady(true), timeout);
     return () => clearTimeout(t);
-  }, [videoReady, videoKey, current?.autoAdvance, current?.reverse, isMobile]);
+  }, [videoReady, videoKey, current?.autoAdvance, isMobile]);
 
   const goNext = useCallback(() => {
     if (!queue.length) return;
@@ -484,7 +421,7 @@ function ActivePlayer({
                     ref={videoRef}
                     src={resolvedSrc ?? undefined}
                     className="absolute inset-0 block h-full w-full object-cover"
-                    autoPlay={!current.reverse} muted preload="auto"
+                    autoPlay muted preload="auto"
                     loop={Boolean(current.loop)}
                     playsInline
                     onCanPlayThrough={handleReady}
@@ -494,7 +431,7 @@ function ActivePlayer({
                     style={{ background: '#000' }}
                   />
                   <div className="pointer-events-none absolute inset-0 bg-black"
-                    style={{ opacity: (videoReady || current.reverse) ? 0 : 1 }} />
+                    style={{ opacity: videoReady ? 0 : 1 }} />
                   {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
                 </div>
               )}
@@ -540,7 +477,7 @@ function ActivePlayer({
                 ref={videoRef}
                 src={resolvedSrc ?? undefined}
                 className="absolute inset-0 block h-full w-full object-cover"
-                autoPlay={!current.reverse} muted preload="auto"
+                autoPlay muted preload="auto"
                 loop={Boolean(current.loop)}
                 playsInline
                 onCanPlayThrough={handleReady}
@@ -550,7 +487,7 @@ function ActivePlayer({
                 style={{ background: '#000' }}
               />
               <div className="pointer-events-none absolute inset-0 bg-black"
-                style={{ opacity: (videoReady || current.reverse) ? 0 : 1 }} />
+                style={{ opacity: videoReady ? 0 : 1 }} />
               {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
             </div>
 
