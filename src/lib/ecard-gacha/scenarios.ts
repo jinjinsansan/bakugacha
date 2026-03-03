@@ -45,10 +45,8 @@ function buildAxisA(isWin: boolean, drawRounds: number): EcardStep[] {
   steps.push(...buildDrawRounds(drawRounds, 'first'));
   if (isWin) {
     steps.push(...buildRound('first', 'slave', 'emperor'));
-    steps.push('win');
   } else {
     steps.push(...buildRound('first', 'slave', 'citizen'));
-    steps.push('lose');
   }
   return steps;
 }
@@ -65,10 +63,8 @@ function buildAxisB(isWin: boolean, drawRounds: number): EcardStep[] {
     } else {
       steps.push(...buildRound('second', 'citizen', 'slave'));
     }
-    steps.push('win');
   } else {
     steps.push(...buildRound('second', 'emperor', 'slave'));
-    steps.push('lose');
   }
   return steps;
 }
@@ -77,16 +73,15 @@ function buildAxisB(isWin: boolean, drawRounds: number): EcardStep[] {
 // 負けラウンド → donten → ドロー → 奴隷 vs 皇帝 (win)
 function buildAxisC(drawRounds: number): EcardStep[] {
   const steps: EcardStep[] = [];
-  // 最初に負けラウンド
+  // 最初に負けラウンド（物語上の演出として残す）
   steps.push(...buildRound('first', 'citizen', 'emperor'));
   steps.push('lose');
   // どんでん返し映像
   steps.push('donten');
   // ドロー
   steps.push(...buildDrawRounds(drawRounds, 'first'));
-  // 逆転勝利
+  // 逆転勝利（final_winで表示するのでwinは不要）
   steps.push(...buildRound('first', 'slave', 'emperor'));
-  steps.push('win');
   return steps;
 }
 
@@ -98,10 +93,8 @@ function buildAxisD(isWin: boolean, drawRounds: number): EcardStep[] {
   steps.push(...buildDrawRounds(drawRounds, 'first'));
   if (isWin) {
     steps.push(...buildRound('first', 'emperor', 'citizen'));
-    steps.push('win');
   } else {
     steps.push(...buildRound('first', 'emperor', 'slave'));
-    steps.push('lose');
   }
   return steps;
 }
@@ -114,10 +107,8 @@ function buildAxisE(isWin: boolean, drawRounds: number): EcardStep[] {
   steps.push(...buildDrawRounds(drawRounds, 'second'));
   if (isWin) {
     steps.push(...buildRound('second', 'slave', 'emperor'));
-    steps.push('win');
   } else {
     steps.push(...buildRound('second', 'slave', 'citizen'));
-    steps.push('lose');
   }
   return steps;
 }

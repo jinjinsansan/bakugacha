@@ -76,7 +76,6 @@ function buildQueue(sequence: EcardStep[], basePath: string): VideoItem[] {
       opp_emperor:  'ecard_opp_king_reverse.mp4',
       opp_slave:    'ecard_opp_joker_reverse.mp4',
       opp_citizen:  'ecard_opp_citizen.mp4',
-      win:          'ecard_win.mp4',
       lose:         'ecard_lose.mp4',
       draw:         'ecard_draw.mp4',
       donten:       'ecard_donten.mp4',
