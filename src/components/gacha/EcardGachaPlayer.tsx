@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { StarOverlay } from '@/components/gacha/overlays/StarOverlay';
+import { LightningOverlay } from '@/components/gacha/overlays/LightningOverlay';
 import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startEcardGacha } from '@/lib/api/ecard-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
@@ -16,6 +17,7 @@ type VideoItem = {
   step: EcardStep;
   showOverlay?: boolean;
   autoAdvance?: boolean;
+  showLightning?: boolean;
 };
 
 type PlayState =
@@ -31,7 +33,7 @@ type PlayState =
       scenarioCode: string;
     };
 
-const VIDEO_VERSION = '3';
+const VIDEO_VERSION = '4';
 
 function buildQueue(sequence: EcardStep[], basePath: string): VideoItem[] {
   const items: VideoItem[] = [];
@@ -64,18 +66,31 @@ function buildQueue(sequence: EcardStep[], basePath: string): VideoItem[] {
     // autoAdvance steps (play through without NEXT button)
     const AUTO_STEPS: EcardStep[] = ['donten', 'final_win', 'final_lose'];
 
+    // 勝ちパターンステップ（イナズマオーバーレイ表示対象）
+    const WIN_PATTERN_STEPS: EcardStep[] = ['my_emperor_win', 'my_slave_win', 'my_citizen_win'];
+
     // Map step to file name
     const FILE_MAP: Partial<Record<EcardStep, string>> = {
       my_blackout:  'ecard_my_blackout.mp4',
       opp_blackout: 'ecard_opp_blackout.mp4',
       my_card_back: 'ecard_my_card_back.mp4',
       opp_card_back: 'ecard_opp_card_back.mp4',
-      my_emperor:   'ecard_my_emperor_reverse.mp4',
-      my_slave:     'ecard_my_slave_reverse.mp4',
+      // 通常カード映像
+      my_emperor:   'ecard_my_emperor.mp4',
+      my_slave:     'ecard_my_slave.mp4',
       my_citizen:   'ecard_my_citizen.mp4',
-      opp_emperor:  'ecard_opp_king_reverse.mp4',
-      opp_slave:    'ecard_opp_joker_reverse.mp4',
+      opp_emperor:  'ecard_opp_emperor.mp4',
+      opp_slave:    'ecard_opp_slave.mp4',
       opp_citizen:  'ecard_opp_citizen.mp4',
+      // 勝ちパターン（自分側）
+      my_emperor_win: 'ecard_my_emperor_win.mp4',
+      my_slave_win:   'ecard_my_slave_win.mp4',
+      my_citizen_win: 'ecard_my_citizen_win.mp4',
+      // 負けパターン（相手側）
+      opp_emperor_lose: 'ecard_opp_emperor_lose.mp4',
+      opp_slave_lose:   'ecard_opp_slave_lose.mp4',
+      opp_citizen_lose: 'ecard_opp_citizen_lose.mp4',
+      // 結果・演出
       lose:         'ecard_lose.mp4',
       draw:         'ecard_draw.mp4',
       donten:       'ecard_donten.mp4',
@@ -90,6 +105,7 @@ function buildQueue(sequence: EcardStep[], basePath: string): VideoItem[] {
         src: `${basePath}/${fileName}?v=${VIDEO_VERSION}`,
         step,
         autoAdvance: AUTO_STEPS.includes(step),
+        showLightning: WIN_PATTERN_STEPS.includes(step),
       });
     }
   });
@@ -432,6 +448,7 @@ function ActivePlayer({
                   <div className="pointer-events-none absolute inset-0 bg-black"
                     style={{ opacity: videoReady ? 0 : 1 }} />
                   {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
+                  {current.showLightning && <LightningOverlay />}
                 </div>
               )}
             </div>
@@ -488,6 +505,7 @@ function ActivePlayer({
               <div className="pointer-events-none absolute inset-0 bg-black"
                 style={{ opacity: videoReady ? 0 : 1 }} />
               {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
+              {current.showLightning && <LightningOverlay />}
             </div>
 
             <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">

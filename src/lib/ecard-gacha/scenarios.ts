@@ -1,25 +1,22 @@
 import type { EcardStep, EcardAxis, EcardCard, EcardScenario } from './types';
 
-// ── ラウンド結果判定 ──────────────────────────────────────────
-function resolveRound(myCard: EcardCard, oppCard: EcardCard): 'win' | 'lose' | 'draw' {
-  if (myCard === oppCard) return 'draw';
-  if (myCard === 'emperor' && oppCard === 'citizen') return 'win';
-  if (myCard === 'emperor' && oppCard === 'slave') return 'lose';
-  if (myCard === 'slave' && oppCard === 'emperor') return 'win';
-  if (myCard === 'slave' && oppCard === 'citizen') return 'lose';
-  if (myCard === 'citizen' && oppCard === 'slave') return 'win';
-  if (myCard === 'citizen' && oppCard === 'emperor') return 'lose';
-  return 'draw';
-}
-
 // ── 1ラウンド分の映像キュー生成 ─────────────────────────────────
+// variant:
+//   'win'  → 自分側カードを勝ちパターン映像にする (my_*_win)
+//   'lose' → 相手側カードを負けパターン映像にする (opp_*_lose)
 function buildRound(
   order: 'first' | 'second',
   myCard: EcardCard,
   oppCard: EcardCard,
+  variant?: 'win' | 'lose',
 ): EcardStep[] {
-  const mySteps: EcardStep[] = ['my_blackout', 'my_card_back', `my_${myCard}` as EcardStep];
-  const oppSteps: EcardStep[] = ['opp_blackout', 'opp_card_back', `opp_${oppCard}` as EcardStep];
+  const myCardStep: EcardStep =
+    variant === 'win' ? (`my_${myCard}_win` as EcardStep) : (`my_${myCard}` as EcardStep);
+  const oppCardStep: EcardStep =
+    variant === 'lose' ? (`opp_${oppCard}_lose` as EcardStep) : (`opp_${oppCard}` as EcardStep);
+
+  const mySteps: EcardStep[] = ['my_blackout', 'my_card_back', myCardStep];
+  const oppSteps: EcardStep[] = ['opp_blackout', 'opp_card_back', oppCardStep];
 
   if (order === 'first') {
     return [...mySteps, ...oppSteps];
@@ -44,9 +41,9 @@ function buildAxisA(isWin: boolean, drawRounds: number): EcardStep[] {
   const steps: EcardStep[] = [];
   steps.push(...buildDrawRounds(drawRounds, 'first'));
   if (isWin) {
-    steps.push(...buildRound('first', 'slave', 'emperor'));
+    steps.push(...buildRound('first', 'slave', 'emperor', 'win'));
   } else {
-    steps.push(...buildRound('first', 'slave', 'citizen'));
+    steps.push(...buildRound('first', 'slave', 'citizen', 'lose'));
   }
   return steps;
 }
@@ -59,12 +56,12 @@ function buildAxisB(isWin: boolean, drawRounds: number): EcardStep[] {
   steps.push(...buildDrawRounds(drawRounds, 'second'));
   if (isWin) {
     if (Math.random() < 0.5) {
-      steps.push(...buildRound('second', 'emperor', 'citizen'));
+      steps.push(...buildRound('second', 'emperor', 'citizen', 'win'));
     } else {
-      steps.push(...buildRound('second', 'citizen', 'slave'));
+      steps.push(...buildRound('second', 'citizen', 'slave', 'win'));
     }
   } else {
-    steps.push(...buildRound('second', 'emperor', 'slave'));
+    steps.push(...buildRound('second', 'emperor', 'slave', 'lose'));
   }
   return steps;
 }
@@ -73,15 +70,15 @@ function buildAxisB(isWin: boolean, drawRounds: number): EcardStep[] {
 // 負けラウンド → donten → ドロー → 奴隷 vs 皇帝 (win)
 function buildAxisC(drawRounds: number): EcardStep[] {
   const steps: EcardStep[] = [];
-  // 最初に負けラウンド（物語上の演出として残す）
+  // 最初に負けラウンド（物語上の演出 — 通常映像を使用）
   steps.push(...buildRound('first', 'citizen', 'emperor'));
   steps.push('lose');
   // どんでん返し映像
   steps.push('donten');
   // ドロー
   steps.push(...buildDrawRounds(drawRounds, 'first'));
-  // 逆転勝利（final_winで表示するのでwinは不要）
-  steps.push(...buildRound('first', 'slave', 'emperor'));
+  // 逆転勝利（勝ちパターン映像）
+  steps.push(...buildRound('first', 'slave', 'emperor', 'win'));
   return steps;
 }
 
@@ -92,9 +89,9 @@ function buildAxisD(isWin: boolean, drawRounds: number): EcardStep[] {
   const steps: EcardStep[] = [];
   steps.push(...buildDrawRounds(drawRounds, 'first'));
   if (isWin) {
-    steps.push(...buildRound('first', 'emperor', 'citizen'));
+    steps.push(...buildRound('first', 'emperor', 'citizen', 'win'));
   } else {
-    steps.push(...buildRound('first', 'emperor', 'slave'));
+    steps.push(...buildRound('first', 'emperor', 'slave', 'lose'));
   }
   return steps;
 }
@@ -106,9 +103,9 @@ function buildAxisE(isWin: boolean, drawRounds: number): EcardStep[] {
   const steps: EcardStep[] = [];
   steps.push(...buildDrawRounds(drawRounds, 'second'));
   if (isWin) {
-    steps.push(...buildRound('second', 'slave', 'emperor'));
+    steps.push(...buildRound('second', 'slave', 'emperor', 'win'));
   } else {
-    steps.push(...buildRound('second', 'slave', 'citizen'));
+    steps.push(...buildRound('second', 'slave', 'citizen', 'lose'));
   }
   return steps;
 }

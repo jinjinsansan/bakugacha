@@ -4,6 +4,8 @@ export type EcardStep =
   | 'my_card_back' | 'opp_card_back'
   | 'my_emperor' | 'my_slave' | 'my_citizen'
   | 'opp_emperor' | 'opp_slave' | 'opp_citizen'
+  | 'my_emperor_win' | 'my_slave_win' | 'my_citizen_win'
+  | 'opp_emperor_lose' | 'opp_slave_lose' | 'opp_citizen_lose'
   | 'win' | 'lose' | 'draw'
   | 'donten'
   | 'final_win' | 'final_lose';
