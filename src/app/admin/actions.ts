@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { requireAdmin } from '@/lib/auth/admin';
 import { upsertCd2Settings } from '@/lib/data/cd2-gacha';
+import { upsertEcardSettings } from '@/lib/data/ecard-gacha';
 import { upsertAppSettings } from '@/lib/data/app-settings';
 
 // ── 商品作成 ──────────────────────────────────────────────────
@@ -155,6 +156,33 @@ export async function updateCd2Settings(formData: FormData) {
     });
   } catch (err) {
     console.error('[admin] updateCd2Settings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
+}
+
+// ── ecard設定更新 ────────────────────────────────────────────────
+export async function updateEcardSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    await upsertEcardSettings(supabase, {
+      isActive:   formData.get('is_active') === 'on',
+      winRate:    Number(formData.get('win_rate')    ?? 40),
+      axisARate:  Number(formData.get('axis_a_rate') ?? 20),
+      axisBRate:  Number(formData.get('axis_b_rate') ?? 30),
+      axisCRate:  Number(formData.get('axis_c_rate') ?? 15),
+      axisDRate:  Number(formData.get('axis_d_rate') ?? 20),
+      axisERate:  Number(formData.get('axis_e_rate') ?? 15),
+      dontenRate: Number(formData.get('donten_rate') ?? 15),
+      star5Rate:  Number(formData.get('star5_rate')  ?? 70),
+      star4Rate:  Number(formData.get('star4_rate')  ?? 60),
+    });
+  } catch (err) {
+    console.error('[admin] updateEcardSettings failed:', err);
     redirect('/admin/settings?error=1');
   }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Cd2GachaPlayer } from '@/components/gacha/Cd2GachaPlayer';
+import { EcardGachaPlayer } from '@/components/gacha/EcardGachaPlayer';
 
 type Props = {
   productId: string;
@@ -71,9 +72,23 @@ export function GachaPlayButton({
         </button>
       </div>
 
-      {/* ガチャタイプ別プレイヤー分岐 — 将来新タイプ追加時はここに case を追加 */}
+      {/* ガチャタイプ別プレイヤー分岐 */}
       {gachaType === 'cd2' && (
         <Cd2GachaPlayer
+          open={open}
+          onClose={() => setOpen(false)}
+          onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
+          prizeName={productTitle}
+          prizeImageUrl={prizeImageUrl}
+          prizeEmoji={prizeEmoji}
+          prizeGradient={prizeGradient}
+          coinCost={price}
+          productId={productId}
+          quality={quality}
+        />
+      )}
+      {gachaType === 'ecard' && (
+        <EcardGachaPlayer
           open={open}
           onClose={() => setOpen(false)}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
