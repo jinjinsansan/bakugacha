@@ -5,7 +5,7 @@ const NAV = [
   { href: '/admin',          label: '📊 ダッシュボード' },
   { href: '/admin/products', label: '🎁 商品管理' },
   { href: '/admin/banners',  label: '🖼️ バナー管理' },
-  { href: '/admin/settings', label: '⚙️ CD2設定' },
+  { href: '/admin/settings', label: '⚙️ ガチャ設定' },
   { href: '/admin/results',  label: '📋 結果一覧' },
   { href: '/admin/users',    label: '👥 ユーザー管理' },
 ];
