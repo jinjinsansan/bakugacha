@@ -165,7 +165,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const baseFolder = quality === 'low' ? 'ecard' : 'ecard';
+    const baseFolder = quality === 'low' ? 'ecard-mobile' : 'ecard';
 
     return NextResponse.json({
       success: true,
