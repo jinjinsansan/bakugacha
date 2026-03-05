@@ -9,17 +9,6 @@ import { generateScenario } from '@/lib/elevator-gacha/scenarios';
 
 type ElevatorQuality = 'high' | 'low';
 
-function computeExpectationStars(star5Rate: number, star4Rate: number): number {
-  const r = Math.random() * 100;
-  if (r < star5Rate / 100 * star4Rate / 100 * 100) return 5;
-  if (r < star5Rate) return 4;
-  const remaining = 100 - star5Rate;
-  const step = remaining / 3;
-  if (r < star5Rate + step) return 3;
-  if (r < star5Rate + step * 2) return 2;
-  return 1;
-}
-
 function normalizeQuality(raw: unknown): ElevatorQuality {
   return raw === 'low' ? 'low' : 'high';
 }
@@ -76,7 +65,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // 連続ハズレ強制当たり判定（chain_lose_threshold）
+    // 連続ハズレ強制当たり判定
     let forcedWin = false;
     if (user && settings.chainLoseThreshold > 0) {
       const { data: recentResults } = await supabase
@@ -97,16 +86,10 @@ export async function POST(request: Request) {
     // 勝敗決定
     const isWin = forcedWin || Math.random() * 100 < settings.winRate;
 
-    // どんでん返し判定（当たり時のみ）
-    const isDonten = isWin && Math.random() * 100 < settings.dontenRate;
-
     // シナリオ生成
-    const scenario = generateScenario(settings, isWin, isDonten);
+    const scenario = generateScenario(isWin);
 
-    // 期待度★
-    const expectationStars = computeExpectationStars(settings.star5Rate, settings.star4Rate);
-
-    // コイン消費 & 結果保存（非同期・失敗しても結果は返す）
+    // コイン消費 & 結果保存
     if (user && productId) {
       const savePromises: Promise<unknown>[] = [];
 
@@ -121,7 +104,7 @@ export async function POST(request: Request) {
           supabase.from('gacha_results').insert({
             user_id: user.id,
             product_id: productId,
-            result: scenario.isWin ? 'win' : 'loss',
+            result: isWin ? 'win' : 'loss',
             prize_name: product?.title ?? productId,
             coins_spent: price,
           }),
@@ -147,12 +130,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       isWin: scenario.isWin,
-      isDonten: scenario.isDonten,
-      floors: scenario.floors,
+      steps: scenario.steps,
       videoBasePath: buildGachaAssetPath(baseFolder),
-      expectationStars,
-      scenarioCode: scenario.scenarioCode,
-      countdownSeconds: settings.countdownSeconds,
     });
   } catch (error) {
     console.error('[elevator-gacha/play]', error);

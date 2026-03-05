@@ -1,62 +1,26 @@
-// ── エレベーターガチャ 型定義 ──────────────────────────────────
+// ── エレベーターガチャ 型定義（シンプル版） ─────────────────────
 
-export type ElevatorRiseType = 'rise_normal' | 'rise_fast' | 'rise_down';
+export type ElevatorStep =
+  | 'title'
+  | 'rise'
+  | 'stop'
+  | 'open_or_skip'
+  | 'open_coin'
+  | 'open_hole'
+  | 'result_win'
+  | 'result_lose';
 
-export type ElevatorStopType =
-  | 'stop_normal'
-  | 'stop_boss'
-  | 'stop_countdown'
-  | 'stop_multidoor'
-  | 'stop_numchaos'
-  | 'stop_numreverse'
-  | 'stop_vibration'
-  | 'stop_emergency'
-  | 'stop_transparent'
-  | 'stop_halfopen'
-  | 'stop_mirror'
-  | 'stop_ghost'
-  | 'stop_ice'
-  | 'stop_fire';
-
-export type ElevatorOpenResult =
-  | 'wall'
-  | 'hole'
-  | 'coin'
-  | 'coin_boss'
-  | 'coin_explosion'
-  | 'wall_collapse';
-
-export interface ElevatorFloor {
-  floorNumber: number;
-  riseType: ElevatorRiseType;
-  stopType: ElevatorStopType;
-  openResult: ElevatorOpenResult;
-  isFinal: boolean;
-}
+/** autoAdvance=false のステップ（ユーザー操作待ち） */
+export const PAUSE_STEPS: Set<ElevatorStep> = new Set(['open_or_skip']);
 
 export interface ElevatorScenario {
   isWin: boolean;
-  isDonten: boolean;
-  floors: ElevatorFloor[];
-  scenarioCode: string;
+  steps: ElevatorStep[];
 }
 
 export interface ElevatorSettings {
   id: string;
   isActive: boolean;
   winRate: number;
-  dontenRate: number;
-  minFloors: number;
-  maxFloors: number;
-  floorRangeMin: number;
-  floorRangeMax: number;
-  bossFloorRate: number;
-  countdownFloorRate: number;
-  multidoorFloorRate: number;
-  chaosFloorRate: number;
-  reverseFloorRate: number;
-  star5Rate: number;
-  star4Rate: number;
-  countdownSeconds: number;
   chainLoseThreshold: number;
 }

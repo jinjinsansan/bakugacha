@@ -1,14 +1,10 @@
-import type { ElevatorFloor } from '@/lib/elevator-gacha/types';
+import type { ElevatorStep } from '@/lib/elevator-gacha/types';
 
 export type ElevatorPlayResponse = {
   success: true;
   isWin: boolean;
-  isDonten: boolean;
-  floors: ElevatorFloor[];
+  steps: ElevatorStep[];
   videoBasePath: string;
-  expectationStars: number;
-  scenarioCode: string;
-  countdownSeconds: number;
 };
 
 export type ElevatorQuality = 'high' | 'low';

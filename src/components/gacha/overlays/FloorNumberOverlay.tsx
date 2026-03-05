@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { ElevatorStopType } from '@/lib/elevator-gacha/types';
-
 export function FloorNumberOverlay({
   floorNumber,
   stopType,
 }: {
   floorNumber: number;
-  stopType: ElevatorStopType;
+  stopType: string;
 }) {
   const [displayNum, setDisplayNum] = useState(floorNumber);
   const [settled, setSettled] = useState(false);

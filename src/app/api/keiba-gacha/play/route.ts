@@ -8,7 +8,7 @@ import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import {
   pickCharacter,
   pickCourse,
-  getCharaWinRate,
+  getEffectiveWinRate,
   generateScenario,
 } from '@/lib/keiba-gacha/scenarios';
 
@@ -73,10 +73,13 @@ export async function POST(request: Request) {
     // 1. キャラ抽選
     const chara = pickCharacter(settings);
 
-    // 2. キャラ別当たり確率を取得
-    const charaWinRate = getCharaWinRate(chara.id, settings);
+    // 2. コース抽選（馬親父=01固定、他=出現率テーブルで重み付き抽選）
+    const course = pickCourse(chara.id, settings);
 
-    // 3. 連続ハズレ強制当たり判定
+    // 3. コース別当たり率 + キャラ×コース補正 → 実効当たり率を算出
+    const effectiveWinRate = getEffectiveWinRate(chara.id, course.id, settings);
+
+    // 4. 連続ハズレ強制当たり判定
     let forcedWin = false;
     if (user && settings.chainLoseThreshold > 0) {
       const { data: recentResults } = await supabase
@@ -94,11 +97,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // 4. 勝敗決定（キャラ別当たり確率適用）
-    const isWin = forcedWin || Math.random() * 100 < charaWinRate;
-
-    // 5. コース抽選（馬親父=01固定、他=重み付き抽選）
-    const course = pickCourse(chara.id, settings);
+    // 5. 勝敗決定（コース別当たり率 + キャラ補正適用）
+    const isWin = forcedWin || Math.random() * 100 < effectiveWinRate;
 
     // 6. シナリオ生成（タイトル動画選択 + ステップ配列）
     const scenario = generateScenario(isWin, chara.id, course.id);

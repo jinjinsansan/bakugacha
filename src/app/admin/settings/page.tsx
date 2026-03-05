@@ -152,8 +152,26 @@ export default async function AdminSettingsPage({
           </div>
         </label>
 
+        <h3 className="text-sm font-bold text-white/70 mt-2">コース別当たり率（核心ロジック）</h3>
+        <p className="text-xs text-white/40 -mt-1">大雨コースほど激アツ。重馬場は低期待度。</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <RateField name="course_win_01" label="晴れ×芝" description="コース01 当たり率" value={keibaSettings.courseWinRates['01'] ?? 60} max={100} />
+          <RateField name="course_win_02" label="晴れ×ダート" description="コース02 当たり率" value={keibaSettings.courseWinRates['02'] ?? 45} max={100} />
+          <RateField name="course_win_03" label="稍重×芝" description="コース03 当たり率" value={keibaSettings.courseWinRates['03'] ?? 35} max={100} />
+          <RateField name="course_win_04" label="稍重×ダート" description="コース04 当たり率" value={keibaSettings.courseWinRates['04'] ?? 25} max={100} />
+          <RateField name="course_win_05" label="重馬場×芝" description="コース05 当たり率（最低）" value={keibaSettings.courseWinRates['05'] ?? 15} max={100} />
+          <RateField name="course_win_06" label="大雨×芝" description="コース06 当たり率（激アツ）" value={keibaSettings.courseWinRates['06'] ?? 70} max={100} />
+          <RateField name="course_win_07" label="大雨×ダート" description="コース07 当たり率（最激アツ）" value={keibaSettings.courseWinRates['07'] ?? 75} max={100} />
+        </div>
+
+        <h3 className="text-sm font-bold text-white/70 mt-2">キャラ別当たり率補正</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <RateField name="umaoyaji_win_rate" label="馬親父（固定値）" description="コース率を無視して固定適用（%）" value={keibaSettings.umaoyajiWinRate} max={100} />
+          <RateField name="bakugachahime_win_rate" label="バクガチャヒメ（下限保証）" description="コース率+補正がこの値を下回らない（%）" value={keibaSettings.bakugachahimeWinRate} max={100} />
+          <RateField name="fuwarin_win_rate" label="フワリン（上限）" description="コース率+補正がこの値を超えない（%）" value={keibaSettings.fuwarinWinRate} max={100} />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <RateField name="win_rate" label="ベース当たり率" description="全体の当たり確率（%）※参考値" value={keibaSettings.winRate} max={100} />
           <div className="flex flex-col gap-1">
             <label className="text-xs text-white/60">連続ハズレ強制当たり閾値</label>
             <p className="text-xs text-white/40 mb-1">N回連続ハズレ後に次回を強制当たりにする（0=無効）</p>
@@ -165,17 +183,10 @@ export default async function AdminSettingsPage({
           </div>
         </div>
 
-        <h3 className="text-sm font-bold text-white/70 mt-2">キャラ別当たり確率</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <RateField name="umaoyaji_win_rate" label="馬親父" description="SSR Premium 出現時の当たり確率（%）" value={keibaSettings.umaoyajiWinRate} max={100} />
-          <RateField name="bakugachahime_win_rate" label="バクガチャヒメ" description="SSR★ 出現時の当たり確率（%）" value={keibaSettings.bakugachahimeWinRate} max={100} />
-          <RateField name="fuwarin_win_rate" label="フワリン" description="R 出現時の当たり確率（%）" value={keibaSettings.fuwarinWinRate} max={100} />
-        </div>
-
         <div className="bg-white/5 rounded-xl p-4 text-xs text-white/50 space-y-1">
-          <p>馬親父: <strong className="text-white/70">{keibaSettings.umaoyajiWinRate}%</strong> / バクガチャヒメ: <strong className="text-white/70">{keibaSettings.bakugachahimeWinRate}%</strong> / フワリン: <strong className="text-white/70">{keibaSettings.fuwarinWinRate}%</strong></p>
-          <p>その他キャラ（シロガネ・ダークボルト・アオイカゼ・ホノオヒメ）: <strong className="text-white/70">100%</strong>（当たり確定）</p>
-          <p>連続ハズレ閾値: <strong className="text-white/70">{keibaSettings.chainLoseThreshold}回</strong></p>
+          <p>コース別: 晴れ芝 <strong className="text-white/70">{keibaSettings.courseWinRates['01'] ?? 60}%</strong> / 大雨ダート <strong className="text-yellow-300">{keibaSettings.courseWinRates['07'] ?? 75}%</strong> / 重馬場 <strong className="text-white/70">{keibaSettings.courseWinRates['05'] ?? 15}%</strong></p>
+          <p>馬親父: <strong className="text-white/70">{keibaSettings.umaoyajiWinRate}%固定</strong> / バクガチャヒメ: <strong className="text-white/70">≥{keibaSettings.bakugachahimeWinRate}%</strong> / フワリン: <strong className="text-white/70">≤{keibaSettings.fuwarinWinRate}%</strong></p>
+          <p>他キャラ: コース率+補正をそのまま適用（アオイカゼ晴れ芝+20%、ダークボルト晴れダート+20%等）</p>
         </div>
 
         <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">

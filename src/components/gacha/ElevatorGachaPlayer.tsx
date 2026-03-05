@@ -2,24 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { StarOverlay } from '@/components/gacha/overlays/StarOverlay';
-import { FloorNumberOverlay } from '@/components/gacha/overlays/FloorNumberOverlay';
-import { OpenSkipOverlay } from '@/components/gacha/overlays/OpenSkipOverlay';
-import { CountdownOverlay } from '@/components/gacha/overlays/CountdownOverlay';
-import { MultidoorOverlay } from '@/components/gacha/overlays/MultidoorOverlay';
 import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startElevatorGacha } from '@/lib/api/elevator-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
-import type { ElevatorFloor } from '@/lib/elevator-gacha/types';
+import type { ElevatorStep } from '@/lib/elevator-gacha/types';
+import { PAUSE_STEPS } from '@/lib/elevator-gacha/types';
 
 // ── 型定義 ────────────────────────────────────────────────────
-
-type PlayerPhase =
-  | 'standby' | 'title'
-  | 'rise' | 'stop' | 'open_skip' | 'choice'
-  | 'open_result'
-  | 'result';
 
 type PlayState =
   | { status: 'loading' }
@@ -27,96 +17,33 @@ type PlayState =
   | {
       status: 'ready';
       isWin: boolean;
-      isDonten: boolean;
-      floors: ElevatorFloor[];
+      steps: ElevatorStep[];
       videoBasePath: string;
-      expectationStars: number;
-      scenarioCode: string;
-      countdownSeconds: number;
     };
 
 const VIDEO_VERSION = '1';
 
-// ── 動画パスマッピング ────────────────────────────────────────
+// ── ステップ→動画ファイルマッピング ────────────────────────────
 
-const RISE_FILE: Record<string, string> = {
-  rise_normal: 'eelev_rise.mp4',
-  rise_fast:   'eelev_rise_fast.mp4',
-  rise_down:   'eelev_rise_down.mp4',
+const STEP_FILE: Record<ElevatorStep, string> = {
+  title:       'eelev_title.mp4',
+  rise:        'eelev_rise.mp4',
+  stop:        'eelev_stop.mp4',
+  open_or_skip:'eelev_open_skip.mp4',
+  open_coin:   'eelev_open_coin.mp4',
+  open_hole:   'eelev_open_hole.mp4',
+  result_win:  'eelev_final_win.mp4',
+  result_lose: 'eelev_final_lose.mp4',
 };
 
-const STOP_FILE: Record<string, string> = {
-  stop_normal:      'eelev_stop.mp4',
-  stop_boss:        'eelev_stop_boss.mp4',
-  stop_countdown:   'eelev_stop_countdown.mp4',
-  stop_multidoor:   'eelev_stop_multidoor.mp4',
-  stop_numchaos:    'eelev_stop_numchaos.mp4',
-  stop_numreverse:  'eelev_stop_numreverse.mp4',
-  stop_vibration:   'eelev_stop_vibration.mp4',
-  stop_emergency:   'eelev_stop_emergency.mp4',
-  stop_transparent: 'eelev_stop_transparent.mp4',
-  stop_halfopen:    'eelev_stop_halfopen.mp4',
-  stop_mirror:      'eelev_stop_mirror.mp4',
-  stop_ghost:       'eelev_stop_ghost.mp4',
-  stop_ice:         'eelev_stop_ice.mp4',
-  stop_fire:        'eelev_stop_fire.mp4',
-};
-
-const OPEN_FILE: Record<string, string> = {
-  wall:           'eelev_open_wall.mp4',
-  hole:           'eelev_open_hole.mp4',
-  coin:           'eelev_open_coin.mp4',
-  coin_boss:      'eelev_open_coin_boss.mp4',
-  coin_explosion: 'eelev_open_coin_explosion.mp4',
-  wall_collapse:  'eelev_open_wall_collapse.mp4',
-};
-
-function computeVideoSrc(
-  phase: PlayerPhase,
-  floor: ElevatorFloor | null,
-  basePath: string,
-  isWin: boolean,
-): string | null {
-  const v = VIDEO_VERSION;
-  switch (phase) {
-    case 'standby': {
-      const STANDBY_FILES = [
-        'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
-        'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
-      ];
-      const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
-      return buildGachaAssetPath('cd2', 'standby', picked);
-    }
-    case 'title':
-      return `${basePath}/eelev_title.mp4?v=${v}`;
-    case 'rise':
-      return floor ? `${basePath}/${RISE_FILE[floor.riseType] ?? 'eelev_rise.mp4'}?v=${v}` : null;
-    case 'stop':
-      return floor ? `${basePath}/${STOP_FILE[floor.stopType] ?? 'eelev_stop.mp4'}?v=${v}` : null;
-    case 'open_skip':
-      return `${basePath}/eelev_open_skip.mp4?v=${v}`;
-    case 'choice':
-      return null; // 停止フレームをそのまま表示
-    case 'open_result':
-      return floor ? `${basePath}/${OPEN_FILE[floor.openResult] ?? 'eelev_open_wall.mp4'}?v=${v}` : null;
-    case 'result':
-      return `${basePath}/eelev_final_${isWin ? 'win' : 'lose'}.mp4?v=${v}`;
-    default:
-      return null;
-  }
+function stepToSrc(step: ElevatorStep, basePath: string): string {
+  return `${basePath}/${STEP_FILE[step]}?v=${VIDEO_VERSION}`;
 }
 
-function getAllVideoSources(floors: ElevatorFloor[], basePath: string): string[] {
-  const v = VIDEO_VERSION;
+function getAllVideoSources(steps: ElevatorStep[], basePath: string): string[] {
   const sources = new Set<string>();
-  sources.add(`${basePath}/eelev_title.mp4?v=${v}`);
-  sources.add(`${basePath}/eelev_open_skip.mp4?v=${v}`);
-  sources.add(`${basePath}/eelev_final_win.mp4?v=${v}`);
-  sources.add(`${basePath}/eelev_final_lose.mp4?v=${v}`);
-  for (const floor of floors) {
-    sources.add(`${basePath}/${RISE_FILE[floor.riseType] ?? 'eelev_rise.mp4'}?v=${v}`);
-    sources.add(`${basePath}/${STOP_FILE[floor.stopType] ?? 'eelev_stop.mp4'}?v=${v}`);
-    sources.add(`${basePath}/${OPEN_FILE[floor.openResult] ?? 'eelev_open_wall.mp4'}?v=${v}`);
+  for (const step of steps) {
+    sources.add(stepToSrc(step, basePath));
   }
   return Array.from(sources);
 }
@@ -258,25 +185,18 @@ function ActivePlayer({
   quality: 'high' | 'low';
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
-  const [phase, setPhase]         = useState<PlayerPhase>('standby');
-  const [floorIdx, setFloorIdx]   = useState(0);
+  const [isStandby, setIsStandby] = useState(true);
+  const [stepIdx, setStepIdx]     = useState(0);
   const [currentSrc, setCurrentSrc] = useState<string | null>(null);
-  const [isLoop, setIsLoop]       = useState(false);
   const [videoReady, setVideoReady] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
+  const [waitingForUser, setWaitingForUser] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
 
   const videoRef        = useRef<HTMLVideoElement>(null);
   const lastReadyKeyRef = useRef<string | null>(null);
   const allowUnmuteRef  = useRef(false);
-  // Refs for latest state in callbacks
-  const phaseRef    = useRef(phase);
-  const floorIdxRef = useRef(floorIdx);
-  phaseRef.current    = phase;
-  floorIdxRef.current = floorIdx;
-
-  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const stepIdxRef      = useRef(stepIdx);
+  stepIdxRef.current    = stepIdx;
 
   // APIコール
   useEffect(() => {
@@ -287,10 +207,13 @@ function ActivePlayer({
         if (cancelled) return;
         setPlayState({ status: 'ready', ...res });
         // standby で開始
-        const standbyUrl = computeVideoSrc('standby', null, '', false);
-        setCurrentSrc(standbyUrl);
-        setIsLoop(true);
-        setPhase('standby');
+        const STANDBY_FILES = [
+          'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
+          'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
+        ];
+        const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
+        setCurrentSrc(buildGachaAssetPath('cd2', 'standby', picked));
+        setIsStandby(true);
         setVideoReady(false);
       } catch (err) {
         if (cancelled) return;
@@ -303,15 +226,15 @@ function ActivePlayer({
   // 全動画ソース（プリフェッチ用）
   const allSources = useMemo(() => {
     if (playState.status !== 'ready') return [];
-    return getAllVideoSources(playState.floors, playState.videoBasePath);
+    return getAllVideoSources(playState.steps, playState.videoBasePath);
   }, [playState]);
   const { resolveAssetSrc } = useSignedAssetResolver(allSources);
 
-  const currentFloor = playState.status === 'ready' ? playState.floors[floorIdx] ?? null : null;
-  const basePath     = playState.status === 'ready' ? playState.videoBasePath : '';
-  const isWin        = playState.status === 'ready' ? playState.isWin : false;
-  const expStars        = playState.status === 'ready' ? playState.expectationStars : 0;
-  const countdownSecs   = playState.status === 'ready' ? playState.countdownSeconds : 5;
+  const isWin    = playState.status === 'ready' ? playState.isWin : false;
+  const steps    = playState.status === 'ready' ? playState.steps : [];
+  const basePath = playState.status === 'ready' ? playState.videoBasePath : '';
+
+  const currentStep = steps[stepIdx] as ElevatorStep | undefined;
 
   // 解決済みURL
   const resolvedSrc = useMemo(() => {
@@ -319,31 +242,27 @@ function ActivePlayer({
     return resolveAssetSrc(currentSrc) ?? currentSrc;
   }, [currentSrc, resolveAssetSrc]);
 
-  const videoKey = `${phase}-${floorIdx}-${currentSrc ?? 'none'}`;
+  const videoKey = `${isStandby ? 'standby' : stepIdx}-${currentSrc ?? 'none'}`;
 
-  // フェーズ遷移
-  const goToPhase = useCallback((nextPhase: PlayerPhase, nextFloorIdx?: number) => {
-    const fi = nextFloorIdx ?? floorIdxRef.current;
-    const floors = playState.status === 'ready' ? playState.floors : [];
-    const floor = floors[fi] ?? null;
-    const base = playState.status === 'ready' ? playState.videoBasePath : '';
-    const win = playState.status === 'ready' ? playState.isWin : false;
+  // ── ステップ遷移 ────────────────────────────────────────
 
-    const src = computeVideoSrc(nextPhase, floor, base, win);
-
-    if (nextFloorIdx !== undefined) setFloorIdx(nextFloorIdx);
-    setPhase(nextPhase);
-    setIsLoop(nextPhase === 'standby');
-    setVideoEnded(false);
-
-    if (src !== null) {
-      setCurrentSrc(src);
-      setVideoReady(false);
-      lastReadyKeyRef.current = null;
+  const goToStep = useCallback((idx: number) => {
+    if (idx >= steps.length) {
+      // 全ステップ完了 → 結果表示
+      setShowResult(true);
+      return;
     }
-  }, [playState]);
+    const step = steps[idx];
+    setStepIdx(idx);
+    stepIdxRef.current = idx;
+    setWaitingForUser(false);
+    setVideoReady(false);
+    lastReadyKeyRef.current = null;
+    setCurrentSrc(stepToSrc(step, basePath));
+  }, [steps, basePath]);
 
-  // 動画再生同期
+  // ── 動画再生同期 ────────────────────────────────────────
+
   const syncPlayback = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -353,17 +272,6 @@ function ActivePlayer({
     }).catch(() => undefined);
   }, []);
   useEffect(() => { syncPlayback(); }, [syncPlayback, resolvedSrc, videoKey]);
-
-  // タイトルオーバーレイ
-  useEffect(() => {
-    if (phase === 'title') {
-      setShowOverlay(true);
-      const t = setTimeout(() => setShowOverlay(false), 3000);
-      return () => clearTimeout(t);
-    }
-    setShowOverlay(false);
-    return undefined;
-  }, [phase]);
 
   const clearVideoSrc = useCallback(() => {
     const v = videoRef.current;
@@ -378,94 +286,39 @@ function ActivePlayer({
   }, [videoKey]);
 
   const handleEnded = useCallback(() => {
-    setVideoEnded(true);
-    const p = phaseRef.current;
+    if (isStandby) return; // standby はループ
 
-    // 自動遷移フェーズ
-    switch (p) {
-      case 'title':
-        clearVideoSrc();
-        allowUnmuteRef.current = true;
-        goToPhase('rise', 0);
-        break;
-      case 'rise':
-        clearVideoSrc();
-        goToPhase('stop');
-        break;
-      case 'stop': {
-        const floors = playState.status === 'ready' ? playState.floors : [];
-        const floor = floors[floorIdxRef.current] ?? null;
-        if (floor?.stopType === 'stop_boss') {
-          // ボス階: 自動OPEN
-          clearVideoSrc();
-          goToPhase('open_result');
-        } else {
-          // open_skip映像→choiceへ
-          clearVideoSrc();
-          goToPhase('open_skip');
-        }
-        break;
-      }
-      case 'open_skip':
-        // OPEN/SKIP選択映像が終了 → choice（ボタン表示待ち）
-        setPhase('choice');
-        phaseRef.current = 'choice';
-        break;
-      case 'open_result': {
-        const floors = playState.status === 'ready' ? playState.floors : [];
-        const floor = floors[floorIdxRef.current] ?? null;
-        if (!floor) break;
-        const result = floor.openResult;
-        if (result === 'wall') {
-          // 壁 → 次フロアへ
-          clearVideoSrc();
-          goToPhase('rise', floorIdxRef.current + 1);
-        } else {
-          // hole / coin / coin_boss / coin_explosion / wall_collapse → 最終結果
-          clearVideoSrc();
-          goToPhase('result');
-        }
-        break;
-      }
-      case 'result':
-        setShowResult(true);
-        break;
-      default:
-        break;
+    const idx = stepIdxRef.current;
+    const step = steps[idx];
+    if (!step) return;
+
+    if (PAUSE_STEPS.has(step)) {
+      // ユーザー操作待ち
+      setWaitingForUser(true);
+      return;
     }
-  }, [playState, goToPhase, clearVideoSrc]);
+
+    // autoAdvance → 次のステップへ
+    clearVideoSrc();
+    goToStep(idx + 1);
+  }, [isStandby, steps, clearVideoSrc, goToStep]);
 
   const handleError = useCallback(() => { setVideoReady(true); }, []);
 
-  // 動画レディのフォールバックタイマー
-  useEffect(() => {
-    const autoPhases: PlayerPhase[] = ['title', 'rise', 'open_skip', 'open_result', 'result'];
-    if (videoReady || autoPhases.includes(phase)) return undefined;
-    const timeout = isMobile ? 700 : 1500;
-    const t = setTimeout(() => setVideoReady(true), timeout);
-    return () => clearTimeout(t);
-  }, [videoReady, videoKey, phase, isMobile]);
-
   // ── ユーザー操作ハンドラ ──────────────────────────────
 
-  const handleStandbyNext = useCallback(() => {
+  const handleStart = useCallback(() => {
     clearVideoSrc();
     allowUnmuteRef.current = true;
-    goToPhase('title');
-  }, [clearVideoSrc, goToPhase]);
+    setIsStandby(false);
+    goToStep(0);
+  }, [clearVideoSrc, goToStep]);
 
   const handleOpen = useCallback(() => {
     clearVideoSrc();
-    allowUnmuteRef.current = true;
-    goToPhase('open_result');
-  }, [clearVideoSrc, goToPhase]);
-
-  const handleSkip = useCallback(() => {
-    // SKIP → 次フロアのriseへ直接遷移
-    clearVideoSrc();
-    allowUnmuteRef.current = true;
-    goToPhase('rise', floorIdxRef.current + 1);
-  }, [clearVideoSrc, goToPhase]);
+    setWaitingForUser(false);
+    goToStep(stepIdxRef.current + 1);
+  }, [clearVideoSrc, goToStep]);
 
   const handleReplayAnimation = useCallback(() => {
     clearVideoSrc();
@@ -473,67 +326,40 @@ function ActivePlayer({
     lastReadyKeyRef.current = null;
     setShowResult(false);
     setVideoReady(false);
-    setVideoEnded(false);
-    const standbyUrl = computeVideoSrc('standby', null, '', false);
-    setCurrentSrc(standbyUrl);
-    setIsLoop(true);
-    setPhase('standby');
-    setFloorIdx(0);
+    setWaitingForUser(false);
+    const STANDBY_FILES = [
+      'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
+      'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
+    ];
+    const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
+    setCurrentSrc(buildGachaAssetPath('cd2', 'standby', picked));
+    setIsStandby(true);
+    setStepIdx(0);
   }, [clearVideoSrc]);
 
-  // 動画のプリフェッチ（次の2つ）
+  // 次の動画プリフェッチ
   const upcomingVideos = useMemo(() => {
-    if (playState.status !== 'ready') return [];
-    const floors = playState.floors;
-    const base = playState.videoBasePath;
-    const win = playState.isWin;
+    if (playState.status !== 'ready' || isStandby) return [];
+    const nextIdx = stepIdx + 1;
     const srcs: string[] = [];
-
-    // 現在のフェーズの次に必要な動画を予測
-    const fi = floorIdx;
-    const floor = floors[fi];
-    if (!floor) return [];
-
-    if (phase === 'standby' || phase === 'title') {
-      const s = computeVideoSrc('rise', floor, base, win);
-      if (s) srcs.push(s);
+    for (let i = nextIdx; i < Math.min(nextIdx + 2, steps.length); i++) {
+      srcs.push(stepToSrc(steps[i], basePath));
     }
-    if (phase === 'rise') {
-      const s = computeVideoSrc('stop', floor, base, win);
-      if (s) srcs.push(s);
-    }
-    if (phase === 'stop' || phase === 'choice') {
-      const s = computeVideoSrc('open_result', floor, base, win);
-      if (s) srcs.push(s);
-      // 次のフロアのrise
-      const nextFloor = floors[fi + 1];
-      if (nextFloor) {
-        const s2 = computeVideoSrc('rise', nextFloor, base, win);
-        if (s2) srcs.push(s2);
-      }
-    }
-
     return srcs
       .map((s) => resolveAssetSrc(s))
       .filter((s): s is string => Boolean(s));
-  }, [phase, floorIdx, playState, resolveAssetSrc]);
+  }, [playState, isStandby, stepIdx, steps, basePath, resolveAssetSrc]);
 
   useEffect(() => {
     upcomingVideos.forEach((src) => { fetch(src, { cache: 'force-cache' }).catch(() => {}); });
   }, [upcomingVideos]);
 
-  // ── オーバーレイ表示判定 ──────────────────────────────
+  // ── 表示判定 ────────────────────────────────────────────
 
-  const showFloorNumber = (phase === 'stop' || phase === 'choice') && currentFloor;
-  const showOpenSkip = phase === 'choice' && videoEnded && currentFloor
-    && currentFloor.stopType !== 'stop_countdown'
-    && currentFloor.stopType !== 'stop_multidoor';
-  const showCountdown = phase === 'choice' && videoEnded && currentFloor?.stopType === 'stop_countdown';
-  const showMultidoor = phase === 'choice' && videoEnded && currentFloor?.stopType === 'stop_multidoor';
-  const skipDisabled = currentFloor?.isFinal ?? false;
-
-  const isAutoPhase = ['title', 'rise', 'open_skip', 'open_result', 'result'].includes(phase);
-  const showStandbyNext = phase === 'standby' && videoReady;
+  const showStandbyStart = isStandby && videoReady;
+  const showOpenButton = !isStandby && waitingForUser && currentStep === 'open_or_skip';
+  const isAutoPhase = !isStandby && !waitingForUser && !showResult;
+  const isLoop = isStandby;
 
   const isLowQuality = quality === 'low';
 
@@ -591,32 +417,19 @@ function ActivePlayer({
                   />
                   <div className="pointer-events-none absolute inset-0 bg-black"
                     style={{ opacity: videoReady ? 0 : 1 }} />
-                  {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
-                  {showFloorNumber && (
-                    <FloorNumberOverlay floorNumber={currentFloor.floorNumber} stopType={currentFloor.stopType} />
-                  )}
                 </div>
               )}
             </div>
 
             <div className="flex flex-col items-center gap-4 mt-6" style={{ flexShrink: 0 }}>
-              {/* オーバーレイUI（軽量モードではフレーム外に表示） */}
-              {showOpenSkip && (
-                <div className="flex items-center gap-4">
-                  <RoundMetalButton label="OPEN" subLabel="開ける" onClick={handleOpen} />
-                  <RoundMetalButton label="SKIP" subLabel="見送る" onClick={handleSkip} disabled={skipDisabled} />
-                </div>
+              {showOpenButton && (
+                <RoundMetalButton label="OPEN" subLabel="開ける" onClick={handleOpen} />
               )}
-              {showCountdown && (
-                <CountdownOverlay seconds={countdownSecs} onTimeout={handleOpen} onOpen={handleOpen} />
+              {showStandbyStart && (
+                <RoundMetalButton label="START" subLabel="開始" onClick={handleStart} />
               )}
-              {showMultidoor && (
-                <MultidoorOverlay onSelect={() => handleOpen()} />
-              )}
-              {showStandbyNext && (
-                <RoundMetalButton label="START" subLabel="開始" onClick={handleStandbyNext} />
-              )}
-              {!showOpenSkip && !showCountdown && !showMultidoor && !showStandbyNext && !isAutoPhase && (
+              {/* 自動再生中はスキップ可能 */}
+              {isAutoPhase && (
                 <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
               )}
             </div>
@@ -668,30 +481,24 @@ function ActivePlayer({
               />
               <div className="pointer-events-none absolute inset-0 bg-black"
                 style={{ opacity: videoReady ? 0 : 1 }} />
-              {showOverlay && expStars > 0 && <StarOverlay starCount={expStars} />}
-              {showFloorNumber && (
-                <FloorNumberOverlay floorNumber={currentFloor.floorNumber} stopType={currentFloor.stopType} />
-              )}
-              {showOpenSkip && (
-                <OpenSkipOverlay onOpen={handleOpen} onSkip={handleSkip} skipDisabled={skipDisabled} />
-              )}
-              {showCountdown && (
-                <CountdownOverlay onTimeout={handleOpen} onOpen={handleOpen} />
-              )}
-              {showMultidoor && (
-                <MultidoorOverlay onSelect={() => handleOpen()} />
+
+              {/* OPENボタン（高画質モードではビデオ上にオーバーレイ） */}
+              {showOpenButton && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <RoundMetalButton label="OPEN" subLabel="開ける" onClick={handleOpen} />
+                </div>
               )}
             </div>
 
             {/* standby: STARTボタン */}
-            {showStandbyNext && (
+            {showStandbyStart && (
               <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
-                <RoundMetalButton label="START" subLabel="開始" onClick={handleStandbyNext} />
+                <RoundMetalButton label="START" subLabel="開始" onClick={handleStart} />
               </div>
             )}
 
-            {/* 全体SKIPボタン（自動遷移フェーズ以外・choice以外で表示） */}
-            {!showStandbyNext && !isAutoPhase && phase !== 'choice' && (
+            {/* 自動再生中はスキップ可能 */}
+            {isAutoPhase && (
               <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
                 <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
               </div>

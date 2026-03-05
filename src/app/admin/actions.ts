@@ -218,9 +218,16 @@ export async function updateKeibaSettings(formData: FormData) {
   const supabase = getServiceSupabase();
 
   try {
+    // コース別当たり率を個別フィールドからJSONに組み立て
+    const courseWinRates: Record<string, number> = {};
+    for (const cid of ['01', '02', '03', '04', '05', '06', '07']) {
+      const v = formData.get(`course_win_${cid}`);
+      if (v != null) courseWinRates[cid] = Number(v);
+    }
+
     await upsertKeibaSettings(supabase, {
       isActive:             formData.get('is_active') === 'on',
-      winRate:              Number(formData.get('win_rate')               ?? 30),
+      courseWinRates,
       umaoyajiWinRate:      Number(formData.get('umaoyaji_win_rate')     ?? 95),
       bakugachahimeWinRate: Number(formData.get('bakugachahime_win_rate') ?? 90),
       fuwarinWinRate:       Number(formData.get('fuwarin_win_rate')       ?? 20),
