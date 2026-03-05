@@ -10,6 +10,7 @@ import {
   pickCourse,
   getEffectiveWinRate,
   generateScenario,
+  getCharaName,
 } from '@/lib/keiba-gacha/scenarios';
 
 type KeibaQuality = 'high' | 'low';
@@ -139,6 +140,13 @@ export async function POST(request: Request) {
       }
     }
 
+    // 期待度スター算出（実効当たり率ベース）
+    const expectationStars =
+      effectiveWinRate >= 70 ? 5 :
+      effectiveWinRate >= 55 ? 4 :
+      effectiveWinRate >= 40 ? 3 :
+      effectiveWinRate >= 25 ? 2 : 1;
+
     const baseFolder = quality === 'low' ? 'keiba-mobile' : 'keiba';
 
     return NextResponse.json({
@@ -146,6 +154,8 @@ export async function POST(request: Request) {
       isWin: scenario.isWin,
       charaId: scenario.charaId,
       courseId: scenario.courseId,
+      charaName: getCharaName(chara.id),
+      expectationStars,
       steps: scenario.steps,
       videoBasePath: buildGachaAssetPath(baseFolder),
     });

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
+import { StarOverlay } from '@/components/gacha/overlays/StarOverlay';
 import { startKeibaGacha } from '@/lib/api/keiba-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
@@ -16,11 +17,16 @@ type PlayState =
   | {
       status: 'ready';
       isWin: boolean;
+      charaName: string;
+      expectationStars: number;
       steps: KeibaStep[];
       videoBasePath: string;
     };
 
 const VIDEO_VERSION = '1';
+
+/** autoAdvance するステップ名 */
+const AUTO_STEPS = new Set(['title', 'result_win', 'result_lose']);
 
 function stepToSrc(step: KeibaStep, basePath: string): string {
   return `${basePath}/${step.file}?v=${VIDEO_VERSION}`;
@@ -32,6 +38,48 @@ function getAllVideoSources(steps: KeibaStep[], basePath: string): string[] {
     sources.add(stepToSrc(step, basePath));
   }
   return Array.from(sources);
+}
+
+// ── 馬名オーバーレイ ─────────────────────────────────────────
+
+function HorseNameOverlay({ name }: { name: string }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 200);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+      <div
+        className="inline-flex flex-col items-center gap-1 px-8 py-4"
+        style={{
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(20,10,5,0.75) 100%)',
+          borderTop: '2px solid rgba(201,168,76,0.8)',
+          borderBottom: '2px solid rgba(201,168,76,0.8)',
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(12px)',
+          transition: 'opacity 0.5s ease, transform 0.5s ease',
+        }}
+      >
+        <p
+          className="text-[10px] font-bold tracking-[0.5em] text-yellow-200/60"
+          style={{ letterSpacing: '0.5em' }}
+        >
+          出走馬
+        </p>
+        <p
+          className="text-2xl font-black text-white"
+          style={{
+            letterSpacing: '0.25em',
+            textShadow: '0 0 16px rgba(201,168,76,0.8), 0 2px 4px rgba(0,0,0,0.9)',
+          }}
+        >
+          {name}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 // ── 結果カード ────────────────────────────────────────────────
@@ -176,12 +224,15 @@ function ActivePlayer({
   const [currentSrc, setCurrentSrc] = useState<string | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   const videoRef        = useRef<HTMLVideoElement>(null);
   const lastReadyKeyRef = useRef<string | null>(null);
   const allowUnmuteRef  = useRef(false);
   const stepIdxRef      = useRef(stepIdx);
   stepIdxRef.current    = stepIdx;
+
+  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|Android/i.test(navigator.userAgent);
 
   // APIコール
   useEffect(() => {
@@ -191,7 +242,6 @@ function ActivePlayer({
         const res = await startKeibaGacha(productId, quality);
         if (cancelled) return;
         setPlayState({ status: 'ready', ...res });
-        // standby で開始（cd2共通動画を使用）
         const STANDBY_FILES = [
           'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
           'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
@@ -215,9 +265,15 @@ function ActivePlayer({
   }, [playState]);
   const { resolveAssetSrc } = useSignedAssetResolver(allSources);
 
-  const isWin    = playState.status === 'ready' ? playState.isWin : false;
-  const steps    = playState.status === 'ready' ? playState.steps : [];
-  const basePath = playState.status === 'ready' ? playState.videoBasePath : '';
+  const isWin      = playState.status === 'ready' ? playState.isWin : false;
+  const steps      = playState.status === 'ready' ? playState.steps : [];
+  const basePath   = playState.status === 'ready' ? playState.videoBasePath : '';
+  const charaName  = playState.status === 'ready' ? playState.charaName : '';
+  const expStars   = playState.status === 'ready' ? playState.expectationStars : 0;
+
+  // 現在のステップ名
+  const currentStepName = (!isStandby && steps[stepIdx]?.name) || '';
+  const isAutoStep = AUTO_STEPS.has(currentStepName);
 
   // 解決済みURL
   const resolvedSrc = useMemo(() => {
@@ -266,14 +322,44 @@ function ActivePlayer({
     setVideoReady(true);
   }, [videoKey]);
 
+  // ── 期待度オーバーレイ（title ステップ） ─────────────────
+
+  useEffect(() => {
+    if (currentStepName === 'title') {
+      setShowOverlay(true);
+      const t = setTimeout(() => setShowOverlay(false), 3000);
+      return () => clearTimeout(t);
+    }
+    setShowOverlay(false);
+    return undefined;
+  }, [currentStepName, videoKey]);
+
+  // ── 動画終了ハンドラ ─────────────────────────────────────
+
   const handleEnded = useCallback(() => {
     if (isStandby) return; // standby はループ
-    // 全ステップ autoAdvance → 次のステップへ
-    clearVideoSrc();
-    goToStep(stepIdxRef.current + 1);
-  }, [isStandby, clearVideoSrc, goToStep]);
+
+    const stepName = steps[stepIdxRef.current]?.name ?? '';
+    if (AUTO_STEPS.has(stepName)) {
+      // autoAdvance → 自動で次へ
+      clearVideoSrc();
+      allowUnmuteRef.current = true;
+      goToStep(stepIdxRef.current + 1);
+    } else {
+      // manual → NEXT ボタン待ち
+      setVideoReady(true);
+    }
+  }, [isStandby, steps, clearVideoSrc, goToStep]);
 
   const handleError = useCallback(() => { setVideoReady(true); }, []);
+
+  // videoReady タイムアウト（autoAdvance以外）
+  useEffect(() => {
+    if (videoReady || isAutoStep) return undefined;
+    const timeout = isMobile ? 700 : 1500;
+    const t = setTimeout(() => setVideoReady(true), timeout);
+    return () => clearTimeout(t);
+  }, [videoReady, videoKey, isAutoStep, isMobile]);
 
   // ── ユーザー操作ハンドラ ──────────────────────────────
 
@@ -284,11 +370,22 @@ function ActivePlayer({
     goToStep(0);
   }, [clearVideoSrc, goToStep]);
 
+  const goNext = useCallback(() => {
+    if (!steps.length) return;
+    clearVideoSrc();
+    allowUnmuteRef.current = true;
+    const next = stepIdxRef.current + 1;
+    if (next >= steps.length) { setShowResult(true); return; }
+    setVideoReady(false);
+    goToStep(next);
+  }, [steps.length, clearVideoSrc, goToStep]);
+
   const handleReplayAnimation = useCallback(() => {
     clearVideoSrc();
     allowUnmuteRef.current = false;
     lastReadyKeyRef.current = null;
     setShowResult(false);
+    setShowOverlay(false);
     setVideoReady(false);
     const STANDBY_FILES = [
       'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
@@ -320,10 +417,24 @@ function ActivePlayer({
   // ── 表示判定 ────────────────────────────────────────────
 
   const showStandbyStart = isStandby && videoReady;
-  const isAutoPhase = !isStandby && !showResult;
+  const isPlaying = !isStandby && !showResult;
+  const nextDisabled = !videoReady || playState.status !== 'ready' || isAutoStep;
   const isLoop = isStandby;
 
+  // オーバーレイ表示判定
+  const showStarOverlay = showOverlay && expStars > 0 && currentStepName === 'title';
+  const showHorseName = currentStepName === 'chara_intro' && charaName;
+
   const isLowQuality = quality === 'low';
+
+  // ── オーバーレイ共通 JSX ──────────────────────────────
+
+  const overlays = (
+    <>
+      {showStarOverlay && <StarOverlay starCount={expStars} />}
+      {showHorseName && <HorseNameOverlay name={charaName} />}
+    </>
+  );
 
   // ── 描画: 軽量モード ──────────────────────────────────
 
@@ -379,16 +490,20 @@ function ActivePlayer({
                   />
                   <div className="pointer-events-none absolute inset-0 bg-black"
                     style={{ opacity: videoReady ? 0 : 1 }} />
+                  {overlays}
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col items-center gap-4 mt-6" style={{ flexShrink: 0 }}>
+            <div className="flex items-center justify-center gap-4 mt-6" style={{ flexShrink: 0 }}>
               {showStandbyStart && (
                 <RoundMetalButton label="START" subLabel="開始" onClick={handleStart} />
               )}
-              {isAutoPhase && (
-                <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+              {isPlaying && (
+                <>
+                  <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
+                  <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+                </>
               )}
             </div>
           </>
@@ -439,6 +554,7 @@ function ActivePlayer({
               />
               <div className="pointer-events-none absolute inset-0 bg-black"
                 style={{ opacity: videoReady ? 0 : 1 }} />
+              {overlays}
             </div>
 
             {showStandbyStart && (
@@ -447,8 +563,9 @@ function ActivePlayer({
               </div>
             )}
 
-            {isAutoPhase && (
+            {isPlaying && (
               <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
+                <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
                 <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
               </div>
             )}

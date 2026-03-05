@@ -26,6 +26,10 @@ const CHARACTERS: CharaDef[] = [
 
 const CHARA_MAP = new Map(CHARACTERS.map((c) => [c.id, c]));
 
+export function getCharaName(charaId: string): string {
+  return CHARA_MAP.get(charaId)?.name ?? charaId;
+}
+
 // ── コース定義 ──────────────────────────────────────────────
 
 interface CourseDef {

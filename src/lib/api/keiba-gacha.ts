@@ -5,6 +5,8 @@ export type KeibaPlayResponse = {
   isWin: boolean;
   charaId: string;
   courseId: string;
+  charaName: string;
+  expectationStars: number;
   steps: KeibaStep[];
   videoBasePath: string;
 };
