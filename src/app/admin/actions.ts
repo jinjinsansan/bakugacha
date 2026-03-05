@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/auth/admin';
 import { upsertCd2Settings } from '@/lib/data/cd2-gacha';
 import { upsertEcardSettings } from '@/lib/data/ecard-gacha';
 import { upsertElevatorSettings } from '@/lib/data/elevator-gacha';
+import { upsertKeibaSettings } from '@/lib/data/keiba-gacha';
 import { upsertAppSettings } from '@/lib/data/app-settings';
 
 // ── 商品作成 ──────────────────────────────────────────────────
@@ -200,23 +201,33 @@ export async function updateElevatorSettings(formData: FormData) {
     await upsertElevatorSettings(supabase, {
       isActive:           formData.get('is_active') === 'on',
       winRate:            Number(formData.get('win_rate')             ?? 20),
-      dontenRate:         Number(formData.get('donten_rate')          ?? 15),
-      minFloors:          Number(formData.get('min_floors')           ?? 3),
-      maxFloors:          Number(formData.get('max_floors')           ?? 6),
-      floorRangeMin:      Number(formData.get('floor_range_min')      ?? 1),
-      floorRangeMax:      Number(formData.get('floor_range_max')      ?? 100),
-      bossFloorRate:      Number(formData.get('boss_floor_rate')      ?? 20),
-      countdownFloorRate: Number(formData.get('countdown_floor_rate') ?? 15),
-      multidoorFloorRate: Number(formData.get('multidoor_floor_rate') ?? 10),
-      chaosFloorRate:     Number(formData.get('chaos_floor_rate')     ?? 10),
-      reverseFloorRate:   Number(formData.get('reverse_floor_rate')   ?? 10),
-      star5Rate:          Number(formData.get('star5_rate')           ?? 70),
-      star4Rate:          Number(formData.get('star4_rate')           ?? 60),
-      countdownSeconds:   Number(formData.get('countdown_seconds')    ?? 5),
       chainLoseThreshold: Number(formData.get('chain_lose_threshold') ?? 3),
     });
   } catch (err) {
     console.error('[admin] updateElevatorSettings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
+}
+
+// ── 競馬ガチャ設定更新 ────────────────────────────────────────
+export async function updateKeibaSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    await upsertKeibaSettings(supabase, {
+      isActive:             formData.get('is_active') === 'on',
+      winRate:              Number(formData.get('win_rate')               ?? 30),
+      umaoyajiWinRate:      Number(formData.get('umaoyaji_win_rate')     ?? 95),
+      bakugachahimeWinRate: Number(formData.get('bakugachahime_win_rate') ?? 90),
+      fuwarinWinRate:       Number(formData.get('fuwarin_win_rate')       ?? 20),
+      chainLoseThreshold:   Number(formData.get('chain_lose_threshold')   ?? 5),
+    });
+  } catch (err) {
+    console.error('[admin] updateKeibaSettings failed:', err);
     redirect('/admin/settings?error=1');
   }
 

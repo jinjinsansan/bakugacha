@@ -2,8 +2,9 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
 import { fetchEcardSettings } from '@/lib/data/ecard-gacha';
 import { fetchElevatorSettings } from '@/lib/data/elevator-gacha';
+import { fetchKeibaSettings } from '@/lib/data/keiba-gacha';
 import { fetchAppSettings } from '@/lib/data/app-settings';
-import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
+import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -12,10 +13,11 @@ export default async function AdminSettingsPage({
 }) {
   const params = await searchParams;
   const supabase = getServiceSupabase();
-  const [settings, ecardSettings, elevatorSettings, appSettings] = await Promise.all([
+  const [settings, ecardSettings, elevatorSettings, keibaSettings, appSettings] = await Promise.all([
     fetchCd2Settings(supabase),
     fetchEcardSettings(supabase),
     fetchElevatorSettings(supabase),
+    fetchKeibaSettings(supabase),
     fetchAppSettings(supabase),
   ]);
 
@@ -117,67 +119,8 @@ export default async function AdminSettingsPage({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <RateField name="win_rate" label="当たり率" description="この確率で当たりになります（%）" value={elevatorSettings.winRate} max={100} />
-          <RateField name="donten_rate" label="どんでん返し率" description="当たり時にどんでん返し演出が出る確率（%）" value={elevatorSettings.dontenRate} max={100} />
-        </div>
-
-        <h3 className="text-sm font-bold text-white/70 mt-2">ループ回数（フロア数）</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">最小ループ回数</label>
-            <input type="number" name="min_floors" defaultValue={elevatorSettings.minFloors} min={1} max={10}
-              className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">最大ループ回数（max_loop_count）</label>
-            <input type="number" name="max_floors" defaultValue={elevatorSettings.maxFloors} min={1} max={20}
-              className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
-          </div>
-        </div>
-
-        <h3 className="text-sm font-bold text-white/70 mt-2">表示フロア番号範囲</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">最小フロア番号（floor_range_min）</label>
-            <p className="text-xs text-white/40 mb-1">停止時にオーバーレイ表示されるN階の最小値</p>
-            <input type="number" name="floor_range_min" defaultValue={elevatorSettings.floorRangeMin} min={1} max={999}
-              className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">最大フロア番号（floor_range_max）</label>
-            <p className="text-xs text-white/40 mb-1">停止時にオーバーレイ表示されるN階の最大値</p>
-            <input type="number" name="floor_range_max" defaultValue={elevatorSettings.floorRangeMax} min={1} max={999}
-              className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
-          </div>
-        </div>
-
-        <h3 className="text-sm font-bold text-white/70 mt-2">特殊フロア出現率</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <RateField name="boss_floor_rate" label="ボスフロア率" description="最終フロアがボスになる確率（%）" value={elevatorSettings.bossFloorRate} max={100} />
-          <RateField name="countdown_floor_rate" label="カウントダウンフロア" description="出現ウェイト" value={elevatorSettings.countdownFloorRate} max={100} />
-          <RateField name="multidoor_floor_rate" label="マルチドアフロア" description="出現ウェイト" value={elevatorSettings.multidoorFloorRate} max={100} />
-          <RateField name="chaos_floor_rate" label="カオスナンバーフロア" description="出現ウェイト" value={elevatorSettings.chaosFloorRate} max={100} />
-          <RateField name="reverse_floor_rate" label="リバースナンバーフロア" description="出現ウェイト" value={elevatorSettings.reverseFloorRate} max={100} />
-        </div>
-
-        <h3 className="text-sm font-bold text-white/70 mt-2">期待度★表示確率</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <RateField name="star5_rate" label="★5表示確率" description="★5が表示される確率（%）" value={elevatorSettings.star5Rate} max={100} />
-          <RateField name="star4_rate" label="★4表示確率" description="★4が表示される確率（%）" value={elevatorSettings.star4Rate} max={100} />
-        </div>
-
-        <h3 className="text-sm font-bold text-white/70 mt-2">特殊演出設定</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">カウントダウン秒数（countdown_seconds）</label>
-            <p className="text-xs text-white/40 mb-1">stop_countdown 発動時のタイムリミット秒数</p>
-            <div className="flex items-center gap-2">
-              <input type="number" name="countdown_seconds" defaultValue={elevatorSettings.countdownSeconds} min={1} max={30}
-                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
-              <span className="text-sm text-white/50">秒</span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/60">連続ハズレ強制当たり閾値（chain_lose_threshold）</label>
+            <label className="text-xs text-white/60">連続ハズレ強制当たり閾値</label>
             <p className="text-xs text-white/40 mb-1">N回連続ハズレ後に次回を強制当たりにする（0=無効）</p>
             <div className="flex items-center gap-2">
               <input type="number" name="chain_lose_threshold" defaultValue={elevatorSettings.chainLoseThreshold} min={0} max={20}
@@ -189,11 +132,50 @@ export default async function AdminSettingsPage({
 
         <div className="bg-white/5 rounded-xl p-4 text-xs text-white/50 space-y-1">
           <p>当たり率: <strong className="text-white/70">{elevatorSettings.winRate}%</strong></p>
-          <p>当たり時どんでん返し: <strong className="text-white/70">{elevatorSettings.dontenRate}%</strong></p>
-          <p>ループ回数: <strong className="text-white/70">{elevatorSettings.minFloors}〜{elevatorSettings.maxFloors}回</strong></p>
-          <p>表示フロア番号: <strong className="text-white/70">{elevatorSettings.floorRangeMin}〜{elevatorSettings.floorRangeMax}F</strong></p>
-          <p>カウントダウン: <strong className="text-white/70">{elevatorSettings.countdownSeconds}秒</strong></p>
           <p>連続ハズレ閾値: <strong className="text-white/70">{elevatorSettings.chainLoseThreshold}回</strong></p>
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      {/* 競馬ガチャ設定 */}
+      <h2 className="text-lg font-black text-white mt-4">競馬ガチャ設定</h2>
+      <form action={updateKeibaSettings} className="card-premium p-6 flex flex-col gap-6">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" name="is_active" defaultChecked={keibaSettings.isActive}
+            className="w-5 h-5 accent-yellow-400" />
+          <div>
+            <p className="text-sm font-bold text-white">競馬ガチャを有効化</p>
+            <p className="text-xs text-white/40">無効にすると「準備中」を返します</p>
+          </div>
+        </label>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <RateField name="win_rate" label="ベース当たり率" description="全体の当たり確率（%）※参考値" value={keibaSettings.winRate} max={100} />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">連続ハズレ強制当たり閾値</label>
+            <p className="text-xs text-white/40 mb-1">N回連続ハズレ後に次回を強制当たりにする（0=無効）</p>
+            <div className="flex items-center gap-2">
+              <input type="number" name="chain_lose_threshold" defaultValue={keibaSettings.chainLoseThreshold} min={0} max={20}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+              <span className="text-sm text-white/50">回</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 className="text-sm font-bold text-white/70 mt-2">キャラ別当たり確率</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <RateField name="umaoyaji_win_rate" label="馬親父" description="SSR Premium 出現時の当たり確率（%）" value={keibaSettings.umaoyajiWinRate} max={100} />
+          <RateField name="bakugachahime_win_rate" label="バクガチャヒメ" description="SSR★ 出現時の当たり確率（%）" value={keibaSettings.bakugachahimeWinRate} max={100} />
+          <RateField name="fuwarin_win_rate" label="フワリン" description="R 出現時の当たり確率（%）" value={keibaSettings.fuwarinWinRate} max={100} />
+        </div>
+
+        <div className="bg-white/5 rounded-xl p-4 text-xs text-white/50 space-y-1">
+          <p>馬親父: <strong className="text-white/70">{keibaSettings.umaoyajiWinRate}%</strong> / バクガチャヒメ: <strong className="text-white/70">{keibaSettings.bakugachahimeWinRate}%</strong> / フワリン: <strong className="text-white/70">{keibaSettings.fuwarinWinRate}%</strong></p>
+          <p>その他キャラ（シロガネ・ダークボルト・アオイカゼ・ホノオヒメ）: <strong className="text-white/70">100%</strong>（当たり確定）</p>
+          <p>連続ハズレ閾値: <strong className="text-white/70">{keibaSettings.chainLoseThreshold}回</strong></p>
         </div>
 
         <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">

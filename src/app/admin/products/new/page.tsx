@@ -8,6 +8,7 @@ export const GACHA_TYPES = [
   { value: 'cd2', label: 'カウントダウンチャレンジ2' },
   { value: 'ecard', label: 'ROYALカードガチャ' },
   { value: 'elevator', label: 'エレベーターガチャ' },
+  { value: 'keiba', label: '競馬ガチャ' },
 ] as const;
 
 export default function AdminProductNewPage() {

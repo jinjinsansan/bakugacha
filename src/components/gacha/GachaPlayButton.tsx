@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Cd2GachaPlayer } from '@/components/gacha/Cd2GachaPlayer';
 import { EcardGachaPlayer } from '@/components/gacha/EcardGachaPlayer';
 import { ElevatorGachaPlayer } from '@/components/gacha/ElevatorGachaPlayer';
+import { KeibaGachaPlayer } from '@/components/gacha/KeibaGachaPlayer';
 
 type Props = {
   productId: string;
@@ -104,6 +105,20 @@ export function GachaPlayButton({
       )}
       {gachaType === 'elevator' && (
         <ElevatorGachaPlayer
+          open={open}
+          onClose={() => setOpen(false)}
+          onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
+          prizeName={productTitle}
+          prizeImageUrl={prizeImageUrl}
+          prizeEmoji={prizeEmoji}
+          prizeGradient={prizeGradient}
+          coinCost={price}
+          productId={productId}
+          quality={quality}
+        />
+      )}
+      {gachaType === 'keiba' && (
+        <KeibaGachaPlayer
           open={open}
           onClose={() => setOpen(false)}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
