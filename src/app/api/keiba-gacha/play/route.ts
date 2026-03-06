@@ -11,7 +11,41 @@ import {
   getEffectiveWinRate,
   generateScenario,
   getCharaName,
+  getCharaWeight,
 } from '@/lib/keiba-gacha/scenarios';
+
+// ── レース名リスト（30種） ────────────────────────────────────
+const RACE_NAMES = [
+  '東京ダービー', '中山記念', '阪神大賞典', '京都金杯', '有馬記念',
+  '天皇賞・春', '天皇賞・秋', 'ジャパンカップ', '宝塚記念', '桜花賞',
+  '皐月賞', 'オークス', '菊花賞', '秋華賞', 'スプリンターズS',
+  'マイルCS', 'エリザベス女王杯', 'チャンピオンズC', 'フェブラリーS', '高松宮記念',
+  '安田記念', 'NHKマイルC', 'ヴィクトリアマイル', '大阪杯', '日本ダービー',
+  '函館記念', '小倉記念', '新潟大賞典', '中京記念', '福島記念',
+];
+
+// ── コース別 馬場状態・距離プール ─────────────────────────────
+const TRACK_CONDITION: Record<string, string> = {
+  '01': '芝・良', '02': 'ダート・良', '03': '芝・稍重',
+  '04': 'ダート・稍重', '05': '芝・重', '06': '芝・重', '07': 'ダート・重',
+};
+const DISTANCES_TURF  = [1600, 2000, 2400, 3200];
+const DISTANCES_DIRT  = [1200, 1600, 2000];
+const DISTANCE_BY_COURSE: Record<string, number[]> = {
+  '01': DISTANCES_TURF, '02': DISTANCES_DIRT, '03': DISTANCES_TURF,
+  '04': DISTANCES_DIRT, '05': DISTANCES_TURF, '06': DISTANCES_TURF, '07': DISTANCES_DIRT,
+};
+
+// ── ★ミスリード設計 ──────────────────────────────────────────
+const HONEST_STAR: Record<string, number[]> = {
+  '01': [4], '02': [3], '03': [2, 3], '04': [2], '05': [1], '06': [4, 5], '07': [6],
+};
+function pickStar(courseId: string, starHonestRate: number): number {
+  const pool = HONEST_STAR[courseId] ?? [3];
+  const honest = pool[Math.floor(Math.random() * pool.length)];
+  if (Math.random() * 100 < starHonestRate) return honest;
+  return Math.floor(Math.random() * 6) + 1; // 1〜6 (6=★MAX)
+}
 
 type KeibaQuality = 'high' | 'low';
 
@@ -140,12 +174,14 @@ export async function POST(request: Request) {
       }
     }
 
-    // 期待度スター算出（実効当たり率ベース）
-    const expectationStars =
-      effectiveWinRate >= 70 ? 5 :
-      effectiveWinRate >= 55 ? 4 :
-      effectiveWinRate >= 40 ? 3 :
-      effectiveWinRate >= 25 ? 2 : 1;
+    // ★ミスリード設計（仕様書: 60%正直・40%ランダム）
+    const expectationStars = pickStar(course.id, settings.starHonestRate);
+
+    // レース情報
+    const raceName = RACE_NAMES[Math.floor(Math.random() * RACE_NAMES.length)];
+    const distPool = DISTANCE_BY_COURSE[course.id] ?? DISTANCES_TURF;
+    const distance = `${distPool[Math.floor(Math.random() * distPool.length)]}m`;
+    const trackCondition = TRACK_CONDITION[course.id] ?? '芝・良';
 
     const baseFolder = quality === 'low' ? 'keiba-mobile' : 'keiba';
 
@@ -155,7 +191,11 @@ export async function POST(request: Request) {
       charaId: scenario.charaId,
       courseId: scenario.courseId,
       charaName: getCharaName(chara.id),
+      charaWeight: getCharaWeight(chara.id),
       expectationStars,
+      raceName,
+      distance,
+      trackCondition,
       steps: scenario.steps,
       videoBasePath: buildGachaAssetPath(baseFolder),
     });

@@ -36,6 +36,7 @@ export async function fetchKeibaSettings(client: SupabaseClient): Promise<KeibaS
       bakugachahimeWinRate: 90,
       fuwarinWinRate: 20,
       chainLoseThreshold: 5,
+      starHonestRate: 60,
     };
   }
 
@@ -56,6 +57,7 @@ export async function fetchKeibaSettings(client: SupabaseClient): Promise<KeibaS
     bakugachahimeWinRate: Number(row.bakugachahime_win_rate ?? 90),
     fuwarinWinRate:       Number(row.fuwarin_win_rate ?? 20),
     chainLoseThreshold:   Number(row.chain_lose_threshold ?? 5),
+    starHonestRate:       Number(row.star_honest_rate ?? 60),
   };
 }
 
@@ -76,6 +78,7 @@ export async function upsertKeibaSettings(
   if (updates.bakugachahimeWinRate  !== undefined) patch.bakugachahime_win_rate   = updates.bakugachahimeWinRate;
   if (updates.fuwarinWinRate        !== undefined) patch.fuwarin_win_rate         = updates.fuwarinWinRate;
   if (updates.chainLoseThreshold    !== undefined) patch.chain_lose_threshold     = updates.chainLoseThreshold;
+  if (updates.starHonestRate        !== undefined) patch.star_honest_rate         = updates.starHonestRate;
 
   const { error } = await client.from('keiba_settings').upsert(patch, { onConflict: 'id' });
   if (error) {

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
-import { StarOverlay } from '@/components/gacha/overlays/StarOverlay';
 import { startKeibaGacha } from '@/lib/api/keiba-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
@@ -18,7 +17,11 @@ type PlayState =
       status: 'ready';
       isWin: boolean;
       charaName: string;
+      charaWeight: string;
       expectationStars: number;
+      raceName: string;
+      distance: string;
+      trackCondition: string;
       steps: KeibaStep[];
       videoBasePath: string;
     };
@@ -40,44 +43,104 @@ function getAllVideoSources(steps: KeibaStep[], basePath: string): string[] {
   return Array.from(sources);
 }
 
-// ── 馬名オーバーレイ ─────────────────────────────────────────
+// ── レースタイトルオーバーレイ ────────────────────────────────
 
-function HorseNameOverlay({ name }: { name: string }) {
+function RaceTitleOverlay({
+  raceName, distance, trackCondition, starCount,
+}: {
+  raceName: string;
+  distance: string;
+  trackCondition: string;
+  starCount: number;
+}) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 200);
+    const t = setTimeout(() => setVisible(true), 150);
+    return () => clearTimeout(t);
+  }, []);
+
+  const starLabel = starCount >= 6 ? '★MAX' : '★'.repeat(starCount);
+  const starColor = starCount >= 6 ? '#ff6b35' : starCount >= 5 ? '#ff4444' : starCount >= 4 ? '#c9a84c' : '#aaa';
+
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-8 px-5"
+      style={{
+        background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.0) 55%)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.6s ease',
+      }}
+    >
+      {/* 期待度★ */}
+      <div className="mb-2 flex items-center gap-1.5">
+        <span
+          className="text-xs font-bold tracking-[0.2em] px-2 py-0.5 rounded-sm"
+          style={{
+            color: starColor,
+            border: `1px solid ${starColor}55`,
+            background: `${starColor}18`,
+            textShadow: `0 0 8px ${starColor}`,
+          }}
+        >
+          期待度 {starLabel}
+        </span>
+      </div>
+
+      {/* レース名 */}
+      <p
+        className="font-black leading-tight mb-1"
+        style={{
+          fontSize: 26,
+          color: '#fff',
+          textShadow: '0 0 20px rgba(201,168,76,0.6), 0 2px 6px rgba(0,0,0,0.9)',
+          letterSpacing: '0.05em',
+        }}
+      >
+        {raceName}
+      </p>
+
+      {/* 距離・馬場 */}
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-bold text-white/70 tracking-wider">{distance}</span>
+        <span className="text-white/30 text-xs">|</span>
+        <span className="text-xs font-bold text-white/70 tracking-wider">{trackCondition}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── キャライントロオーバーレイ ────────────────────────────────
+
+function CharaIntroOverlay({ name, weight }: { name: string; weight: string }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 300);
     return () => clearTimeout(t);
   }, []);
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <div
-        className="inline-flex flex-col items-center gap-1 px-8 py-4"
+    <div
+      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-8 px-5"
+      style={{
+        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.0) 50%)',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(8px)',
+        transition: 'opacity 0.5s ease, transform 0.5s ease',
+      }}
+    >
+      <p
+        className="font-black text-white leading-tight mb-0.5"
         style={{
-          background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(20,10,5,0.75) 100%)',
-          borderTop: '2px solid rgba(201,168,76,0.8)',
-          borderBottom: '2px solid rgba(201,168,76,0.8)',
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'translateY(0)' : 'translateY(12px)',
-          transition: 'opacity 0.5s ease, transform 0.5s ease',
+          fontSize: 28,
+          letterSpacing: '0.15em',
+          textShadow: '0 0 16px rgba(201,168,76,0.7), 0 2px 5px rgba(0,0,0,0.9)',
         }}
       >
-        <p
-          className="text-[10px] font-bold tracking-[0.5em] text-yellow-200/60"
-          style={{ letterSpacing: '0.5em' }}
-        >
-          出走馬
-        </p>
-        <p
-          className="text-2xl font-black text-white"
-          style={{
-            letterSpacing: '0.25em',
-            textShadow: '0 0 16px rgba(201,168,76,0.8), 0 2px 4px rgba(0,0,0,0.9)',
-          }}
-        >
-          {name}
-        </p>
-      </div>
+        {name}
+      </p>
+      <p className="text-xs font-bold tracking-widest" style={{ color: 'rgba(255,255,255,0.55)' }}>
+        馬体重 {weight}
+      </p>
     </div>
   );
 }
@@ -224,7 +287,6 @@ function ActivePlayer({
   const [currentSrc, setCurrentSrc] = useState<string | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
 
   const videoRef        = useRef<HTMLVideoElement>(null);
   const lastReadyKeyRef = useRef<string | null>(null);
@@ -265,11 +327,15 @@ function ActivePlayer({
   }, [playState]);
   const { resolveAssetSrc } = useSignedAssetResolver(allSources);
 
-  const isWin      = playState.status === 'ready' ? playState.isWin : false;
-  const steps      = playState.status === 'ready' ? playState.steps : [];
-  const basePath   = playState.status === 'ready' ? playState.videoBasePath : '';
-  const charaName  = playState.status === 'ready' ? playState.charaName : '';
-  const expStars   = playState.status === 'ready' ? playState.expectationStars : 0;
+  const isWin          = playState.status === 'ready' ? playState.isWin : false;
+  const steps          = playState.status === 'ready' ? playState.steps : [];
+  const basePath       = playState.status === 'ready' ? playState.videoBasePath : '';
+  const charaName      = playState.status === 'ready' ? playState.charaName : '';
+  const charaWeight    = playState.status === 'ready' ? playState.charaWeight : '';
+  const expStars       = playState.status === 'ready' ? playState.expectationStars : 0;
+  const raceName       = playState.status === 'ready' ? playState.raceName : '';
+  const distance       = playState.status === 'ready' ? playState.distance : '';
+  const trackCondition = playState.status === 'ready' ? playState.trackCondition : '';
 
   // 現在のステップ名
   const currentStepName = (!isStandby && steps[stepIdx]?.name) || '';
@@ -322,17 +388,7 @@ function ActivePlayer({
     setVideoReady(true);
   }, [videoKey]);
 
-  // ── 期待度オーバーレイ（title ステップ） ─────────────────
 
-  useEffect(() => {
-    if (currentStepName === 'title') {
-      setShowOverlay(true);
-      const t = setTimeout(() => setShowOverlay(false), 3000);
-      return () => clearTimeout(t);
-    }
-    setShowOverlay(false);
-    return undefined;
-  }, [currentStepName, videoKey]);
 
   // ── 動画終了ハンドラ ─────────────────────────────────────
 
@@ -385,7 +441,6 @@ function ActivePlayer({
     allowUnmuteRef.current = false;
     lastReadyKeyRef.current = null;
     setShowResult(false);
-    setShowOverlay(false);
     setVideoReady(false);
     const STANDBY_FILES = [
       'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
@@ -422,8 +477,8 @@ function ActivePlayer({
   const isLoop = isStandby;
 
   // オーバーレイ表示判定
-  const showStarOverlay = showOverlay && expStars > 0 && currentStepName === 'title';
-  const showHorseName = currentStepName === 'chara_intro' && charaName;
+  const showTitleOverlay  = currentStepName === 'title' && raceName !== '';
+  const showCharaIntro    = currentStepName === 'chara_intro' && charaName !== '';
 
   const isLowQuality = quality === 'low';
 
@@ -431,8 +486,15 @@ function ActivePlayer({
 
   const overlays = (
     <>
-      {showStarOverlay && <StarOverlay starCount={expStars} />}
-      {showHorseName && <HorseNameOverlay name={charaName} />}
+      {showTitleOverlay && (
+        <RaceTitleOverlay
+          raceName={raceName}
+          distance={distance}
+          trackCondition={trackCondition}
+          starCount={expStars}
+        />
+      )}
+      {showCharaIntro && <CharaIntroOverlay name={charaName} weight={charaWeight} />}
     </>
   );
 

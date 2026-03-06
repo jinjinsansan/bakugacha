@@ -31,4 +31,6 @@ export interface KeibaSettings {
   fuwarinWinRate: number;
   /** 連続ハズレ強制当たり閾値 */
   chainLoseThreshold: number;
+  /** ★が正直な期待度を示す確率（%）。残り%はランダムミスリード */
+  starHonestRate: number;
 }

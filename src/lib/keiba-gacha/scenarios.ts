@@ -30,6 +30,22 @@ export function getCharaName(charaId: string): string {
   return CHARA_MAP.get(charaId)?.name ?? charaId;
 }
 
+// ── キャラ馬体重 ────────────────────────────────────────────
+
+const CHARA_WEIGHT: Record<string, string> = {
+  shirogane:     '480kg',
+  darkbolt:      '498kg',
+  aoikaze:       '464kg',
+  honohime:      '456kg',
+  fuwarin:       '438kg',
+  bakugachahime: '422kg',
+  umaoyaji:      '3246kg',
+};
+
+export function getCharaWeight(charaId: string): string {
+  return CHARA_WEIGHT[charaId] ?? '---kg';
+}
+
 // ── コース定義 ──────────────────────────────────────────────
 
 interface CourseDef {
@@ -44,8 +60,8 @@ interface CourseDef {
 }
 
 const COURSES: CourseDef[] = [
-  { id: '01', label: '晴れ×芝',       defaultAppearanceWeight: 30, defaultWinRate: 60, gateFile: 'E-01_gate_sunny_turf.mp4',       packFile: 'F-01_pack_side_sunny_turf.mp4',       cornerFile: 'G-01_final_corner_sunny_turf.mp4',       goalFile: 'H-01_goal_front_sunny_turf.mp4' },
-  { id: '02', label: '晴れ×ダート',   defaultAppearanceWeight: 20, defaultWinRate: 45, gateFile: 'E-02_gate_sunny_dirt.mp4',        packFile: 'F-02_pack_side_sunny_dirt.mp4',        cornerFile: 'G-02_final_corner_sunny_dirt.mp4',        goalFile: 'H-02_goal_front_sunny_dirt.mp4' },
+  { id: '01', label: '晴れ×芝',       defaultAppearanceWeight: 30, defaultWinRate: 60, gateFile: 'E-01_gate_start_sunny_turf.mp4',  packFile: 'F-01_pack_side_sunny_turf.mp4',       cornerFile: 'G-01_final_corner_sunny_turf.mp4',       goalFile: 'H-01_goal_front_sunny_turf.mp4' },
+  { id: '02', label: '晴れ×ダート',   defaultAppearanceWeight: 20, defaultWinRate: 45, gateFile: 'E-02_gate_start_sunny_dirt.mp4',  packFile: 'F-02_pack_side_sunny_dirt.mp4',        cornerFile: 'G-02_final_corner_sunny_dirt.mp4',        goalFile: 'H-02_goal_front_sunny_dirt.mp4' },
   { id: '03', label: '稍重×芝',       defaultAppearanceWeight: 15, defaultWinRate: 35, gateFile: 'E-03_gate_start_soft_turf.mp4',   packFile: 'F-03_pack_side_soft_turf.mp4',        cornerFile: 'G-03_final_corner_soft_turf.mp4',        goalFile: 'H-03_goal_front_soft_turf.mp4' },
   { id: '04', label: '稍重×ダート',   defaultAppearanceWeight: 15, defaultWinRate: 25, gateFile: 'E-04_gate_start_soft_dirt.mp4',   packFile: 'F-04_pack_side_soft_dirt.mp4',        cornerFile: 'G-04_final_corner_soft_dirt.mp4',        goalFile: 'H-04_goal_front_soft_dirt.mp4' },
   { id: '05', label: '重馬場×芝',     defaultAppearanceWeight: 10, defaultWinRate: 15, gateFile: 'E-05_gate_start_heavy_turf.mp4',  packFile: 'F-05_pack_side_heavy_turf.mp4',       cornerFile: 'G-05_final_corner_heavy_turf.mp4',       goalFile: 'H-05_goal_front_heavy_turf.mp4' },
@@ -67,14 +83,16 @@ const UMAOYAJI_COURSE: CourseDef = {
   goalFile:   'H-01b_goal_front_sunny_turf_umaoyaji.mp4',
 };
 
-// ── タイトル動画マッピング ──────────────────────────────────
+// ── タイトル動画マッピング（コース別ファンファーレ） ──────────
 
-const TITLE_BY_RARITY: Record<Rarity, string> = {
-  R:           'D-05a_title_normal.mp4',
-  SR:          'D-05b_title_heatup.mp4',
-  SSR:         'D-05c_title_hot.mp4',
-  SSR_STAR:    'D-05d_title_ssr.mp4',
-  SSR_PREMIUM: 'D-05d_title_ssr.mp4',
+const TITLE_BY_COURSE: Record<string, string> = {
+  '01': 'title_sunny_turf.mp4',
+  '02': 'title_sunny_dirt.mp4',
+  '03': 'title_soft_turf.mp4',
+  '04': 'title_soft_dirt.mp4',
+  '05': 'title_heavy_turf.mp4',
+  '06': 'title_rain_turf.mp4',
+  '07': 'title_rain_dirt.mp4',
 };
 
 // ── デフォルト キャラ×コース補正 ────────────────────────────
@@ -119,8 +137,8 @@ export function pickCourse(charaId: string, settings: KeibaSettings): CourseDef 
   });
 }
 
-export function pickTitle(charaRarity: Rarity): string {
-  return TITLE_BY_RARITY[charaRarity];
+export function pickTitleByCourse(courseId: string): string {
+  return TITLE_BY_COURSE[courseId] ?? 'title_sunny_turf.mp4';
 }
 
 /**
@@ -182,7 +200,7 @@ export function generateScenario(
     ? UMAOYAJI_COURSE
     : COURSES.find((c) => c.id === courseId) ?? COURSES[0];
 
-  const titleFile = pickTitle(chara.rarity);
+  const titleFile = pickTitleByCourse(course.id);
 
   const steps: KeibaStep[] = [
     { name: 'title',        file: titleFile },

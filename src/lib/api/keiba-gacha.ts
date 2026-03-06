@@ -6,7 +6,11 @@ export type KeibaPlayResponse = {
   charaId: string;
   courseId: string;
   charaName: string;
+  charaWeight: string;
   expectationStars: number;
+  raceName: string;
+  distance: string;
+  trackCondition: string;
   steps: KeibaStep[];
   videoBasePath: string;
 };
