@@ -10,8 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // ── 設定 ──────────────────────────────────────────────────────
-// WSLエンコード出力先（Windowsからのアクセスパス）
-const SOURCE_DIR = '\\\\wsl$\\Ubuntu\\tmp\\keiba-mobile';
+const SOURCE_DIR = '/tmp/keiba-mobile';
 const ACCOUNT_ID = '954dcc10adf822b50ccceedef0aa97e6';
 const ACCESS_KEY = 'eaa0aa3d33af2b2d635d73218e633514';
 const SECRET_KEY = '4275dc9a87fb942bc5e28974b31abed5fcbc2b920512869b059ab0e882e6462e';
@@ -23,13 +22,16 @@ const client = new S3Client({
   credentials: { accessKeyId: ACCESS_KEY, secretAccessKey: SECRET_KEY },
 });
 
-// ── ファイル一覧（ゲームで使用するファイルのみ）──────────────
+// ── ファイル一覧 ──────────────────────────────────────────────
 const FILES = [
-  // タイトル演出
-  'D-05a_title_normal.mp4',
-  'D-05b_title_heatup.mp4',
-  'D-05c_title_hot.mp4',
-  'D-05d_title_ssr.mp4',
+  // タイトル演出（コース別ファンファーレ）
+  'title_sunny_turf.mp4',
+  'title_sunny_dirt.mp4',
+  'title_soft_turf.mp4',
+  'title_soft_dirt.mp4',
+  'title_heavy_turf.mp4',
+  'title_rain_turf.mp4',
+  'title_rain_dirt.mp4',
   // キャラ紹介
   'A-01_chara_shirogane.mp4',
   'A-02_chara_darkbolt.mp4',
@@ -39,9 +41,9 @@ const FILES = [
   'A-06_chara_bakugachahime.mp4',
   'A-07_chara_umaoyaji.mp4',
   // ゲートスタート
-  'E-01_gate_sunny_turf.mp4',
+  'E-01_gate_start_sunny_turf.mp4',
   'E-01b_gate_start_sunny_turf_umaoyaji.mp4',
-  'E-02_gate_sunny_dirt.mp4',
+  'E-02_gate_start_sunny_dirt.mp4',
   'E-03_gate_start_soft_turf.mp4',
   'E-04_gate_start_soft_dirt.mp4',
   'E-05_gate_start_heavy_turf.mp4',
@@ -128,17 +130,12 @@ async function main() {
   const force = process.argv.includes('--force');
   console.log(`\n🚀 競馬ガチャ軽量版 R2アップロード開始 (force=${force})\n`);
 
-  console.log('── keiba-mobile 動画 ──');
   for (const file of FILES) {
     await upload(path.join(SOURCE_DIR, file), `keiba-mobile/${file}`, force);
   }
 
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`🎉 完了  ✅ ${uploadCount}件アップロード  ⏭ ${skipCount}件スキップ  ⚠️ ${warnCount}件警告`);
-  if (uploadCount > 0) {
-    console.log(`\n📡 確認URL:`);
-    console.log(`   https://pub-8b35f6e6ba774983a4321944c3771b60.r2.dev/keiba-mobile/D-05a_title_normal.mp4`);
-  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
