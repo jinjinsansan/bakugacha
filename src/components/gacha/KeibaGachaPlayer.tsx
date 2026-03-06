@@ -595,14 +595,16 @@ function ActivePlayer({
     return (
       <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/90">
         {showResult && playState.status === 'ready' && (
-          <div className="fixed inset-0 z-10">
-            <ResultCard
-              isWin={isWin} coinCost={coinCost}
-              onClose={onClose} onRetry={onRetry}
-              onReplayAnimation={handleReplayAnimation}
-              cardCharaId={cardInfo?.charaId}
-              cardSerialNumber={cardInfo?.serialNumber}
-            />
+          <div className="fixed inset-0 z-10 flex items-center justify-center bg-black">
+            <div className="relative h-full w-full max-w-[430px]">
+              <ResultCard
+                isWin={isWin} coinCost={coinCost}
+                onClose={onClose} onRetry={onRetry}
+                onReplayAnimation={handleReplayAnimation}
+                cardCharaId={cardInfo?.charaId}
+                cardSerialNumber={cardInfo?.serialNumber}
+              />
+            </div>
           </div>
         )}
 
