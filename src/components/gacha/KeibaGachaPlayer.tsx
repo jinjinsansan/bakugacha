@@ -186,20 +186,20 @@ function EmbeddedCard({ charaId, serialNumber }: { charaId: string; serialNumber
     : '#b08040';
 
   return (
-    <div className="flex flex-col items-center py-4" style={{ perspective: 1200 }}>
+    <div className="flex flex-col items-center py-5" style={{ perspective: 1200 }}>
       {/* Card back */}
       {phase === 'back' && (
         <div
           style={{
-            width: 180, height: 262, borderRadius: 10,
+            width: 260, height: 380, borderRadius: 14,
             background: `linear-gradient(135deg, #1a1a2e 0%, ${rarityColor}33 50%, #1a1a2e 100%)`,
             border: `2px solid ${rarityColor}66`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: `0 0 40px ${rarityColor}30`,
+            boxShadow: `0 0 60px ${rarityColor}40`,
             animation: 'cardPulse 0.8s ease-in-out',
           }}
         >
-          <span style={{ fontSize: 48, color: rarityColor, textShadow: `0 0 16px ${rarityColor}` }}>🃏</span>
+          <span style={{ fontSize: 64, color: rarityColor, textShadow: `0 0 20px ${rarityColor}` }}>🃏</span>
         </div>
       )}
 
@@ -209,25 +209,25 @@ function EmbeddedCard({ charaId, serialNumber }: { charaId: string; serialNumber
           transformStyle: 'preserve-3d',
           animation: 'cardFlip 0.8s ease-out forwards',
         }}>
-          <KeibaDigitalCard charaId={charaId} serialNumber={serialNumber} size="collection" cardRef={cardRef} />
+          <KeibaDigitalCard charaId={charaId} serialNumber={serialNumber} size="full" cardRef={cardRef} />
         </div>
       )}
 
       {/* Card done */}
       {phase === 'done' && (
-        <KeibaDigitalCard charaId={charaId} serialNumber={serialNumber} size="collection" cardRef={cardRef} />
+        <KeibaDigitalCard charaId={charaId} serialNumber={serialNumber} size="full" cardRef={cardRef} />
       )}
 
       {/* Serial + Download */}
       {phase === 'done' && (
-        <div className="flex flex-col items-center mt-2 gap-1.5">
-          <p className="text-[10px] font-bold tracking-widest" style={{ color: rarityColor }}>{serialNumber}</p>
+        <div className="flex flex-col items-center mt-3 gap-2">
+          <p className="text-xs font-bold tracking-widest" style={{ color: rarityColor }}>{serialNumber}</p>
           <button
-            className="px-3 py-1.5 rounded-lg text-xs font-bold transition hover:scale-105"
+            className="px-5 py-2 rounded-xl text-sm font-bold transition hover:scale-105"
             style={{
               background: `linear-gradient(135deg, ${rarityColor}, ${rarityColor}cc)`,
               color: def.rarity === 'gold' || def.rarity === 'rainbow' ? '#1a1a2e' : '#fff',
-              boxShadow: `0 2px 12px ${rarityColor}30`,
+              boxShadow: `0 4px 20px ${rarityColor}40`,
             }}
             onClick={handleDownload}
             disabled={downloading}
@@ -254,14 +254,10 @@ function EmbeddedCard({ charaId, serialNumber }: { charaId: string; serialNumber
 // ── 結果カード ────────────────────────────────────────────────
 
 function ResultCard({
-  isWin, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost,
+  isWin, coinCost,
   onClose, onRetry, onReplayAnimation, cardCharaId, cardSerialNumber,
 }: {
   isWin: boolean;
-  prizeName?: string;
-  prizeImageUrl?: string;
-  prizeEmoji?: string;
-  prizeGradient?: string;
   coinCost?: number;
   onClose?: () => void;
   onRetry?: () => void;
@@ -270,16 +266,18 @@ function ResultCard({
   cardSerialNumber?: string;
 }) {
   return (
-    <div className="absolute inset-0 flex flex-col" style={{ background: '#f2f2ed' }}>
-      <div className="flex items-center justify-between px-4 py-3 bg-white"
-        style={{ borderBottom: '1px solid #e8e8e8' }}>
+    <div className="absolute inset-0 flex flex-col" style={{ background: '#0d0d1a' }}>
+      {/* ヘッダー */}
+      <div className="flex items-center justify-between px-4 py-3"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', background: '#12122a' }}>
         <div className="w-12" />
-        <h2 className="text-sm font-bold" style={{ color: '#1a1a2e' }}>ガチャ結果</h2>
-        <button className="text-sm font-medium" style={{ color: '#888' }} onClick={onClose}>
-          あとで
+        <h2 className="text-sm font-bold text-white/80">ガチャ結果</h2>
+        <button className="text-sm font-medium text-white/50" onClick={onClose}>
+          閉じる
         </button>
       </div>
 
+      {/* 当選バナー */}
       {isWin && (
         <button
           className="flex items-center gap-3 w-full text-left px-4 py-3"
@@ -295,70 +293,29 @@ function ResultCard({
         </button>
       )}
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {/* カード表示（アニメーション付き） */}
-        {cardCharaId && cardSerialNumber && (
-          <div className="rounded-2xl mb-4 overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #1a1a2e, #2a1a4e)' }}>
-            <EmbeddedCard charaId={cardCharaId} serialNumber={cardSerialNumber} />
-          </div>
-        )}
-
-        <div className="bg-white rounded-2xl p-3 flex gap-3"
-          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
-          <div
-            className="w-20 flex-shrink-0 rounded-xl overflow-hidden flex items-center justify-center"
-            style={{
-              aspectRatio: '3/4',
-              background: prizeGradient ?? 'linear-gradient(135deg,#1a1a2e,#16213e)',
-            }}
-          >
-            {prizeImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={prizeImageUrl} alt={prizeName ?? ''} className="w-full h-full object-cover" />
-            ) : (
-              <span style={{ fontSize: 28 }}>{prizeEmoji ?? '🏇'}</span>
+      {/* カード表示エリア（メイン） */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center">
+        {cardCharaId && cardSerialNumber ? (
+          <EmbeddedCard charaId={cardCharaId} serialNumber={cardSerialNumber} />
+        ) : (
+          <div className="flex flex-col items-center gap-3 px-6">
+            <span style={{ fontSize: 48 }}>{isWin ? '🏆' : '🏇'}</span>
+            <p className="text-lg font-black text-white/80">
+              {isWin ? '当たり！' : 'ハズレ...'}
+            </p>
+            {!isWin && (
+              <p className="text-sm text-white/40">次回のチャレンジに期待しましょう！</p>
             )}
           </div>
-          <div className="flex-1 flex flex-col justify-between min-w-0">
-            <div>
-              <span
-                className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
-                style={{
-                  background: isWin ? '#fff3cd' : '#f0f0f0',
-                  color: isWin ? '#92400e' : '#666',
-                  border: isWin ? '1px solid #f59e0b' : '1px solid #ddd',
-                }}
-              >
-                {isWin ? '当選' : '未当選'}
-              </span>
-              <p className="text-sm font-bold leading-snug" style={{ color: '#1a1a2e' }}>
-                {prizeName ?? (isWin ? '当たり！' : 'またチャレンジ！')}
-              </p>
-            </div>
-            {coinCost != null && (
-              <div
-                className="mt-2 py-2 px-3 rounded-lg text-sm font-bold flex items-center gap-1.5"
-                style={{ background: '#f5f5f0', color: '#555' }}
-              >
-                🪙 {coinCost.toLocaleString()}コイン
-              </div>
-            )}
-          </div>
-        </div>
-
-        {!isWin && (
-          <p className="text-center text-sm mt-4" style={{ color: '#999' }}>
-            次回のチャレンジに期待しましょう！
-          </p>
         )}
       </div>
 
-      <div className="px-4 pt-3 flex flex-col gap-3 bg-white"
-        style={{ borderTop: '1px solid #e8e8e8', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
+      {/* フッター */}
+      <div className="px-4 pt-3 flex flex-col gap-3"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.1)', background: '#12122a', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
         <button
           className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
-          style={{ border: '2px solid #ddd', color: '#555', background: '#fff' }}
+          style={{ border: '2px solid rgba(255,255,255,0.15)', color: '#fff', background: 'rgba(255,255,255,0.05)' }}
           onClick={onRetry}
         >
           もう一度引く 🪙 {coinCost?.toLocaleString() ?? 0}
@@ -371,9 +328,9 @@ function ResultCard({
             { href: '/mypage',         icon: '👤', label: 'マイページ' },
           ] as const).map(({ href, icon, label }) => (
             <a key={label} href={href} className="flex flex-col items-center gap-1 py-2 rounded-xl"
-              style={{ background: '#f5f5f0' }}>
+              style={{ background: 'rgba(255,255,255,0.05)' }}>
               <span style={{ fontSize: 20 }}>{icon}</span>
-              <span className="text-[10px] font-bold" style={{ color: '#555' }}>{label}</span>
+              <span className="text-[10px] font-bold text-white/50">{label}</span>
             </a>
           ))}
         </div>
@@ -639,9 +596,7 @@ function ActivePlayer({
         {showResult && playState.status === 'ready' && (
           <div className="fixed inset-0 z-10">
             <ResultCard
-              isWin={isWin} prizeName={prizeName}
-              prizeImageUrl={prizeImageUrl} prizeEmoji={prizeEmoji}
-              prizeGradient={prizeGradient} coinCost={coinCost}
+              isWin={isWin} coinCost={coinCost}
               onClose={onClose} onRetry={onRetry}
               onReplayAnimation={handleReplayAnimation}
               cardCharaId={cardInfo?.charaId}
@@ -771,9 +726,7 @@ function ActivePlayer({
 
         {showResult && playState.status === 'ready' && (
           <ResultCard
-            isWin={isWin} prizeName={prizeName}
-            prizeImageUrl={prizeImageUrl} prizeEmoji={prizeEmoji}
-            prizeGradient={prizeGradient} coinCost={coinCost}
+            isWin={isWin} coinCost={coinCost}
             onClose={onClose} onRetry={onRetry}
             onReplayAnimation={handleReplayAnimation}
             cardCharaId={cardInfo?.charaId}
