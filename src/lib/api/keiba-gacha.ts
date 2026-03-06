@@ -5,6 +5,8 @@ export type KeibaPlayResponse = {
   isWin: boolean;
   charaId: string;
   courseId: string;
+  resultCharaId: string;
+  resultCharaName: string;
   charaName: string;
   charaWeight: string;
   expectationStars: number;
@@ -13,6 +15,7 @@ export type KeibaPlayResponse = {
   trackCondition: string;
   steps: KeibaStep[];
   videoBasePath: string;
+  card: { serialNumber: string; charaId: string; cardNumber: string } | null;
 };
 
 export type KeibaQuality = 'high' | 'low';

@@ -1,0 +1,6 @@
+-- どんでん返し設定カラム追加
+ALTER TABLE keiba_settings
+  ADD COLUMN IF NOT EXISTS donten_rate INTEGER DEFAULT 20,
+  ADD COLUMN IF NOT EXISTS donten_up_rate INTEGER DEFAULT 70,
+  ADD COLUMN IF NOT EXISTS donten_down_rate INTEGER DEFAULT 20,
+  ADD COLUMN IF NOT EXISTS donten_comedy_rate INTEGER DEFAULT 10;

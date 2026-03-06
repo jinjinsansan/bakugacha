@@ -37,6 +37,11 @@ export async function fetchKeibaSettings(client: SupabaseClient): Promise<KeibaS
       fuwarinWinRate: 20,
       chainLoseThreshold: 5,
       starHonestRate: 60,
+      cardMaxIssuance: {},
+      dontenRate: 20,
+      dontenUpRate: 70,
+      dontenDownRate: 20,
+      dontenComedyRate: 10,
     };
   }
 
@@ -58,6 +63,11 @@ export async function fetchKeibaSettings(client: SupabaseClient): Promise<KeibaS
     fuwarinWinRate:       Number(row.fuwarin_win_rate ?? 20),
     chainLoseThreshold:   Number(row.chain_lose_threshold ?? 5),
     starHonestRate:       Number(row.star_honest_rate ?? 60),
+    cardMaxIssuance:      parseJson(row.card_max_issuance, {}),
+    dontenRate:           Number(row.donten_rate ?? 20),
+    dontenUpRate:         Number(row.donten_up_rate ?? 70),
+    dontenDownRate:       Number(row.donten_down_rate ?? 20),
+    dontenComedyRate:     Number(row.donten_comedy_rate ?? 10),
   };
 }
 
@@ -79,6 +89,11 @@ export async function upsertKeibaSettings(
   if (updates.fuwarinWinRate        !== undefined) patch.fuwarin_win_rate         = updates.fuwarinWinRate;
   if (updates.chainLoseThreshold    !== undefined) patch.chain_lose_threshold     = updates.chainLoseThreshold;
   if (updates.starHonestRate        !== undefined) patch.star_honest_rate         = updates.starHonestRate;
+  if (updates.cardMaxIssuance       !== undefined) patch.card_max_issuance        = updates.cardMaxIssuance;
+  if (updates.dontenRate            !== undefined) patch.donten_rate              = updates.dontenRate;
+  if (updates.dontenUpRate          !== undefined) patch.donten_up_rate           = updates.dontenUpRate;
+  if (updates.dontenDownRate        !== undefined) patch.donten_down_rate         = updates.dontenDownRate;
+  if (updates.dontenComedyRate      !== undefined) patch.donten_comedy_rate       = updates.dontenComedyRate;
 
   const { error } = await client.from('keiba_settings').upsert(patch, { onConflict: 'id' });
   if (error) {

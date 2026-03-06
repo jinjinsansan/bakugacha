@@ -232,9 +232,36 @@ export async function updateKeibaSettings(formData: FormData) {
       bakugachahimeWinRate: Number(formData.get('bakugachahime_win_rate') ?? 90),
       fuwarinWinRate:       Number(formData.get('fuwarin_win_rate')       ?? 20),
       chainLoseThreshold:   Number(formData.get('chain_lose_threshold')   ?? 5),
+      dontenRate:           Number(formData.get('donten_rate')            ?? 20),
+      dontenUpRate:         Number(formData.get('donten_up_rate')         ?? 70),
+      dontenDownRate:       Number(formData.get('donten_down_rate')       ?? 20),
+      dontenComedyRate:     Number(formData.get('donten_comedy_rate')     ?? 10),
     });
   } catch (err) {
     console.error('[admin] updateKeibaSettings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
+}
+
+// ── 競馬ガチャ カード発行設定更新 ──────────────────────────────
+export async function updateKeibaCardSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    const charaIds = ['shirogane', 'darkbolt', 'aoikaze', 'honohime', 'fuwarin', 'bakugachahime', 'umaoyaji'];
+    const cardMaxIssuance: Record<string, number> = {};
+    for (const cid of charaIds) {
+      const v = formData.get(`card_max_${cid}`);
+      if (v != null) cardMaxIssuance[cid] = Number(v);
+    }
+
+    await upsertKeibaSettings(supabase, { cardMaxIssuance });
+  } catch (err) {
+    console.error('[admin] updateKeibaCardSettings failed:', err);
     redirect('/admin/settings?error=1');
   }
 

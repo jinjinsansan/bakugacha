@@ -3,16 +3,23 @@ import { fetchKeibaSettings } from '@/lib/data/keiba-gacha';
 import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';
 import { deductCoins } from '@/lib/data/coins';
+import { issueCard } from '@/lib/data/keiba-cards';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import {
   pickCharacter,
-  pickCourse,
+  pickFanfareCourse,
   getEffectiveWinRate,
   generateScenario,
   getCharaName,
   getCharaWeight,
 } from '@/lib/keiba-gacha/scenarios';
+import {
+  rollDontenType,
+  selectDontenPattern,
+  buildDontenScenario,
+} from '@/lib/keiba-gacha/scenario-patterns';
+import type { KeibaScenario } from '@/lib/keiba-gacha/types';
 
 // ── レース名リスト（30種） ────────────────────────────────────
 const RACE_NAMES = [
@@ -105,16 +112,13 @@ export async function POST(request: Request) {
       }
     }
 
-    // 1. キャラ抽選
+    // 1. ファンファーレコース抽選（全キャラ共通、重み付き）
+    const fanfareCourse = pickFanfareCourse(settings);
+
+    // 2. キャラ抽選
     const chara = pickCharacter(settings);
 
-    // 2. コース抽選（馬親父=01固定、他=出現率テーブルで重み付き抽選）
-    const course = pickCourse(chara.id, settings);
-
-    // 3. コース別当たり率 + キャラ×コース補正 → 実効当たり率を算出
-    const effectiveWinRate = getEffectiveWinRate(chara.id, course.id, settings);
-
-    // 4. 連続ハズレ強制当たり判定
+    // 3. 連続ハズレ強制当たり判定
     let forcedWin = false;
     if (user && settings.chainLoseThreshold > 0) {
       const { data: recentResults } = await supabase
@@ -132,13 +136,46 @@ export async function POST(request: Request) {
       }
     }
 
-    // 5. 勝敗決定（コース別当たり率 + キャラ補正適用）
-    const isWin = forcedWin || Math.random() * 100 < effectiveWinRate;
+    // 4. どんでん返し抽選
+    let scenario: KeibaScenario | null = null;
+    let forcedStar: number | null = null;
 
-    // 6. シナリオ生成（タイトル動画選択 + ステップ配列）
-    const scenario = generateScenario(isWin, chara.id, course.id);
+    const isDonten = Math.random() * 100 < settings.dontenRate;
+
+    if (isDonten) {
+      const dontenType = rollDontenType(
+        settings.dontenUpRate,
+        settings.dontenDownRate,
+        settings.dontenComedyRate,
+      );
+
+      // forcedWin 時に down/comedy は無効化 → 上振れに変換
+      const effectiveType = (forcedWin && dontenType !== 'up') ? 'up' : dontenType;
+
+      const pattern = selectDontenPattern(fanfareCourse.id, chara.id, effectiveType);
+
+      if (pattern) {
+        // forcedWin なのにパターンがハズレの場合はスキップ（通常フローにフォールバック）
+        if (forcedWin && !pattern.isWin) {
+          // フォールバック
+        } else {
+          scenario = buildDontenScenario(pattern);
+          forcedStar = pattern.forcedStar;
+        }
+      }
+    }
+
+    // 通常フロー（どんでん不発 or パターンなし）
+    if (!scenario) {
+      const effectiveWinRate = getEffectiveWinRate(chara.id, fanfareCourse.id, settings);
+      const isWin = forcedWin || Math.random() * 100 < effectiveWinRate;
+      scenario = generateScenario(isWin, chara.id, fanfareCourse.id);
+    }
 
     // 7. コイン消費 & 結果保存
+    let gachaResultId: string | null = null;
+    let cardData: { serialNumber: string; charaId: string; cardNumber: string } | null = null;
+
     if (user && productId) {
       const savePromises: Promise<unknown>[] = [];
 
@@ -148,19 +185,39 @@ export async function POST(request: Request) {
         );
       }
 
-      savePromises.push(
-        Promise.resolve(
-          supabase.from('gacha_results').insert({
-            user_id: user.id,
-            product_id: productId,
-            result: isWin ? 'win' : 'loss',
-            prize_name: product?.title ?? productId,
-            coins_spent: price,
-          }),
-        ).then(({ error }) => { if (error) console.error('[gacha_results insert]', error); }),
-      );
+      // gacha_results を insert して ID を取得
+      const { data: resultRow, error: resultError } = await supabase
+        .from('gacha_results')
+        .insert({
+          user_id: user.id,
+          product_id: productId,
+          result: scenario.isWin ? 'win' : 'loss',
+          prize_name: product?.title ?? productId,
+          coins_spent: price,
+        })
+        .select('id')
+        .single();
+
+      if (resultError) {
+        console.error('[gacha_results insert]', resultError);
+      } else {
+        gachaResultId = resultRow.id;
+      }
 
       await Promise.all(savePromises);
+
+      // カード発行（当選=resultCharaIdのカード、ハズレ=ハズレカード）
+      if (gachaResultId) {
+        const cardCharaId = scenario.isWin ? scenario.resultCharaId : 'hazure';
+        const card = await issueCard(supabase, user.id as string, cardCharaId, gachaResultId, settings);
+        if (card) {
+          cardData = {
+            serialNumber: card.serialNumber,
+            charaId: card.charaId,
+            cardNumber: card.cardNumber,
+          };
+        }
+      }
 
       // 在庫デクリメント & sold-out 自動化
       if (product && product.stock_remaining != null) {
@@ -174,14 +231,14 @@ export async function POST(request: Request) {
       }
     }
 
-    // ★ミスリード設計（仕様書: 60%正直・40%ランダム）
-    const expectationStars = pickStar(course.id, settings.starHonestRate);
+    // ★決定（forcedStar があれば優先、なければ通常ロジック）
+    const expectationStars = forcedStar ?? pickStar(fanfareCourse.id, settings.starHonestRate);
 
     // レース情報
     const raceName = RACE_NAMES[Math.floor(Math.random() * RACE_NAMES.length)];
-    const distPool = DISTANCE_BY_COURSE[course.id] ?? DISTANCES_TURF;
+    const distPool = DISTANCE_BY_COURSE[fanfareCourse.id] ?? DISTANCES_TURF;
     const distance = `${distPool[Math.floor(Math.random() * distPool.length)]}m`;
-    const trackCondition = TRACK_CONDITION[course.id] ?? '芝・良';
+    const trackCondition = TRACK_CONDITION[fanfareCourse.id] ?? '芝・良';
 
     const baseFolder = quality === 'low' ? 'keiba-mobile' : 'keiba';
 
@@ -190,6 +247,8 @@ export async function POST(request: Request) {
       isWin: scenario.isWin,
       charaId: scenario.charaId,
       courseId: scenario.courseId,
+      resultCharaId: scenario.resultCharaId,
+      resultCharaName: getCharaName(scenario.resultCharaId),
       charaName: getCharaName(chara.id),
       charaWeight: getCharaWeight(chara.id),
       expectationStars,
@@ -198,6 +257,7 @@ export async function POST(request: Request) {
       trackCondition,
       steps: scenario.steps,
       videoBasePath: buildGachaAssetPath(baseFolder),
+      card: cardData,
     });
   } catch (error) {
     console.error('[keiba-gacha/play]', error);

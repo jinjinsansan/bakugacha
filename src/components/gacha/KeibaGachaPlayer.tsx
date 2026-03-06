@@ -6,6 +6,7 @@ import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startKeibaGacha } from '@/lib/api/keiba-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
+import { KeibaCardReveal } from '@/components/gacha/keiba/KeibaCardReveal';
 import type { KeibaStep } from '@/lib/keiba-gacha/types';
 
 // ── 型定義 ────────────────────────────────────────────────────
@@ -16,6 +17,8 @@ type PlayState =
   | {
       status: 'ready';
       isWin: boolean;
+      charaId: string;
+      resultCharaId: string;
       charaName: string;
       charaWeight: string;
       expectationStars: number;
@@ -24,6 +27,7 @@ type PlayState =
       trackCondition: string;
       steps: KeibaStep[];
       videoBasePath: string;
+      card: { serialNumber: string; charaId: string; cardNumber: string } | null;
     };
 
 const VIDEO_VERSION = '1';
@@ -149,7 +153,7 @@ function CharaIntroOverlay({ name, weight }: { name: string; weight: string }) {
 
 function ResultCard({
   isWin, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost,
-  onClose, onRetry, onReplayAnimation,
+  onClose, onRetry, onReplayAnimation, onShowCard, cardCharaId,
 }: {
   isWin: boolean;
   prizeName?: string;
@@ -160,6 +164,8 @@ function ResultCard({
   onClose?: () => void;
   onRetry?: () => void;
   onReplayAnimation?: () => void;
+  onShowCard?: () => void;
+  cardCharaId?: string;
 }) {
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: '#f2f2ed' }}>
@@ -184,6 +190,21 @@ function ResultCard({
             <p className="text-xs mt-0.5" style={{ opacity: 0.85 }}>ガチャ演出をもう一度見る</p>
           </div>
           <span className="text-xl flex-shrink-0" style={{ opacity: 0.8 }}>›</span>
+        </button>
+      )}
+
+      {cardCharaId && onShowCard && (
+        <button
+          className="flex items-center gap-3 w-full text-left px-4 py-2.5"
+          style={{ background: 'linear-gradient(90deg, #1a1a2e, #2a1a4e)', color: '#f0d890', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+          onClick={onShowCard}
+        >
+          <span className="text-2xl flex-shrink-0">🃏</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-sm leading-tight">デジタルカード獲得！</p>
+            <p className="text-xs mt-0.5" style={{ opacity: 0.7, color: '#ccc' }}>カードをもう一度見る・ダウンロード</p>
+          </div>
+          <span className="text-xl flex-shrink-0" style={{ opacity: 0.6 }}>›</span>
         </button>
       )}
 
@@ -287,6 +308,7 @@ function ActivePlayer({
   const [currentSrc, setCurrentSrc] = useState<string | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [showCardReveal, setShowCardReveal] = useState(false);
 
   const videoRef        = useRef<HTMLVideoElement>(null);
   const lastReadyKeyRef = useRef<string | null>(null);
@@ -336,6 +358,7 @@ function ActivePlayer({
   const raceName       = playState.status === 'ready' ? playState.raceName : '';
   const distance       = playState.status === 'ready' ? playState.distance : '';
   const trackCondition = playState.status === 'ready' ? playState.trackCondition : '';
+  const cardInfo       = playState.status === 'ready' ? playState.card : null;
 
   // 現在のステップ名
   const currentStepName = (!isStandby && steps[stepIdx]?.name) || '';
@@ -353,7 +376,12 @@ function ActivePlayer({
 
   const goToStep = useCallback((idx: number) => {
     if (idx >= steps.length) {
-      setShowResult(true);
+      // カードがある場合はカード演出を先に表示
+      if (cardInfo) {
+        setShowCardReveal(true);
+      } else {
+        setShowResult(true);
+      }
       return;
     }
     const step = steps[idx];
@@ -362,7 +390,7 @@ function ActivePlayer({
     setVideoReady(false);
     lastReadyKeyRef.current = null;
     setCurrentSrc(stepToSrc(step, basePath));
-  }, [steps, basePath]);
+  }, [steps, basePath, cardInfo]);
 
   // ── 動画再生同期 ────────────────────────────────────────
 
@@ -440,10 +468,17 @@ function ActivePlayer({
     clearVideoSrc();
     allowUnmuteRef.current = true;
     const next = stepIdxRef.current + 1;
-    if (next >= steps.length) { setShowResult(true); return; }
+    if (next >= steps.length) {
+      if (cardInfo) {
+        setShowCardReveal(true);
+      } else {
+        setShowResult(true);
+      }
+      return;
+    }
     setVideoReady(false);
     goToStep(next);
-  }, [steps.length, clearVideoSrc, goToStep]);
+  }, [steps.length, clearVideoSrc, goToStep, cardInfo]);
 
   const handleReplayAnimation = useCallback(() => {
     clearVideoSrc();
@@ -460,6 +495,19 @@ function ActivePlayer({
     setIsStandby(true);
     setStepIdx(0);
   }, [clearVideoSrc]);
+
+  const handleSkip = useCallback(() => {
+    if (cardInfo) {
+      setShowCardReveal(true);
+    } else {
+      setShowResult(true);
+    }
+  }, [cardInfo]);
+
+  const handleCardRevealClose = useCallback(() => {
+    setShowCardReveal(false);
+    setShowResult(true);
+  }, []);
 
   // 次の動画プリフェッチ
   const upcomingVideos = useMemo(() => {
@@ -509,9 +557,19 @@ function ActivePlayer({
 
   // ── 描画: 軽量モード ──────────────────────────────────
 
+  // カード演出オーバーレイ（両モード共通）
+  const cardRevealOverlay = showCardReveal && cardInfo && (
+    <KeibaCardReveal
+      charaId={cardInfo.charaId}
+      serialNumber={cardInfo.serialNumber}
+      onClose={handleCardRevealClose}
+    />
+  );
+
   if (isLowQuality) {
     return (
       <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/90">
+        {cardRevealOverlay}
         {showResult && playState.status === 'ready' && (
           <div className="fixed inset-0 z-10">
             <ResultCard
@@ -520,6 +578,8 @@ function ActivePlayer({
               prizeGradient={prizeGradient} coinCost={coinCost}
               onClose={onClose} onRetry={onRetry}
               onReplayAnimation={handleReplayAnimation}
+              onShowCard={cardInfo ? () => setShowCardReveal(true) : undefined}
+              cardCharaId={cardInfo?.charaId}
             />
           </div>
         )}
@@ -573,7 +633,7 @@ function ActivePlayer({
               {isPlaying && (
                 <>
                   <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
-                  <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+                  <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={handleSkip} />
                 </>
               )}
             </div>
@@ -593,6 +653,7 @@ function ActivePlayer({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
+      {cardRevealOverlay}
       <div className="relative flex h-full w-full max-w-[430px] flex-col">
 
         {playState.status === 'loading' && <div className="h-full bg-black" />}
@@ -637,7 +698,7 @@ function ActivePlayer({
             {isPlaying && (
               <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
                 <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
-                <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+                <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={handleSkip} />
               </div>
             )}
           </>
@@ -650,6 +711,8 @@ function ActivePlayer({
             prizeGradient={prizeGradient} coinCost={coinCost}
             onClose={onClose} onRetry={onRetry}
             onReplayAnimation={handleReplayAnimation}
+            onShowCard={cardInfo ? () => setShowCardReveal(true) : undefined}
+            cardCharaId={cardInfo?.charaId}
           />
         )}
       </div>

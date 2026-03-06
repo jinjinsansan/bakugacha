@@ -4,7 +4,9 @@ import { fetchEcardSettings } from '@/lib/data/ecard-gacha';
 import { fetchElevatorSettings } from '@/lib/data/elevator-gacha';
 import { fetchKeibaSettings } from '@/lib/data/keiba-gacha';
 import { fetchAppSettings } from '@/lib/data/app-settings';
-import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
+import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
+import { fetchCardIssuanceCounts } from '@/lib/data/keiba-cards';
+import { ALL_KEIBA_CARDS } from '@/lib/keiba-gacha/cards';
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -13,12 +15,13 @@ export default async function AdminSettingsPage({
 }) {
   const params = await searchParams;
   const supabase = getServiceSupabase();
-  const [settings, ecardSettings, elevatorSettings, keibaSettings, appSettings] = await Promise.all([
+  const [settings, ecardSettings, elevatorSettings, keibaSettings, appSettings, cardCounts] = await Promise.all([
     fetchCd2Settings(supabase),
     fetchEcardSettings(supabase),
     fetchElevatorSettings(supabase),
     fetchKeibaSettings(supabase),
     fetchAppSettings(supabase),
+    fetchCardIssuanceCounts(supabase),
   ]);
 
   return (
@@ -183,10 +186,51 @@ export default async function AdminSettingsPage({
           </div>
         </div>
 
+        <h3 className="text-sm font-bold text-white/70 mt-2">どんでん返し設定</h3>
+        <p className="text-xs text-white/40 -mt-1">レース途中でコース・キャラが差し替わる演出。上振れ/下振れ/コメディの合計=100推奨。</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <RateField name="donten_rate" label="どんでん発動率" description="全体でどんでん返しが発生する確率（%）" value={keibaSettings.dontenRate} max={100} />
+          <RateField name="donten_up_rate" label="上振れ割合" description="どんでん発動時に上振れする割合" value={keibaSettings.dontenUpRate} max={100} />
+          <RateField name="donten_down_rate" label="下振れ割合" description="どんでん発動時に下振れする割合" value={keibaSettings.dontenDownRate} max={100} />
+          <RateField name="donten_comedy_rate" label="コメディ割合" description="どんでん発動時にコメディになる割合" value={keibaSettings.dontenComedyRate} max={100} />
+        </div>
+
         <div className="bg-white/5 rounded-xl p-4 text-xs text-white/50 space-y-1">
           <p>コース別: 晴れ芝 <strong className="text-white/70">{keibaSettings.courseWinRates['01'] ?? 60}%</strong> / 大雨ダート <strong className="text-yellow-300">{keibaSettings.courseWinRates['07'] ?? 75}%</strong> / 重馬場 <strong className="text-white/70">{keibaSettings.courseWinRates['05'] ?? 15}%</strong></p>
           <p>馬親父: <strong className="text-white/70">{keibaSettings.umaoyajiWinRate}%固定</strong> / バクガチャヒメ: <strong className="text-white/70">≥{keibaSettings.bakugachahimeWinRate}%</strong> / フワリン: <strong className="text-white/70">≤{keibaSettings.fuwarinWinRate}%</strong></p>
           <p>他キャラ: コース率+補正をそのまま適用（アオイカゼ晴れ芝+20%、ダークボルト晴れダート+20%等）</p>
+          <p>どんでん返し: <strong className="text-white/70">{keibaSettings.dontenRate}%発動</strong>（上振れ{keibaSettings.dontenUpRate} / 下振れ{keibaSettings.dontenDownRate} / コメディ{keibaSettings.dontenComedyRate}）</p>
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      {/* 競馬ガチャ カード発行設定 */}
+      <h2 className="text-lg font-black text-white mt-4">競馬ガチャ カード発行設定</h2>
+      <form action={updateKeibaCardSettings} className="card-premium p-6 flex flex-col gap-6">
+        <p className="text-xs text-white/50">キャラ別の最大発行枚数を設定します（0 = 無制限）</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ALL_KEIBA_CARDS.map((card) => (
+            <div key={card.charaId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">
+                {'★'.repeat(card.stars)} {card.name} ({card.cardNumber})
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number" name={`card_max_${card.charaId}`}
+                  defaultValue={keibaSettings.cardMaxIssuance[card.charaId] ?? 0}
+                  min={0}
+                  className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+                />
+                <span className="text-sm text-white/50">枚</span>
+                <span className="text-xs text-white/30 ml-2">
+                  現在: <strong className="text-white/60">{cardCounts[card.charaId] ?? 0}</strong>枚発行済
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
 
         <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">

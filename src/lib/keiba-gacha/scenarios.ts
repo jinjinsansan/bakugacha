@@ -24,7 +24,7 @@ const CHARACTERS: CharaDef[] = [
   { id: 'umaoyaji',       name: '馬親父',           rarity: 'SSR_PREMIUM', defaultWeight: 3,  introFile: 'A-07_chara_umaoyaji.mp4',       winFile: 'WIN-07_umaoyaji.mp4',       loseFile: 'LOSE-07_umaoyaji.mp4' },
 ];
 
-const CHARA_MAP = new Map(CHARACTERS.map((c) => [c.id, c]));
+export const CHARA_MAP = new Map(CHARACTERS.map((c) => [c.id, c]));
 
 export function getCharaName(charaId: string): string {
   return CHARA_MAP.get(charaId)?.name ?? charaId;
@@ -69,10 +69,10 @@ const COURSES: CourseDef[] = [
   { id: '07', label: '大雨×ダート',   defaultAppearanceWeight: 5,  defaultWinRate: 75, gateFile: 'E-07_gate_start_rain_dirt.mp4',   packFile: 'F-07_pack_side_rain_dirt.mp4',        cornerFile: 'G-07_final_corner_rain_dirt.mp4',        goalFile: 'H-07_goal_front_rain_dirt.mp4' },
 ];
 
-const COURSE_MAP = new Map(COURSES.map((c) => [c.id, c]));
+export const COURSE_MAP = new Map(COURSES.map((c) => [c.id, c]));
 
 /** 馬親父専用コース（晴れ×芝 固定） */
-const UMAOYAJI_COURSE: CourseDef = {
+export const UMAOYAJI_COURSE: CourseDef = {
   id: '01',
   label: '晴れ×芝（馬親父）',
   defaultAppearanceWeight: 0,
@@ -85,7 +85,7 @@ const UMAOYAJI_COURSE: CourseDef = {
 
 // ── タイトル動画マッピング（コース別ファンファーレ） ──────────
 
-const TITLE_BY_COURSE: Record<string, string> = {
+export const TITLE_BY_COURSE: Record<string, string> = {
   '01': 'title_sunny_turf.mp4',
   '02': 'title_sunny_dirt.mp4',
   '03': 'title_soft_turf.mp4',
@@ -131,6 +131,14 @@ export function pickCharacter(settings: KeibaSettings): CharaDef {
 
 export function pickCourse(charaId: string, settings: KeibaSettings): CourseDef {
   if (charaId === 'umaoyaji') return UMAOYAJI_COURSE;
+  return weightedPick(COURSES, (c) => {
+    const override = settings.courseAppearanceRates[c.id];
+    return override != null ? override : c.defaultAppearanceWeight;
+  });
+}
+
+/** ファンファーレコース抽選（全キャラ共通、ウマオヤジ固定なし） */
+export function pickFanfareCourse(settings: KeibaSettings): CourseDef {
   return weightedPick(COURSES, (c) => {
     const override = settings.courseAppearanceRates[c.id];
     return override != null ? override : c.defaultAppearanceWeight;
@@ -191,27 +199,29 @@ export function getEffectiveWinRate(
 export function generateScenario(
   isWin: boolean,
   charaId: string,
-  courseId: string,
+  fanfareCourseId: string,
 ): KeibaScenario {
   const chara = CHARA_MAP.get(charaId);
   if (!chara) throw new Error(`Unknown charaId: ${charaId}`);
 
-  const course = charaId === 'umaoyaji'
+  // ウマオヤジがイントロキャラの場合、レースステップは UMAOYAJI_COURSE を使用
+  const raceCourse = charaId === 'umaoyaji'
     ? UMAOYAJI_COURSE
-    : COURSES.find((c) => c.id === courseId) ?? COURSES[0];
+    : COURSES.find((c) => c.id === fanfareCourseId) ?? COURSES[0];
 
-  const titleFile = pickTitleByCourse(course.id);
+  // タイトルはファンファーレコースから取得（レースコースとは独立）
+  const titleFile = pickTitleByCourse(fanfareCourseId);
 
   const steps: KeibaStep[] = [
     { name: 'title',        file: titleFile },
     { name: 'chara_intro',  file: chara.introFile },
-    { name: 'gate_start',   file: course.gateFile },
-    { name: 'pack_run',     file: course.packFile },
-    { name: 'final_corner', file: course.cornerFile },
-    { name: 'goal_front',   file: course.goalFile },
+    { name: 'gate_start',   file: raceCourse.gateFile },
+    { name: 'pack_run',     file: raceCourse.packFile },
+    { name: 'final_corner', file: raceCourse.cornerFile },
+    { name: 'goal_front',   file: raceCourse.goalFile },
     { name: isWin ? 'result_win' : 'result_lose',
       file: isWin ? chara.winFile : chara.loseFile },
   ];
 
-  return { isWin, charaId, courseId: course.id, steps };
+  return { isWin, charaId, courseId: fanfareCourseId, resultCharaId: charaId, steps };
 }

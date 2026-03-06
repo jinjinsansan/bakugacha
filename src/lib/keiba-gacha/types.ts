@@ -7,8 +7,9 @@ export interface KeibaStep {
 
 export interface KeibaScenario {
   isWin: boolean;
-  charaId: string;
-  courseId: string;
+  charaId: string;          // イントロキャラ
+  courseId: string;          // ファンファーレコース
+  resultCharaId: string;    // 勝利キャラ（カード発行対象）
   steps: KeibaStep[];
 }
 
@@ -33,4 +34,25 @@ export interface KeibaSettings {
   chainLoseThreshold: number;
   /** ★が正直な期待度を示す確率（%）。残り%はランダムミスリード */
   starHonestRate: number;
+  /** キャラ別カード最大発行枚数: {"shirogane":100,...} 0=無制限 */
+  cardMaxIssuance: Record<string, number>;
+  /** どんでん返し全体の発動率（%） */
+  dontenRate: number;
+  /** どんでん上振れ割合（%） */
+  dontenUpRate: number;
+  /** どんでん下振れ割合（%） */
+  dontenDownRate: number;
+  /** どんでんコメディ割合（%） */
+  dontenComedyRate: number;
+}
+
+export interface KeibaCardIssued {
+  id: string;
+  userId: string;
+  gachaResultId: string | null;
+  charaId: string;
+  serialNumber: string;
+  serialSeq: number;
+  cardNumber: string;
+  issuedAt: string;
 }
