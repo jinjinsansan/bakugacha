@@ -95,6 +95,8 @@ export function KeibaDigitalCard({
       className={`${styles.card} ${getRarityStyle(def.rarity)} ${sizeClass}`}
       onClick={onClick}
     >
+      {/* ベベル＋ブラシ質感オーバーレイ（html2canvas対応のため実DOM） */}
+      <div className={styles.cardBevel} />
       <div className={styles.cardInner}>
         {/* Header */}
         <div className={styles.cardHeader}>
@@ -149,6 +151,8 @@ export function KeibaDigitalCard({
         {/* Card ID / Serial */}
         <div className={styles.cardId}>{cardIdText}</div>
       </div>
+      {/* ライトスウィープオーバーレイ（html2canvas対応のため実DOM） */}
+      <div className={styles.cardSweep} />
     </div>
   );
 }
