@@ -64,7 +64,7 @@ function RaceTitleOverlay({
 
   return (
     <div
-      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-36 px-5"
+      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-48 px-5"
       style={{
         background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.0) 55%)',
         opacity: visible ? 1 : 0,
@@ -120,7 +120,7 @@ function CharaIntroOverlay({ name, weight }: { name: string; weight: string }) {
 
   return (
     <div
-      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-36 px-5"
+      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-48 px-5"
       style={{
         background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.0) 50%)',
         opacity: visible ? 1 : 0,
