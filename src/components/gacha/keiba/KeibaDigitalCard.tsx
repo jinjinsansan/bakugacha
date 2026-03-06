@@ -113,10 +113,11 @@ export function KeibaDigitalCard({
           ))}
         </div>
 
-        {/* Illustration */}
-        <div className={styles.cardIllust}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={illustUrl} alt={def.name} crossOrigin="anonymous" />
+        {/* Illustration — background-imageでhtml2canvasのobject-fit非対応を回避 */}
+        <div
+          className={styles.cardIllust}
+          style={{ backgroundImage: `url(${illustUrl})` }}
+        >
           {holoClass && <div className={holoClass} />}
           {hasSparkles && (
             <div className={styles.sparkles}>
