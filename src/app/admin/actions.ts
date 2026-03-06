@@ -232,10 +232,10 @@ export async function updateKeibaSettings(formData: FormData) {
       bakugachahimeWinRate: Number(formData.get('bakugachahime_win_rate') ?? 90),
       fuwarinWinRate:       Number(formData.get('fuwarin_win_rate')       ?? 20),
       chainLoseThreshold:   Number(formData.get('chain_lose_threshold')   ?? 5),
-      dontenRate:           Number(formData.get('donten_rate')            ?? 20),
-      dontenUpRate:         Number(formData.get('donten_up_rate')         ?? 70),
-      dontenDownRate:       Number(formData.get('donten_down_rate')       ?? 20),
-      dontenComedyRate:     Number(formData.get('donten_comedy_rate')     ?? 10),
+      dontenRate:           Math.round(Number(formData.get('donten_rate')        ?? 20)),
+      dontenUpRate:         Math.round(Number(formData.get('donten_up_rate')     ?? 70)),
+      dontenDownRate:       Math.round(Number(formData.get('donten_down_rate')   ?? 20)),
+      dontenComedyRate:     Math.round(Number(formData.get('donten_comedy_rate') ?? 10)),
     });
   } catch (err) {
     console.error('[admin] updateKeibaSettings failed:', err);
