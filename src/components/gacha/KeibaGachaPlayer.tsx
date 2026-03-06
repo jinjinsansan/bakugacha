@@ -266,14 +266,14 @@ function ResultCard({
   cardSerialNumber?: string;
 }) {
   return (
-    <div className="absolute inset-0 flex flex-col" style={{ background: '#0d0d1a' }}>
+    <div className="absolute inset-0 flex flex-col" style={{ background: '#f2f2ed' }}>
       {/* ヘッダー */}
-      <div className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', background: '#12122a' }}>
+      <div className="flex items-center justify-between px-4 py-3 bg-white"
+        style={{ borderBottom: '1px solid #e8e8e8' }}>
         <div className="w-12" />
-        <h2 className="text-sm font-bold text-white/80">ガチャ結果</h2>
-        <button className="text-sm font-medium text-white/50" onClick={onClose}>
-          閉じる
+        <h2 className="text-sm font-bold" style={{ color: '#1a1a2e' }}>ガチャ結果</h2>
+        <button className="text-sm font-medium" style={{ color: '#888' }} onClick={onClose}>
+          あとで
         </button>
       </div>
 
@@ -293,29 +293,30 @@ function ResultCard({
         </button>
       )}
 
-      {/* カード表示エリア（メイン） */}
-      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center">
+      {/* カード表示エリア（中央最大活用） */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center"
+        style={{ background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)' }}>
         {cardCharaId && cardSerialNumber ? (
           <EmbeddedCard charaId={cardCharaId} serialNumber={cardSerialNumber} />
         ) : (
           <div className="flex flex-col items-center gap-3 px-6">
             <span style={{ fontSize: 48 }}>{isWin ? '🏆' : '🏇'}</span>
-            <p className="text-lg font-black text-white/80">
+            <p className="text-lg font-black text-white">
               {isWin ? '当たり！' : 'ハズレ...'}
             </p>
             {!isWin && (
-              <p className="text-sm text-white/40">次回のチャレンジに期待しましょう！</p>
+              <p className="text-sm text-white/50">次回のチャレンジに期待しましょう！</p>
             )}
           </div>
         )}
       </div>
 
       {/* フッター */}
-      <div className="px-4 pt-3 flex flex-col gap-3"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.1)', background: '#12122a', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
+      <div className="px-4 pt-3 flex flex-col gap-3 bg-white"
+        style={{ borderTop: '1px solid #e8e8e8', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
         <button
           className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
-          style={{ border: '2px solid rgba(255,255,255,0.15)', color: '#fff', background: 'rgba(255,255,255,0.05)' }}
+          style={{ border: '2px solid #ddd', color: '#555', background: '#fff' }}
           onClick={onRetry}
         >
           もう一度引く 🪙 {coinCost?.toLocaleString() ?? 0}
@@ -328,9 +329,9 @@ function ResultCard({
             { href: '/mypage',         icon: '👤', label: 'マイページ' },
           ] as const).map(({ href, icon, label }) => (
             <a key={label} href={href} className="flex flex-col items-center gap-1 py-2 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.05)' }}>
+              style={{ background: '#f5f5f0' }}>
               <span style={{ fontSize: 20 }}>{icon}</span>
-              <span className="text-[10px] font-bold text-white/50">{label}</span>
+              <span className="text-[10px] font-bold" style={{ color: '#555' }}>{label}</span>
             </a>
           ))}
         </div>
