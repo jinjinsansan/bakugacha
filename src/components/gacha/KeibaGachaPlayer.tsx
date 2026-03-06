@@ -6,7 +6,9 @@ import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startKeibaGacha } from '@/lib/api/keiba-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
-import { KeibaCardReveal } from '@/components/gacha/keiba/KeibaCardReveal';
+import { KeibaDigitalCard } from '@/components/gacha/keiba/KeibaDigitalCard';
+import { downloadCardAsPng } from '@/lib/keiba-gacha/card-download';
+import { KEIBA_CARD_MAP } from '@/lib/keiba-gacha/cards';
 import type { KeibaStep } from '@/lib/keiba-gacha/types';
 
 // ── 型定義 ────────────────────────────────────────────────────
@@ -149,11 +151,111 @@ function CharaIntroOverlay({ name, weight }: { name: string; weight: string }) {
   );
 }
 
+// ── 埋め込みカード演出 ──────────────────────────────────────
+
+function EmbeddedCard({ charaId, serialNumber }: { charaId: string; serialNumber: string }) {
+  const [phase, setPhase] = useState<'back' | 'flip' | 'done'>('back');
+  const [downloading, setDownloading] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const def = KEIBA_CARD_MAP.get(charaId);
+
+  useEffect(() => {
+    // back → flip → done を自動進行
+    const t1 = setTimeout(() => setPhase('flip'), 800);
+    const t2 = setTimeout(() => setPhase('done'), 1600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  const handleDownload = useCallback(async () => {
+    if (!cardRef.current || downloading) return;
+    setDownloading(true);
+    try {
+      await downloadCardAsPng(cardRef.current, serialNumber);
+    } catch (e) {
+      console.error('[card-download]', e);
+    } finally {
+      setDownloading(false);
+    }
+  }, [serialNumber, downloading]);
+
+  if (!def) return null;
+
+  const rarityColor = def.rarity === 'rainbow' ? '#c850ff'
+    : def.rarity === 'gold' ? '#ffd700'
+    : def.rarity === 'silver' ? '#a0b0c0'
+    : '#b08040';
+
+  return (
+    <div className="flex flex-col items-center py-4" style={{ perspective: 1200 }}>
+      {/* Card back */}
+      {phase === 'back' && (
+        <div
+          style={{
+            width: 180, height: 262, borderRadius: 10,
+            background: `linear-gradient(135deg, #1a1a2e 0%, ${rarityColor}33 50%, #1a1a2e 100%)`,
+            border: `2px solid ${rarityColor}66`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: `0 0 40px ${rarityColor}30`,
+            animation: 'cardPulse 0.8s ease-in-out',
+          }}
+        >
+          <span style={{ fontSize: 48, color: rarityColor, textShadow: `0 0 16px ${rarityColor}` }}>🃏</span>
+        </div>
+      )}
+
+      {/* Card flip */}
+      {phase === 'flip' && (
+        <div style={{
+          transformStyle: 'preserve-3d',
+          animation: 'cardFlip 0.8s ease-out forwards',
+        }}>
+          <KeibaDigitalCard charaId={charaId} serialNumber={serialNumber} size="collection" cardRef={cardRef} />
+        </div>
+      )}
+
+      {/* Card done */}
+      {phase === 'done' && (
+        <KeibaDigitalCard charaId={charaId} serialNumber={serialNumber} size="collection" cardRef={cardRef} />
+      )}
+
+      {/* Serial + Download */}
+      {phase === 'done' && (
+        <div className="flex flex-col items-center mt-2 gap-1.5">
+          <p className="text-[10px] font-bold tracking-widest" style={{ color: rarityColor }}>{serialNumber}</p>
+          <button
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition hover:scale-105"
+            style={{
+              background: `linear-gradient(135deg, ${rarityColor}, ${rarityColor}cc)`,
+              color: def.rarity === 'gold' || def.rarity === 'rainbow' ? '#1a1a2e' : '#fff',
+              boxShadow: `0 2px 12px ${rarityColor}30`,
+            }}
+            onClick={handleDownload}
+            disabled={downloading}
+          >
+            {downloading ? '保存中...' : 'PNGダウンロード'}
+          </button>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes cardPulse {
+          0% { transform: scale(0.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes cardFlip {
+          0% { transform: rotateY(180deg); opacity: 0; }
+          100% { transform: rotateY(0deg); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 // ── 結果カード ────────────────────────────────────────────────
 
 function ResultCard({
   isWin, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost,
-  onClose, onRetry, onReplayAnimation, onShowCard, cardCharaId,
+  onClose, onRetry, onReplayAnimation, cardCharaId, cardSerialNumber,
 }: {
   isWin: boolean;
   prizeName?: string;
@@ -164,8 +266,8 @@ function ResultCard({
   onClose?: () => void;
   onRetry?: () => void;
   onReplayAnimation?: () => void;
-  onShowCard?: () => void;
   cardCharaId?: string;
+  cardSerialNumber?: string;
 }) {
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: '#f2f2ed' }}>
@@ -193,22 +295,15 @@ function ResultCard({
         </button>
       )}
 
-      {cardCharaId && onShowCard && (
-        <button
-          className="flex items-center gap-3 w-full text-left px-4 py-2.5"
-          style={{ background: 'linear-gradient(90deg, #1a1a2e, #2a1a4e)', color: '#f0d890', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-          onClick={onShowCard}
-        >
-          <span className="text-2xl flex-shrink-0">🃏</span>
-          <div className="flex-1 min-w-0">
-            <p className="font-black text-sm leading-tight">デジタルカード獲得！</p>
-            <p className="text-xs mt-0.5" style={{ opacity: 0.7, color: '#ccc' }}>カードをもう一度見る・ダウンロード</p>
-          </div>
-          <span className="text-xl flex-shrink-0" style={{ opacity: 0.6 }}>›</span>
-        </button>
-      )}
-
       <div className="flex-1 overflow-y-auto px-4 py-4">
+        {/* カード表示（アニメーション付き） */}
+        {cardCharaId && cardSerialNumber && (
+          <div className="rounded-2xl mb-4 overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #1a1a2e, #2a1a4e)' }}>
+            <EmbeddedCard charaId={cardCharaId} serialNumber={cardSerialNumber} />
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl p-3 flex gap-3"
           style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
           <div
@@ -308,7 +403,6 @@ function ActivePlayer({
   const [currentSrc, setCurrentSrc] = useState<string | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [showCardReveal, setShowCardReveal] = useState(false);
 
   const videoRef        = useRef<HTMLVideoElement>(null);
   const lastReadyKeyRef = useRef<string | null>(null);
@@ -376,12 +470,7 @@ function ActivePlayer({
 
   const goToStep = useCallback((idx: number) => {
     if (idx >= steps.length) {
-      // カードがある場合はカード演出を先に表示
-      if (cardInfo) {
-        setShowCardReveal(true);
-      } else {
-        setShowResult(true);
-      }
+      setShowResult(true);
       return;
     }
     const step = steps[idx];
@@ -390,7 +479,7 @@ function ActivePlayer({
     setVideoReady(false);
     lastReadyKeyRef.current = null;
     setCurrentSrc(stepToSrc(step, basePath));
-  }, [steps, basePath, cardInfo]);
+  }, [steps, basePath]);
 
   // ── 動画再生同期 ────────────────────────────────────────
 
@@ -469,16 +558,12 @@ function ActivePlayer({
     allowUnmuteRef.current = true;
     const next = stepIdxRef.current + 1;
     if (next >= steps.length) {
-      if (cardInfo) {
-        setShowCardReveal(true);
-      } else {
-        setShowResult(true);
-      }
+      setShowResult(true);
       return;
     }
     setVideoReady(false);
     goToStep(next);
-  }, [steps.length, clearVideoSrc, goToStep, cardInfo]);
+  }, [steps.length, clearVideoSrc, goToStep]);
 
   const handleReplayAnimation = useCallback(() => {
     clearVideoSrc();
@@ -497,15 +582,6 @@ function ActivePlayer({
   }, [clearVideoSrc]);
 
   const handleSkip = useCallback(() => {
-    if (cardInfo) {
-      setShowCardReveal(true);
-    } else {
-      setShowResult(true);
-    }
-  }, [cardInfo]);
-
-  const handleCardRevealClose = useCallback(() => {
-    setShowCardReveal(false);
     setShowResult(true);
   }, []);
 
@@ -557,19 +633,9 @@ function ActivePlayer({
 
   // ── 描画: 軽量モード ──────────────────────────────────
 
-  // カード演出オーバーレイ（両モード共通）
-  const cardRevealOverlay = showCardReveal && cardInfo && (
-    <KeibaCardReveal
-      charaId={cardInfo.charaId}
-      serialNumber={cardInfo.serialNumber}
-      onClose={handleCardRevealClose}
-    />
-  );
-
   if (isLowQuality) {
     return (
       <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/90">
-        {cardRevealOverlay}
         {showResult && playState.status === 'ready' && (
           <div className="fixed inset-0 z-10">
             <ResultCard
@@ -578,8 +644,8 @@ function ActivePlayer({
               prizeGradient={prizeGradient} coinCost={coinCost}
               onClose={onClose} onRetry={onRetry}
               onReplayAnimation={handleReplayAnimation}
-              onShowCard={cardInfo ? () => setShowCardReveal(true) : undefined}
               cardCharaId={cardInfo?.charaId}
+              cardSerialNumber={cardInfo?.serialNumber}
             />
           </div>
         )}
@@ -653,7 +719,6 @@ function ActivePlayer({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
-      {cardRevealOverlay}
       <div className="relative flex h-full w-full max-w-[430px] flex-col">
 
         {playState.status === 'loading' && <div className="h-full bg-black" />}
@@ -711,8 +776,8 @@ function ActivePlayer({
             prizeGradient={prizeGradient} coinCost={coinCost}
             onClose={onClose} onRetry={onRetry}
             onReplayAnimation={handleReplayAnimation}
-            onShowCard={cardInfo ? () => setShowCardReveal(true) : undefined}
             cardCharaId={cardInfo?.charaId}
+            cardSerialNumber={cardInfo?.serialNumber}
           />
         )}
       </div>
