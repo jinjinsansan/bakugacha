@@ -29,7 +29,7 @@ type PlayState =
 const VIDEO_VERSION = '1';
 
 /** autoAdvance するステップ名 */
-const AUTO_STEPS = new Set(['title', 'result_win', 'result_lose']);
+const AUTO_STEPS = new Set(['result_win', 'result_lose']);
 
 function stepToSrc(step: KeibaStep, basePath: string): string {
   return `${basePath}/${step.file}?v=${VIDEO_VERSION}`;
@@ -64,7 +64,7 @@ function RaceTitleOverlay({
 
   return (
     <div
-      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-8 px-5"
+      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-36 px-5"
       style={{
         background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.0) 55%)',
         opacity: visible ? 1 : 0,
@@ -120,7 +120,7 @@ function CharaIntroOverlay({ name, weight }: { name: string; weight: string }) {
 
   return (
     <div
-      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-8 px-5"
+      className="pointer-events-none absolute inset-0 flex flex-col justify-end pb-36 px-5"
       style={{
         background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.0) 50%)',
         opacity: visible ? 1 : 0,
@@ -407,7 +407,16 @@ function ActivePlayer({
     }
   }, [isStandby, steps, clearVideoSrc, goToStep]);
 
-  const handleError = useCallback(() => { setVideoReady(true); }, []);
+  const handleError = useCallback(() => {
+    const stepName = steps[stepIdxRef.current]?.name ?? '';
+    if (AUTO_STEPS.has(stepName)) {
+      clearVideoSrc();
+      allowUnmuteRef.current = true;
+      goToStep(stepIdxRef.current + 1);
+    } else {
+      setVideoReady(true);
+    }
+  }, [steps, clearVideoSrc, goToStep]);
 
   // videoReady タイムアウト（autoAdvance以外）
   useEffect(() => {
