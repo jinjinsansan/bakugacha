@@ -1,0 +1,349 @@
+/* ── 競馬ガチャ デジタルカード CSS ─────────────────────────── */
+
+.card {
+  position: relative;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(.25,.8,.25,1),
+              box-shadow 0.35s ease;
+  flex-shrink: 0;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.03);
+}
+
+/* ── RARITY FRAMES ────────────────────────────────────────── */
+
+.rarityRainbow {
+  background: linear-gradient(135deg,
+    #ff0080 0%, #ff4500 14%, #ffd700 28%,
+    #00ff80 42%, #00bfff 56%, #8000ff 70%,
+    #ff0080 84%, #ff4500 100%);
+  background-size: 400% 400%;
+  animation: rainbowShift 4s linear infinite, rainbowGlow 3s ease-in-out infinite;
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 30px rgba(200,80,255,0.6),
+    0 0 0 1px rgba(255,255,255,0.2);
+}
+
+.rarityGold {
+  background: linear-gradient(160deg,
+    #ffe566 0%, #b8860b 15%, #ffd700 30%,
+    #daa520 50%, #ffe566 65%, #b8860b 80%, #ffd700 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 20px rgba(255,215,0,0.5),
+    0 0 0 1px rgba(255,215,0,0.3),
+    inset 0 1px 0 rgba(255,255,200,0.5);
+  animation: goldPulse 3.5s ease-in-out infinite;
+}
+
+.raritySilver {
+  background: linear-gradient(160deg,
+    #e8e8e8 0%, #a8b0b8 20%, #d0d8e0 40%,
+    #90a0b0 60%, #c0c8d0 80%, #a0a8b0 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 15px rgba(180,200,220,0.4),
+    0 0 0 1px rgba(255,255,255,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+  animation: silverShine 4s ease-in-out infinite;
+}
+
+.rarityBronze {
+  background: linear-gradient(160deg,
+    #cd9a5e 0%, #8b6914 20%, #c8a060 40%,
+    #7a5a20 60%, #b8944e 80%, #6a4a18 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(200,160,96,0.3),
+    inset 0 1px 0 rgba(255,220,160,0.3);
+}
+
+.raritySimple {
+  background: linear-gradient(160deg,
+    #f0f0f0 0%, #c8c8c8 20%, #e8e8e8 40%,
+    #a8a8a8 60%, #d8d8d8 80%, #b0b0b0 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(255,255,255,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+/* ── ANIMATIONS ───────────────────────────────────────────── */
+
+@keyframes rainbowShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes rainbowGlow {
+  0%,100% { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 30px rgba(200,80,255,0.6), 0 0 0 1px rgba(255,255,255,0.2); }
+  33%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 40px rgba(80,200,255,0.7), 0 0 0 1px rgba(255,255,255,0.2); }
+  66%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 40px rgba(255,80,100,0.7), 0 0 0 1px rgba(255,255,255,0.2); }
+}
+
+@keyframes goldPulse {
+  0%,100% { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 20px rgba(255,215,0,0.5), 0 0 0 1px rgba(255,215,0,0.3); }
+  50%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 45px rgba(255,215,0,0.9), 0 0 0 1px rgba(255,215,0,0.5); }
+}
+
+@keyframes silverShine {
+  0%,100% { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 15px rgba(180,200,220,0.4), 0 0 0 1px rgba(255,255,255,0.15); }
+  50%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 30px rgba(180,200,220,0.6), 0 0 0 1px rgba(255,255,255,0.25); }
+}
+
+/* ── INNER BODY ───────────────────────────────────────────── */
+
+.cardInner {
+  position: absolute;
+  inset: 9px;
+  border-radius: 7px;
+  background: #161616;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+}
+
+/* ── HEADER ───────────────────────────────────────────────── */
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  padding: 7px 9px 5px;
+  background: linear-gradient(180deg, #2c2c2c 0%, #1c1c1c 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.cardName {
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #f2e4b0;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardAttribute {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.25);
+  box-shadow: 0 0 8px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.attrLight { background: radial-gradient(circle at 35% 35%, #fffde0, #ffd700, #b8860b); }
+.attrDark  { background: radial-gradient(circle at 35% 35%, #6a00aa, #2a0060, #0a0020); }
+.attrWind  { background: radial-gradient(circle at 35% 35%, #b0e8ff, #4499ee, #1155aa); }
+.attrFire  { background: radial-gradient(circle at 35% 35%, #ffcc44, #ff6600, #aa1100); }
+.attrEarth { background: radial-gradient(circle at 35% 35%, #c8a060, #8b6914, #4a3800); }
+
+/* ── STARS ────────────────────────────────────────────────── */
+
+.cardStars {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px 9px 3px;
+  gap: 1px;
+  flex-shrink: 0;
+  background: #1c1c1c;
+}
+
+.star { font-size: 12px; line-height: 1; }
+.starNormal  { color: #909090; }
+.starGold    { color: #ffd700; filter: drop-shadow(0 0 3px rgba(255,215,0,0.9)); }
+.starRainbow {
+  background: linear-gradient(90deg, #ff0080, #ff8800, #ffff00, #00ff80, #00bfff, #cc00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 4px rgba(255,100,200,0.9));
+}
+
+/* ── ILLUSTRATION ─────────────────────────────────────────── */
+
+.cardIllust {
+  flex: 1;
+  margin: 0 7px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 3px;
+  background: #000;
+  min-height: 0;
+}
+
+.cardIllust img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  display: block;
+}
+
+/* ── HOLO OVERLAY ─────────────────────────────────────────── */
+
+.holoRainbow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(255,0,128,0.18) 0%,
+    rgba(255,165,0,0.12) 16%,
+    rgba(255,255,0,0.12) 32%,
+    rgba(0,255,128,0.12) 48%,
+    rgba(0,191,255,0.12) 64%,
+    rgba(128,0,255,0.18) 80%,
+    rgba(255,0,128,0.18) 100%);
+  background-size: 300% 300%;
+  animation: holoShift 2.8s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.holoGold {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg,
+    transparent 35%,
+    rgba(255,245,150,0.25) 48%,
+    rgba(255,215,0,0.15) 52%,
+    transparent 65%);
+  background-size: 250% 250%;
+  animation: goldShimmer 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes holoShift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 300% 300%; }
+}
+
+@keyframes goldShimmer {
+  0%   { background-position: -100% -100%; }
+  100% { background-position: 250% 250%; }
+}
+
+/* ── SPARKLES ─────────────────────────────────────────────── */
+
+.sparkles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+.sparkle {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: sparkleAnim var(--dur, 2s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+  width: var(--sz, 4px);
+  height: var(--sz, 4px);
+}
+
+@keyframes sparkleAnim {
+  0%,100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50%     { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+/* ── TYPE LINE ────────────────────────────────────────────── */
+
+.cardType {
+  padding: 3px 9px;
+  font-size: 9px;
+  color: #bbb;
+  background: #202020;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* ── EFFECT BOX ───────────────────────────────────────────── */
+
+.cardEffect {
+  margin: 0 7px;
+  padding: 5px 7px;
+  background: #f4e8c8;
+  border: 1px solid #9a8060;
+  border-radius: 2px;
+  flex-shrink: 0;
+  height: 72px;
+  overflow: hidden;
+}
+
+.cardEffect p {
+  font-size: 8px;
+  line-height: 1.55;
+  color: #1a1a1a;
+}
+
+/* ── STATS ────────────────────────────────────────────────── */
+
+.cardStats {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 5px 10px 3px;
+  background: linear-gradient(180deg, #1c1c1c, #101010);
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.stat {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #e8d8a0;
+  letter-spacing: 0.02em;
+}
+
+.stat span { color: #ffffff; font-size: 12px; }
+
+/* ── CARD ID ──────────────────────────────────────────────── */
+
+.cardId {
+  text-align: right;
+  padding: 1px 10px 4px;
+  font-size: 7.5px;
+  color: #555;
+  background: #101010;
+  flex-shrink: 0;
+}
+
+/* ── SIZE VARIANTS ────────────────────────────────────────── */
+
+.sizeFull {
+  width: 295px;
+  height: 430px;
+}
+
+.sizeCollection {
+  width: 148px;
+  height: 215px;
+}
+
+.sizeCollection .cardHeader { padding: 4px 5px 3px; gap: 3px; }
+.sizeCollection .cardName { font-size: 8px; }
+.sizeCollection .cardAttribute { width: 16px; height: 16px; font-size: 8px; }
+.sizeCollection .cardStars { padding: 1px 5px 2px; }
+.sizeCollection .star { font-size: 8px; }
+.sizeCollection .cardIllust { margin: 0 4px; }
+.sizeCollection .cardType { font-size: 6px; padding: 2px 5px; }
+.sizeCollection .cardEffect { margin: 0 4px; padding: 3px 4px; height: 36px; }
+.sizeCollection .cardEffect p { font-size: 5.5px; }
+.sizeCollection .cardStats { padding: 2px 5px 1px; gap: 8px; }
+.sizeCollection .stat { font-size: 7px; }
+.sizeCollection .stat span { font-size: 8px; }
+.sizeCollection .cardId { font-size: 5px; padding: 1px 5px 2px; }
+.sizeCollection .cardInner { inset: 5px; border-radius: 5px; }
