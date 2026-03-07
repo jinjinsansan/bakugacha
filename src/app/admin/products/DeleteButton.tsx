@@ -12,7 +12,13 @@ export function DeleteButton({ title, deleteAction }: { title: string; deleteAct
       className="px-2 py-1 rounded bg-red-900/50 hover:bg-red-800/70 text-red-300 text-xs transition-colors disabled:opacity-50"
       onClick={() => {
         if (!confirm(`「${title}」を削除しますか？`)) return;
-        startTransition(() => deleteAction());
+        startTransition(async () => {
+          try {
+            await deleteAction();
+          } catch (e) {
+            alert(`削除に失敗しました: ${e instanceof Error ? e.message : '不明なエラー'}`);
+          }
+        });
       }}
     >
       {pending ? '...' : '削除'}
