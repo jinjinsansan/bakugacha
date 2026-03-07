@@ -1,0 +1,460 @@
+/* ── 来世ガチャ デジタルカード CSS ─────────────────────────── */
+
+.card {
+  position: relative;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(.25,.8,.25,1),
+              box-shadow 0.35s ease;
+  flex-shrink: 0;
+}
+
+.cardBevel {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 0 rgba(0,0,0,0.4),
+    inset 2px 0 0 rgba(255,255,255,0.15),
+    inset -2px 0 0 rgba(0,0,0,0.25);
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 0px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cardSweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255,255,255,0.15) 45%,
+    rgba(255,255,255,0.25) 50%,
+    rgba(255,255,255,0.15) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: lightSweep 4s ease-in-out infinite;
+  z-index: 4;
+  pointer-events: none;
+}
+
+@keyframes lightSweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.03);
+}
+
+/* ── RARITY FRAMES ────────────────────────────────────────── */
+
+.rarityRainbow {
+  background: linear-gradient(135deg,
+    #ff0080 0%, #ff4500 14%, #ffd700 28%,
+    #00ff80 42%, #00bfff 56%, #8000ff 70%,
+    #ff0080 84%, #ff4500 100%);
+  background-size: 400% 400%;
+  animation: rainbowShift 4s linear infinite, rainbowGlow 3s ease-in-out infinite;
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 30px rgba(200,80,255,0.6),
+    0 0 0 1px rgba(255,255,255,0.2),
+    inset 0 2px 0 rgba(255,255,255,0.4);
+}
+
+.rarityPlatinum {
+  background: linear-gradient(135deg,
+    #7b68ee 0%, #4169e1 15%, #9370db 30%,
+    #6a5acd 50%, #7b68ee 65%, #483d8b 80%, #6a5acd 100%);
+  background-size: 300% 300%;
+  animation: platinumShift 5s ease-in-out infinite, platinumGlow 3s ease-in-out infinite;
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 25px rgba(123,104,238,0.6),
+    0 0 0 1px rgba(147,112,219,0.3),
+    inset 0 2px 0 rgba(200,180,255,0.5);
+}
+
+.rarityGold {
+  background: linear-gradient(160deg,
+    #ffe566 0%, #b8860b 15%, #ffd700 30%,
+    #daa520 50%, #ffe566 65%, #b8860b 80%, #ffd700 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 20px rgba(255,215,0,0.5),
+    0 0 0 1px rgba(255,215,0,0.3),
+    inset 0 2px 0 rgba(255,255,200,0.6);
+  animation: goldPulse 3.5s ease-in-out infinite;
+}
+
+.raritySilver {
+  background: linear-gradient(160deg,
+    #e8e8e8 0%, #a8b0b8 20%, #d0d8e0 40%,
+    #90a0b0 60%, #c0c8d0 80%, #a0a8b0 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 15px rgba(180,200,220,0.4),
+    0 0 0 1px rgba(255,255,255,0.15),
+    inset 0 2px 0 rgba(255,255,255,0.5);
+  animation: silverShine 4s ease-in-out infinite;
+}
+
+.rarityBronze {
+  background: linear-gradient(160deg,
+    #cd9a5e 0%, #8b6914 20%, #c8a060 40%,
+    #7a5a20 60%, #b8944e 80%, #6a4a18 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(200,160,96,0.3),
+    inset 0 2px 0 rgba(255,220,160,0.45);
+}
+
+.raritySimple {
+  background: linear-gradient(160deg,
+    #f0f0f0 0%, #c8c8c8 20%, #e8e8e8 40%,
+    #a8a8a8 60%, #d8d8d8 80%, #b0b0b0 100%);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(255,255,255,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+/* ── ANIMATIONS ───────────────────────────────────────────── */
+
+@keyframes rainbowShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes rainbowGlow {
+  0%,100% { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 30px rgba(200,80,255,0.6), 0 0 0 1px rgba(255,255,255,0.2), inset 0 2px 0 rgba(255,255,255,0.4); }
+  33%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 40px rgba(80,200,255,0.7), 0 0 0 1px rgba(255,255,255,0.2), inset 0 2px 0 rgba(255,255,255,0.4); }
+  66%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 40px rgba(255,80,100,0.7), 0 0 0 1px rgba(255,255,255,0.2), inset 0 2px 0 rgba(255,255,255,0.4); }
+}
+
+@keyframes platinumShift {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes platinumGlow {
+  0%,100% { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 25px rgba(123,104,238,0.6), 0 0 0 1px rgba(147,112,219,0.3), inset 0 2px 0 rgba(200,180,255,0.5); }
+  50%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 45px rgba(106,90,205,0.9), 0 0 0 1px rgba(147,112,219,0.5), inset 0 2px 0 rgba(200,180,255,0.5); }
+}
+
+@keyframes goldPulse {
+  0%,100% { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 20px rgba(255,215,0,0.5), 0 0 0 1px rgba(255,215,0,0.3), inset 0 2px 0 rgba(255,255,200,0.6); }
+  50%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 45px rgba(255,215,0,0.9), 0 0 0 1px rgba(255,215,0,0.5), inset 0 2px 0 rgba(255,255,200,0.6); }
+}
+
+@keyframes silverShine {
+  0%,100% { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 15px rgba(180,200,220,0.4), 0 0 0 1px rgba(255,255,255,0.15), inset 0 2px 0 rgba(255,255,255,0.5); }
+  50%     { box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 30px rgba(180,200,220,0.6), 0 0 0 1px rgba(255,255,255,0.25), inset 0 2px 0 rgba(255,255,255,0.5); }
+}
+
+/* ── INNER BODY ───────────────────────────────────────────── */
+
+.cardInner {
+  position: absolute;
+  inset: 9px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #1e1e1e 0%, #141414 40%, #1a1a1a 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+  z-index: 2;
+  transform: translateZ(0);
+}
+
+/* ── HEADER ───────────────────────────────────────────────── */
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  padding: 8px 9px 6px;
+  background: linear-gradient(180deg, #333 0%, #222 50%, #1a1a1a 100%);
+  border-bottom: 1px solid rgba(255,215,0,0.12);
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.cardName {
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #f2e4b0;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardRarity {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+
+.rarityBadgeN   { background: #555; color: #ccc; }
+.rarityBadgeR   { background: #8b6914; color: #ffe4a0; }
+.rarityBadgeSR  { background: #6080a0; color: #d8e8f0; }
+.rarityBadgeSSR { background: #b8860b; color: #fff8d0; }
+.rarityBadgeUR  { background: #5b3ac0; color: #d8c8ff; }
+.rarityBadgeLR  { background: linear-gradient(90deg, #ff0080, #ffd700, #00bfff); color: #fff; }
+
+/* ── STARS ────────────────────────────────────────────────── */
+
+.cardStars {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px 9px 3px;
+  gap: 1px;
+  flex-shrink: 0;
+  background: #1c1c1c;
+}
+
+.star { font-size: 12px; line-height: 1; }
+.starNormal   { color: #909090; }
+.starGold     { color: #ffd700; filter: drop-shadow(0 0 3px rgba(255,215,0,0.9)); }
+.starPlatinum {
+  color: #9370db;
+  filter: drop-shadow(0 0 3px rgba(123,104,238,0.9));
+}
+.starRainbow {
+  background: linear-gradient(90deg, #ff0080, #ff8800, #ffff00, #00ff80, #00bfff, #cc00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 4px rgba(255,100,200,0.9));
+}
+
+/* ── ILLUSTRATION ─────────────────────────────────────────── */
+
+.cardIllust {
+  flex: 1;
+  margin: 0 7px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(255,215,0,0.2);
+  border-radius: 3px;
+  background-color: #000;
+  background-size: cover;
+  background-position: center 15%;
+  background-repeat: no-repeat;
+  min-height: 0;
+  box-shadow:
+    inset 0 0 8px rgba(0,0,0,0.6),
+    0 0 4px rgba(255,215,0,0.1);
+}
+
+/* ── HOLO OVERLAY ─────────────────────────────────────────── */
+
+.holoRainbow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(255,0,128,0.25) 0%,
+    rgba(255,165,0,0.18) 16%,
+    rgba(255,255,0,0.18) 32%,
+    rgba(0,255,128,0.18) 48%,
+    rgba(0,191,255,0.18) 64%,
+    rgba(128,0,255,0.25) 80%,
+    rgba(255,0,128,0.25) 100%);
+  background-size: 300% 300%;
+  animation: holoShift 3.5s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.holoPlatinum {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg,
+    transparent 30%,
+    rgba(147,112,219,0.35) 45%,
+    rgba(123,104,238,0.25) 55%,
+    transparent 70%);
+  background-size: 250% 250%;
+  animation: platinumShimmer 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.holoGold {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg,
+    transparent 30%,
+    rgba(255,245,150,0.35) 45%,
+    rgba(255,215,0,0.25) 55%,
+    transparent 70%);
+  background-size: 250% 250%;
+  animation: goldShimmer 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes holoShift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 300% 300%; }
+}
+
+@keyframes platinumShimmer {
+  0%   { background-position: -100% -100%; }
+  100% { background-position: 250% 250%; }
+}
+
+@keyframes goldShimmer {
+  0%   { background-position: -100% -100%; }
+  100% { background-position: 250% 250%; }
+}
+
+/* ── SPARKLES ─────────────────────────────────────────────── */
+
+.sparkles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+.sparkle {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: sparkleAnim var(--dur, 2s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+  width: var(--sz, 4px);
+  height: var(--sz, 4px);
+}
+
+@keyframes sparkleAnim {
+  0%,100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50%     { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+/* ── TYPE LINE ────────────────────────────────────────────── */
+
+.cardType {
+  padding: 4px 9px 3px;
+  font-size: 9px;
+  color: #bbb;
+  background: #202020;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* ── EFFECT BOX ───────────────────────────────────────────── */
+
+.cardEffect {
+  margin: 0 7px;
+  padding: 5px 7px;
+  background: linear-gradient(180deg, #f5ecd0 0%, #e8d8b0 100%);
+  border: 1px solid #8a7050;
+  border-radius: 2px;
+  flex-shrink: 0;
+  height: 72px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 2px rgba(0,0,0,0.1);
+}
+
+.cardEffect p {
+  font-size: 8px;
+  line-height: 1.55;
+  color: #1a1a1a;
+}
+
+/* ── STATS ────────────────────────────────────────────────── */
+
+.cardStats {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 5px 10px 3px;
+  background: linear-gradient(180deg, #1c1c1c, #101010);
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.stat {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #e8d8a0;
+  letter-spacing: 0.02em;
+}
+
+.stat span { color: #ffffff; font-size: 12px; }
+
+/* ── CARD ID ──────────────────────────────────────────────── */
+
+.cardId {
+  text-align: right;
+  padding: 1px 10px 4px;
+  font-size: 7.5px;
+  color: #555;
+  background: #101010;
+  flex-shrink: 0;
+}
+
+/* ── SIZE VARIANTS ────────────────────────────────────────── */
+
+.sizeFull {
+  width: 295px;
+  height: 430px;
+}
+
+.sizeCollection {
+  width: 148px;
+  height: 215px;
+}
+
+.sizeCollection .cardHeader { padding: 4px 5px 3px; gap: 3px; }
+.sizeCollection .cardName { font-size: 8px; }
+.sizeCollection .cardRarity { font-size: 6px; padding: 1px 4px; }
+.sizeCollection .cardStars { padding: 1px 5px 2px; }
+.sizeCollection .star { font-size: 8px; }
+.sizeCollection .cardIllust { margin: 0 4px; }
+.sizeCollection .cardType { font-size: 6px; padding: 2px 5px; }
+.sizeCollection .cardEffect { margin: 0 4px; padding: 3px 4px; height: 36px; }
+.sizeCollection .cardEffect p { font-size: 5.5px; }
+.sizeCollection .cardStats { padding: 2px 5px 1px; gap: 8px; }
+.sizeCollection .stat { font-size: 7px; }
+.sizeCollection .stat span { font-size: 8px; }
+.sizeCollection .cardId { font-size: 5px; padding: 1px 5px 2px; }
+.sizeCollection .cardInner { inset: 5px; border-radius: 5px; }
+
+.sizeCollection .cardBevel {
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    inset 1px 0 0 rgba(255,255,255,0.1),
+    inset -1px 0 0 rgba(0,0,0,0.15);
+}
+.sizeCollection .cardSweep {
+  border-radius: 10px;
+}
+
+/* PNG保存時 */
+.card[data-capturing] .cardSweep {
+  display: none;
+}
+.card[data-capturing],
+.card[data-capturing] * {
+  animation-play-state: paused !important;
+}

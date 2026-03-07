@@ -3,10 +3,14 @@ import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
 import { fetchEcardSettings } from '@/lib/data/ecard-gacha';
 import { fetchElevatorSettings } from '@/lib/data/elevator-gacha';
 import { fetchKeibaSettings } from '@/lib/data/keiba-gacha';
+import { fetchRaiseSettings } from '@/lib/data/raise-gacha';
 import { fetchAppSettings } from '@/lib/data/app-settings';
-import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
+import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateRaiseKentaSettings, updateRaiseShoichiSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
 import { fetchCardIssuanceCounts } from '@/lib/data/keiba-cards';
+import { fetchRaiseCardIssuanceCounts } from '@/lib/data/raise-cards';
 import { ALL_KEIBA_CARDS } from '@/lib/keiba-gacha/cards';
+import { ALL_KENTA_CARDS } from '@/lib/raise-gacha/cards-kenta';
+import { ALL_SHOICHI_CARDS } from '@/lib/raise-gacha/cards-shoichi';
 import { DONTEN_PATTERNS } from '@/lib/keiba-gacha/scenario-patterns';
 
 export default async function AdminSettingsPage({
@@ -16,13 +20,17 @@ export default async function AdminSettingsPage({
 }) {
   const params = await searchParams;
   const supabase = getServiceSupabase();
-  const [settings, ecardSettings, elevatorSettings, keibaSettings, appSettings, cardCounts] = await Promise.all([
+  const [settings, ecardSettings, elevatorSettings, keibaSettings, raiseKentaSettings, raiseShoichiSettings, appSettings, cardCounts, raiseKentaCounts, raiseShoichiCounts] = await Promise.all([
     fetchCd2Settings(supabase),
     fetchEcardSettings(supabase),
     fetchElevatorSettings(supabase),
     fetchKeibaSettings(supabase),
+    fetchRaiseSettings(supabase, 'kenta'),
+    fetchRaiseSettings(supabase, 'shoichi'),
     fetchAppSettings(supabase),
     fetchCardIssuanceCounts(supabase),
+    fetchRaiseCardIssuanceCounts(supabase, 'kenta'),
+    fetchRaiseCardIssuanceCounts(supabase, 'shoichi'),
   ]);
 
   return (
@@ -366,6 +374,120 @@ export default async function AdminSettingsPage({
                 <span className="text-sm text-white/50">枚</span>
                 <span className="text-xs text-white/30 ml-2">
                   現在: <strong className="text-white/60">{cardCounts[card.charaId] ?? 0}</strong>枚発行済
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      {/* 来世ガチャ（健太編）設定 */}
+      <h2 className="text-lg font-black text-white mt-4">来世ガチャ（健太編）設定</h2>
+      <form action={updateRaiseKentaSettings} className="card-premium p-6 flex flex-col gap-6">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" name="is_active" defaultChecked={raiseKentaSettings.isActive}
+            className="w-5 h-5 accent-yellow-400" />
+          <div>
+            <p className="text-sm font-bold text-white">来世ガチャ（健太編）を有効化</p>
+            <p className="text-xs text-white/40">無効にすると「準備中」を返します</p>
+          </div>
+        </label>
+
+        <RateField name="loss_rate" label="ハズレ率" description="この確率でハズレになります（%）" value={raiseKentaSettings.lossRate} max={100} />
+
+        <h3 className="text-sm font-bold text-white/70 mt-2">★出現ウェイト（★1〜★12）</h3>
+        <p className="text-xs text-white/40 -mt-1">当選時の★レベル決定に使用。値が大きいほど出やすい。</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {ALL_KENTA_CARDS.filter(c => c.starLevel > 0).map((card) => (
+            <div key={card.cardId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">★{card.starLevel} {card.rarity} {card.name}</label>
+              <input type="number" name={`star_${card.starLevel}`}
+                defaultValue={raiseKentaSettings.starDistribution[card.starLevel - 1] ?? 0}
+                min={0} step={0.1}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+            </div>
+          ))}
+        </div>
+
+        <RateField name="donden_rate" label="どんでん返し率" description="当選時にどんでん返しが発動する確率（%）" value={raiseKentaSettings.dondenRate} max={100} />
+
+        <h3 className="text-sm font-bold text-white/70 mt-2">カード別最大発行枚数</h3>
+        <p className="text-xs text-white/40 -mt-1">0 = 無制限</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ALL_KENTA_CARDS.map((card) => (
+            <div key={card.cardId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">
+                {'★'.repeat(card.starLevel || 1)} {card.name} ({card.cardNumber})
+              </label>
+              <div className="flex items-center gap-2">
+                <input type="number" name={`card_max_${card.cardId}`}
+                  defaultValue={raiseKentaSettings.cardMaxIssuance[card.cardId] ?? 0}
+                  min={0}
+                  className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+                <span className="text-sm text-white/50">枚</span>
+                <span className="text-xs text-white/30 ml-2">
+                  現在: <strong className="text-white/60">{raiseKentaCounts[card.cardId] ?? 0}</strong>枚
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      {/* 来世ガチャ（正一編）設定 */}
+      <h2 className="text-lg font-black text-white mt-4">来世ガチャ（正一編）設定</h2>
+      <form action={updateRaiseShoichiSettings} className="card-premium p-6 flex flex-col gap-6">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" name="is_active" defaultChecked={raiseShoichiSettings.isActive}
+            className="w-5 h-5 accent-yellow-400" />
+          <div>
+            <p className="text-sm font-bold text-white">来世ガチャ（正一編）を有効化</p>
+            <p className="text-xs text-white/40">無効にすると「準備中」を返します</p>
+          </div>
+        </label>
+
+        <RateField name="loss_rate" label="ハズレ率" description="この確率でハズレになります（%）" value={raiseShoichiSettings.lossRate} max={100} />
+
+        <h3 className="text-sm font-bold text-white/70 mt-2">★出現ウェイト（★1〜★12）</h3>
+        <p className="text-xs text-white/40 -mt-1">当選時の★レベル決定に使用。値が大きいほど出やすい。</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {ALL_SHOICHI_CARDS.filter(c => c.starLevel > 0).map((card) => (
+            <div key={card.cardId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">★{card.starLevel} {card.rarity} {card.name}</label>
+              <input type="number" name={`star_${card.starLevel}`}
+                defaultValue={raiseShoichiSettings.starDistribution[card.starLevel - 1] ?? 0}
+                min={0} step={0.1}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+            </div>
+          ))}
+        </div>
+
+        <RateField name="donden_rate" label="どんでん返し率" description="当選時にどんでん返しが発動する確率（%）" value={raiseShoichiSettings.dondenRate} max={100} />
+
+        <h3 className="text-sm font-bold text-white/70 mt-2">カード別最大発行枚数</h3>
+        <p className="text-xs text-white/40 -mt-1">0 = 無制限</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ALL_SHOICHI_CARDS.map((card) => (
+            <div key={card.cardId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">
+                {'★'.repeat(card.starLevel || 1)} {card.name} ({card.cardNumber})
+              </label>
+              <div className="flex items-center gap-2">
+                <input type="number" name={`card_max_${card.cardId}`}
+                  defaultValue={raiseShoichiSettings.cardMaxIssuance[card.cardId] ?? 0}
+                  min={0}
+                  className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+                <span className="text-sm text-white/50">枚</span>
+                <span className="text-xs text-white/30 ml-2">
+                  現在: <strong className="text-white/60">{raiseShoichiCounts[card.cardId] ?? 0}</strong>枚
                 </span>
               </div>
             </div>

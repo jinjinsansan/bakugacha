@@ -5,6 +5,8 @@ import { getUserFromSession } from '@/lib/data/session';
 import { fetchAppSettings } from '@/lib/data/app-settings';
 import { logoutAction } from '@/app/(auth)/actions';
 import { CopyReferralLink } from '@/components/referral/CopyReferralLink';
+import { KeibaCardCollection } from '@/components/mypage/KeibaCardCollection';
+import { RaiseCardCollection } from '@/components/mypage/RaiseCardCollection';
 
 export default async function MyPage() {
   const supabase = getServiceSupabase();
@@ -116,6 +118,10 @@ export default async function MyPage() {
           </Link>
         </div>
       </div>
+
+      {/* カードコレクション */}
+      <KeibaCardCollection />
+      <RaiseCardCollection />
 
       {/* ガチャ履歴 */}
       <div className="rounded-2xl overflow-hidden mb-6"

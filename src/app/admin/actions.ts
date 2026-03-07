@@ -8,6 +8,7 @@ import { upsertCd2Settings } from '@/lib/data/cd2-gacha';
 import { upsertEcardSettings } from '@/lib/data/ecard-gacha';
 import { upsertElevatorSettings } from '@/lib/data/elevator-gacha';
 import { upsertKeibaSettings } from '@/lib/data/keiba-gacha';
+import { upsertRaiseSettings } from '@/lib/data/raise-gacha';
 import { upsertAppSettings } from '@/lib/data/app-settings';
 
 // ── 商品作成 ──────────────────────────────────────────────────
@@ -323,6 +324,76 @@ export async function updateKeibaCardSettings(formData: FormData) {
     await upsertKeibaSettings(supabase, { cardMaxIssuance });
   } catch (err) {
     console.error('[admin] updateKeibaCardSettings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
+}
+
+// ── 来世ガチャ（健太編）設定更新 ────────────────────────────────
+export async function updateRaiseKentaSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    const starDistribution: number[] = [];
+    for (let i = 1; i <= 12; i++) {
+      starDistribution.push(Number(formData.get(`star_${i}`) ?? 0));
+    }
+
+    const cardMaxIssuance: Record<string, number> = {};
+    for (const key of formData.keys()) {
+      if (key.startsWith('card_max_')) {
+        const cardId = key.replace('card_max_', '');
+        cardMaxIssuance[cardId] = Number(formData.get(key));
+      }
+    }
+
+    await upsertRaiseSettings(supabase, 'kenta', {
+      isActive:         formData.get('is_active') === 'on',
+      lossRate:         Number(formData.get('loss_rate') ?? 60),
+      starDistribution,
+      dondenRate:       Number(formData.get('donden_rate') ?? 20),
+      cardMaxIssuance,
+    });
+  } catch (err) {
+    console.error('[admin] updateRaiseKentaSettings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
+}
+
+// ── 来世ガチャ（正一編）設定更新 ────────────────────────────────
+export async function updateRaiseShoichiSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    const starDistribution: number[] = [];
+    for (let i = 1; i <= 12; i++) {
+      starDistribution.push(Number(formData.get(`star_${i}`) ?? 0));
+    }
+
+    const cardMaxIssuance: Record<string, number> = {};
+    for (const key of formData.keys()) {
+      if (key.startsWith('card_max_')) {
+        const cardId = key.replace('card_max_', '');
+        cardMaxIssuance[cardId] = Number(formData.get(key));
+      }
+    }
+
+    await upsertRaiseSettings(supabase, 'shoichi', {
+      isActive:         formData.get('is_active') === 'on',
+      lossRate:         Number(formData.get('loss_rate') ?? 60),
+      starDistribution,
+      dondenRate:       Number(formData.get('donden_rate') ?? 20),
+      cardMaxIssuance,
+    });
+  } catch (err) {
+    console.error('[admin] updateRaiseShoichiSettings failed:', err);
     redirect('/admin/settings?error=1');
   }
 

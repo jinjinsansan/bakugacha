@@ -5,6 +5,7 @@ import { Cd2GachaPlayer } from '@/components/gacha/Cd2GachaPlayer';
 import { EcardGachaPlayer } from '@/components/gacha/EcardGachaPlayer';
 import { ElevatorGachaPlayer } from '@/components/gacha/ElevatorGachaPlayer';
 import { KeibaGachaPlayer } from '@/components/gacha/KeibaGachaPlayer';
+import { RaiseGachaPlayer } from '@/components/gacha/RaiseGachaPlayer';
 
 type Props = {
   productId: string;
@@ -129,6 +130,28 @@ export function GachaPlayButton({
           coinCost={price}
           productId={productId}
           quality={quality}
+        />
+      )}
+      {gachaType === 'raise_kenta' && (
+        <RaiseGachaPlayer
+          open={open}
+          onClose={() => setOpen(false)}
+          onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
+          coinCost={price}
+          productId={productId}
+          quality={quality}
+          characterId="kenta"
+        />
+      )}
+      {gachaType === 'raise_shoichi' && (
+        <RaiseGachaPlayer
+          open={open}
+          onClose={() => setOpen(false)}
+          onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
+          coinCost={price}
+          productId={productId}
+          quality={quality}
+          characterId="shoichi"
         />
       )}
     </>
