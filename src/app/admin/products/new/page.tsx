@@ -9,6 +9,8 @@ export const GACHA_TYPES = [
   { value: 'ecard', label: 'ROYALカードガチャ' },
   { value: 'elevator', label: 'エレベーターガチャ' },
   { value: 'keiba', label: '競馬ガチャ' },
+  { value: 'raise_kenta', label: '来世ガチャ（健太編）' },
+  { value: 'raise_shoichi', label: '来世ガチャ（正一編）' },
 ] as const;
 
 export default function AdminProductNewPage() {
