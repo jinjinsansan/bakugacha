@@ -86,14 +86,14 @@ export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: 
   await requireAdmin();
   const supabase = getServiceSupabase();
 
-  // 関連する gacha_results の product_id を NULL にして外部キー制約を解除
+  // 関連する gacha_results を先に削除して外部キー制約を回避
   const { error: fkError } = await supabase
     .from('gacha_results')
-    .update({ product_id: null })
+    .delete()
     .eq('product_id', id);
   if (fkError) {
-    console.error('[deleteProduct] FK解除失敗:', fkError);
-    return { ok: false, error: `関連データの解除に失敗: ${fkError.message}` };
+    console.error('[deleteProduct] 関連データ削除失敗:', fkError);
+    return { ok: false, error: `関連データの削除に失敗: ${fkError.message}` };
   }
 
   const { error } = await supabase.from('gacha_products').delete().eq('id', id);
