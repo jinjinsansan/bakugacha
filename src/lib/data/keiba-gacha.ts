@@ -42,6 +42,7 @@ export async function fetchKeibaSettings(client: SupabaseClient): Promise<KeibaS
       dontenUpRate: 70,
       dontenDownRate: 20,
       dontenComedyRate: 10,
+      dontenPatternWeights: {},
     };
   }
 
@@ -68,6 +69,7 @@ export async function fetchKeibaSettings(client: SupabaseClient): Promise<KeibaS
     dontenUpRate:         Number(row.donten_up_rate ?? 70),
     dontenDownRate:       Number(row.donten_down_rate ?? 20),
     dontenComedyRate:     Number(row.donten_comedy_rate ?? 10),
+    dontenPatternWeights: parseJson(row.donten_pattern_weights, {}),
   };
 }
 
@@ -94,6 +96,7 @@ export async function upsertKeibaSettings(
   if (updates.dontenUpRate          !== undefined) patch.donten_up_rate           = updates.dontenUpRate;
   if (updates.dontenDownRate        !== undefined) patch.donten_down_rate         = updates.dontenDownRate;
   if (updates.dontenComedyRate      !== undefined) patch.donten_comedy_rate       = updates.dontenComedyRate;
+  if (updates.dontenPatternWeights  !== undefined) patch.donten_pattern_weights   = updates.dontenPatternWeights;
 
   const { error } = await client.from('keiba_settings').upsert(patch, { onConflict: 'id' });
   if (error) {

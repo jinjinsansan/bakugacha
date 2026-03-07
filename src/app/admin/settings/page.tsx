@@ -7,6 +7,7 @@ import { fetchAppSettings } from '@/lib/data/app-settings';
 import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
 import { fetchCardIssuanceCounts } from '@/lib/data/keiba-cards';
 import { ALL_KEIBA_CARDS } from '@/lib/keiba-gacha/cards';
+import { DONTEN_PATTERNS } from '@/lib/keiba-gacha/scenario-patterns';
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -186,6 +187,98 @@ export default async function AdminSettingsPage({
           </div>
         </div>
 
+        {/* ── A. キャラ別出現ウェイト ── */}
+        <h3 className="text-sm font-bold text-white/70 mt-2">キャラ別出現ウェイト</h3>
+        <p className="text-xs text-white/40 -mt-1">値が大きいほど出やすい。0にすると出現しません。</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { id: 'shirogane', name: 'シロガネ(SR)', def: 7 },
+            { id: 'darkbolt', name: 'ダークボルト(SR)', def: 7 },
+            { id: 'aoikaze', name: 'アオイカゼ(SSR)', def: 5 },
+            { id: 'honohime', name: 'ホノオヒメ(SR)', def: 7 },
+            { id: 'fuwarin', name: 'フワリン(R)', def: 25 },
+            { id: 'bakugachahime', name: 'バクガチャヒメ(SSR)', def: 4 },
+            { id: 'umaoyaji', name: '馬親父(PREMIUM)', def: 3 },
+          ].map((c) => (
+            <div key={c.id} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">{c.name}</label>
+              <input type="number" name={`chara_rate_${c.id}`} defaultValue={keibaSettings.charaRates[c.id] ?? c.def} min={0}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+            </div>
+          ))}
+        </div>
+
+        {/* ── B. コース別出現ウェイト ── */}
+        <h3 className="text-sm font-bold text-white/70 mt-2">コース別出現ウェイト（ファンファーレ）</h3>
+        <p className="text-xs text-white/40 -mt-1">値が大きいほどそのコースが出やすい。</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { id: '01', label: '晴れ×芝', def: 30 },
+            { id: '02', label: '晴れ×ダート', def: 20 },
+            { id: '03', label: '稍重×芝', def: 15 },
+            { id: '04', label: '稍重×ダート', def: 15 },
+            { id: '05', label: '重馬場×芝', def: 10 },
+            { id: '06', label: '大雨×芝', def: 5 },
+            { id: '07', label: '大雨×ダート', def: 5 },
+          ].map((c) => (
+            <div key={c.id} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">{c.label}</label>
+              <input type="number" name={`course_appear_${c.id}`} defaultValue={keibaSettings.courseAppearanceRates[c.id] ?? c.def} min={0}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+            </div>
+          ))}
+        </div>
+
+        {/* ── C. キャラ×コース当たり率補正 ── */}
+        <h3 className="text-sm font-bold text-white/70 mt-2">キャラ×コース当たり率補正（%加算）</h3>
+        <p className="text-xs text-white/40 -mt-1">空 or 0 = 補正なし。±の値を入力。最右列はワイルドカード（全コース共通補正）。</p>
+        <div className="overflow-x-auto">
+          <table className="text-xs text-white/80 border-collapse">
+            <thead>
+              <tr>
+                <th className="px-2 py-1 text-left text-white/50">キャラ</th>
+                {['01晴芝', '02晴ダ', '03稍芝', '04稍ダ', '05重芝', '06雨芝', '07雨ダ', '*全体'].map((h) => (
+                  <th key={h} className="px-1 py-1 text-center text-white/50 whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { id: 'shirogane', name: 'シロガネ' },
+                { id: 'darkbolt', name: 'ダークボルト' },
+                { id: 'aoikaze', name: 'アオイカゼ' },
+                { id: 'honohime', name: 'ホノオヒメ' },
+                { id: 'fuwarin', name: 'フワリン' },
+                { id: 'bakugachahime', name: 'バクガチャヒメ' },
+                { id: 'umaoyaji', name: '馬親父' },
+              ].map((chara) => (
+                <tr key={chara.id}>
+                  <td className="px-2 py-1 whitespace-nowrap">{chara.name}</td>
+                  {['01', '02', '03', '04', '05', '06', '07'].map((cid) => (
+                    <td key={cid} className="px-1 py-1">
+                      <input type="number" name={`bonus_${chara.id}_${cid}`}
+                        defaultValue={keibaSettings.charaCourseBonuses[chara.id]?.[cid] ?? 0}
+                        className="w-14 rounded bg-white/10 border border-white/10 px-1 py-1 text-xs text-white text-center focus:outline-none focus:border-yellow-400/50" />
+                    </td>
+                  ))}
+                  <td className="px-1 py-1">
+                    <input type="number" name={`bonus_${chara.id}_wildcard`}
+                      defaultValue={keibaSettings.charaCourseBonuses[chara.id]?.['*'] ?? 0}
+                      className="w-14 rounded bg-white/10 border border-white/10 px-1 py-1 text-xs text-white text-center focus:outline-none focus:border-yellow-400/50" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── D. ★正直率 ── */}
+        <h3 className="text-sm font-bold text-white/70 mt-2">★正直率</h3>
+        <p className="text-xs text-white/40 -mt-1">★が正直な期待度を示す確率。残りはランダムミスリード。</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <RateField name="star_honest_rate" label="★正直率" description="★が正直な確率（%）" value={keibaSettings.starHonestRate} max={100} />
+        </div>
+
         <h3 className="text-sm font-bold text-white/70 mt-2">どんでん返し設定</h3>
         <p className="text-xs text-white/40 -mt-1">レース途中でコース・キャラが差し替わる演出。上振れ/下振れ/コメディの合計=100推奨。</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -193,6 +286,52 @@ export default async function AdminSettingsPage({
           <RateField name="donten_up_rate" label="上振れ割合" description="どんでん発動時に上振れする割合" value={keibaSettings.dontenUpRate} max={100} />
           <RateField name="donten_down_rate" label="下振れ割合" description="どんでん発動時に下振れする割合" value={keibaSettings.dontenDownRate} max={100} />
           <RateField name="donten_comedy_rate" label="コメディ割合" description="どんでん発動時にコメディになる割合" value={keibaSettings.dontenComedyRate} max={100} />
+        </div>
+
+        {/* ── E. どんでんパターン個別ウェイト ── */}
+        <h3 className="text-sm font-bold text-white/70 mt-2">どんでんパターン個別ウェイト</h3>
+        <p className="text-xs text-white/40 -mt-1">0=無効、100=デフォルト。ウェイトが大きいほど選ばれやすい。</p>
+        <div className="overflow-x-auto">
+          <table className="text-xs text-white/80 border-collapse w-full">
+            <thead>
+              <tr>
+                <th className="px-2 py-1 text-left text-white/50">ID</th>
+                <th className="px-2 py-1 text-left text-white/50">コース</th>
+                <th className="px-2 py-1 text-left text-white/50">キャラ</th>
+                <th className="px-2 py-1 text-center text-white/50">タイプ</th>
+                <th className="px-2 py-1 text-center text-white/50">結果</th>
+                <th className="px-2 py-1 text-center text-white/50">ウェイト</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DONTEN_PATTERNS.map((p) => {
+                const courseLabels: Record<string, string> = {
+                  '01': '晴れ×芝', '02': '晴れ×ダート', '03': '稍重×芝',
+                  '04': '稍重×ダート', '05': '重馬場×芝', '06': '大雨×芝', '07': '大雨×ダート',
+                };
+                const charaNames: Record<string, string> = {
+                  shirogane: 'シロガネ', darkbolt: 'ダークボルト', aoikaze: 'アオイカゼ',
+                  honohime: 'ホノオヒメ', fuwarin: 'フワリン', bakugachahime: 'バクガチャヒメ', umaoyaji: '馬親父',
+                };
+                const typeColor = p.type === 'up' ? 'text-emerald-400' : p.type === 'down' ? 'text-red-400' : 'text-yellow-400';
+                return (
+                  <tr key={p.id} className="border-t border-white/5">
+                    <td className="px-2 py-1 font-mono">{p.id}</td>
+                    <td className="px-2 py-1 whitespace-nowrap">{courseLabels[p.fanfareCourse] ?? p.fanfareCourse}</td>
+                    <td className="px-2 py-1 whitespace-nowrap">{charaNames[p.introCharaId] ?? p.introCharaId}</td>
+                    <td className={`px-2 py-1 text-center font-bold ${typeColor}`}>{p.type}</td>
+                    <td className="px-2 py-1 text-center">{p.isWin ? '✅当' : '❌外'}</td>
+                    <td className="px-2 py-1 text-center">
+                      <input type="number" name={`pattern_weight_${p.id}`}
+                        defaultValue={keibaSettings.dontenPatternWeights[p.id] ?? 100}
+                        min={0} max={1000}
+                        className="w-16 rounded bg-white/10 border border-white/10 px-1 py-1 text-xs text-white text-center focus:outline-none focus:border-yellow-400/50" />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
         <div className="bg-white/5 rounded-xl p-4 text-xs text-white/50 space-y-1">

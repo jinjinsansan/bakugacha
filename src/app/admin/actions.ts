@@ -225,9 +225,52 @@ export async function updateKeibaSettings(formData: FormData) {
       if (v != null) courseWinRates[cid] = Number(v);
     }
 
+    // キャラ別出現ウェイト
+    const charaIds = ['shirogane', 'darkbolt', 'aoikaze', 'honohime', 'fuwarin', 'bakugachahime', 'umaoyaji'];
+    const charaRates: Record<string, number> = {};
+    for (const cid of charaIds) {
+      const v = formData.get(`chara_rate_${cid}`);
+      if (v != null && String(v).trim() !== '') charaRates[cid] = Number(v);
+    }
+
+    // コース別出現ウェイト
+    const courseIds = ['01', '02', '03', '04', '05', '06', '07'];
+    const courseAppearanceRates: Record<string, number> = {};
+    for (const cid of courseIds) {
+      const v = formData.get(`course_appear_${cid}`);
+      if (v != null && String(v).trim() !== '') courseAppearanceRates[cid] = Number(v);
+    }
+
+    // キャラ×コース補正
+    const charaCourseBonuses: Record<string, Record<string, number>> = {};
+    for (const charaId of charaIds) {
+      const bonuses: Record<string, number> = {};
+      for (const courseId of courseIds) {
+        const v = formData.get(`bonus_${charaId}_${courseId}`);
+        if (v != null && String(v).trim() !== '' && Number(v) !== 0) bonuses[courseId] = Number(v);
+      }
+      const wv = formData.get(`bonus_${charaId}_wildcard`);
+      if (wv != null && String(wv).trim() !== '' && Number(wv) !== 0) bonuses['*'] = Number(wv);
+      if (Object.keys(bonuses).length > 0) charaCourseBonuses[charaId] = bonuses;
+    }
+
+    // どんでんパターン個別ウェイト
+    const dontenPatternWeights: Record<string, number> = {};
+    for (const key of formData.keys()) {
+      if (key.startsWith('pattern_weight_')) {
+        const patternId = key.replace('pattern_weight_', '');
+        const v = formData.get(key);
+        if (v != null && String(v).trim() !== '') dontenPatternWeights[patternId] = Number(v);
+      }
+    }
+
     await upsertKeibaSettings(supabase, {
       isActive:             formData.get('is_active') === 'on',
       courseWinRates,
+      courseAppearanceRates,
+      charaRates,
+      charaCourseBonuses,
+      starHonestRate:       Number(formData.get('star_honest_rate') ?? 60),
       umaoyajiWinRate:      Number(formData.get('umaoyaji_win_rate')     ?? 95),
       bakugachahimeWinRate: Number(formData.get('bakugachahime_win_rate') ?? 90),
       fuwarinWinRate:       Number(formData.get('fuwarin_win_rate')       ?? 20),
@@ -236,6 +279,7 @@ export async function updateKeibaSettings(formData: FormData) {
       dontenUpRate:         Math.round(Number(formData.get('donten_up_rate')     ?? 70)),
       dontenDownRate:       Math.round(Number(formData.get('donten_down_rate')   ?? 20)),
       dontenComedyRate:     Math.round(Number(formData.get('donten_comedy_rate') ?? 10)),
+      dontenPatternWeights,
     });
   } catch (err) {
     console.error('[admin] updateKeibaSettings failed:', err);

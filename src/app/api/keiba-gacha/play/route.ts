@@ -152,7 +152,7 @@ export async function POST(request: Request) {
       // forcedWin 時に down/comedy は無効化 → 上振れに変換
       const effectiveType = (forcedWin && dontenType !== 'up') ? 'up' : dontenType;
 
-      const pattern = selectDontenPattern(fanfareCourse.id, chara.id, effectiveType);
+      const pattern = selectDontenPattern(fanfareCourse.id, chara.id, effectiveType, settings.dontenPatternWeights);
 
       if (pattern) {
         // forcedWin なのにパターンがハズレの場合はスキップ（通常フローにフォールバック）

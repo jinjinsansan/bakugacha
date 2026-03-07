@@ -44,6 +44,8 @@ export interface KeibaSettings {
   dontenDownRate: number;
   /** どんでんコメディ割合（%） */
   dontenComedyRate: number;
+  /** どんでんパターン個別ウェイト: {"S10":100,"S11":0,...} 0=無効, 100=デフォルト */
+  dontenPatternWeights: Record<string, number>;
 }
 
 export interface KeibaCardIssued {

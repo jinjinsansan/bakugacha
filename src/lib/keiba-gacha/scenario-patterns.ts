@@ -75,6 +75,7 @@ export function selectDontenPattern(
   fanfareCourse: string,
   introCharaId: string,
   dontenType: DontenType,
+  patternWeights?: Record<string, number>,
 ): DontenPattern | null {
   const candidates = DONTEN_PATTERNS.filter(
     (p) =>
@@ -83,6 +84,22 @@ export function selectDontenPattern(
       p.type === dontenType,
   );
   if (candidates.length === 0) return null;
+
+  // ウェイト付きランダム選択（ウェイト0は除外）
+  if (patternWeights && Object.keys(patternWeights).length > 0) {
+    const weighted = candidates
+      .map((p) => ({ pattern: p, weight: patternWeights[p.id] ?? 100 }))
+      .filter((w) => w.weight > 0);
+    if (weighted.length === 0) return null;
+    const total = weighted.reduce((sum, w) => sum + w.weight, 0);
+    let roll = Math.random() * total;
+    for (const w of weighted) {
+      roll -= w.weight;
+      if (roll <= 0) return w.pattern;
+    }
+    return weighted[weighted.length - 1].pattern;
+  }
+
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
