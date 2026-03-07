@@ -132,11 +132,13 @@ export function buildScenario(
     file: `${char}_chance_${prePattern}.mp4`,
   });
 
-  // 4. MAIN (2-5 steps)
-  for (let i = 1; i <= videoCard.mainSceneSteps; i++) {
+  // 4. MAIN (2-5 steps) — mainStepNumbers があれば欠番に対応
+  const stepNumbers = videoCard.mainStepNumbers
+    ?? Array.from({ length: videoCard.mainSceneSteps }, (_, i) => i + 1);
+  for (const n of stepNumbers) {
     steps.push({
-      name: `main${i}`,
-      file: `${char}_${videoCard.cardId}_${i}.mp4`,
+      name: `main${n}`,
+      file: `${char}_${videoCard.cardId}_${n}.mp4`,
     });
   }
 

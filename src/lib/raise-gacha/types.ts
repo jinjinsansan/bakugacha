@@ -40,11 +40,11 @@ export interface RaiseCardDef {
   rarity: RaiseRarity;
   starLevel: number;
   mainSceneSteps: number;
+  /** 欠番がある場合に明示的なステップ番号を指定（例: [1,3,4,5]） */
+  mainStepNumbers?: number[];
   cardNumber: string;
   illustFile: string;
   effectText: string;
-  atk: number;
-  def: number;
 }
 
 export interface RaiseDondenRoute {

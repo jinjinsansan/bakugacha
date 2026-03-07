@@ -145,12 +145,6 @@ export function RaiseDigitalCard({
           <p>{def.effectText}</p>
         </div>
 
-        {/* Stats */}
-        <div className={styles.cardStats}>
-          <div className={styles.stat}>ATK/<span>{def.atk}</span></div>
-          <div className={styles.stat}>DEF/<span>{def.def}</span></div>
-        </div>
-
         {/* Card ID / Serial */}
         <div className={styles.cardId}>{cardIdText}</div>
       </div>
