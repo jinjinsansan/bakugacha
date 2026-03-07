@@ -82,19 +82,28 @@ export async function updateProduct(id: string, formData: FormData) {
 }
 
 // ── 商品削除 ──────────────────────────────────────────────────
-export async function deleteProduct(id: string) {
+export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();
   const supabase = getServiceSupabase();
 
   // 関連する gacha_results の product_id を NULL にして外部キー制約を解除
-  await supabase.from('gacha_results').update({ product_id: null }).eq('product_id', id);
+  const { error: fkError } = await supabase
+    .from('gacha_results')
+    .update({ product_id: null })
+    .eq('product_id', id);
+  if (fkError) {
+    console.error('[deleteProduct] FK解除失敗:', fkError);
+    return { ok: false, error: `関連データの解除に失敗: ${fkError.message}` };
+  }
 
   const { error } = await supabase.from('gacha_products').delete().eq('id', id);
   if (error) {
     console.error('[deleteProduct]', error);
-    throw new Error(`削除に失敗しました: ${error.message}`);
+    return { ok: false, error: `削除に失敗: ${error.message}` };
   }
+
   revalidatePath('/admin/products');
+  return { ok: true };
 }
 
 // ── バナー作成 ──────────────────────────────────────────────────

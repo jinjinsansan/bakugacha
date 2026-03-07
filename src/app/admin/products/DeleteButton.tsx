@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 
-export function DeleteButton({ title, deleteAction }: { title: string; deleteAction: () => Promise<void> }) {
+export function DeleteButton({ title, deleteAction }: { title: string; deleteAction: () => Promise<{ ok: boolean; error?: string }> }) {
   const [pending, startTransition] = useTransition();
 
   return (
@@ -13,10 +13,9 @@ export function DeleteButton({ title, deleteAction }: { title: string; deleteAct
       onClick={() => {
         if (!confirm(`「${title}」を削除しますか？`)) return;
         startTransition(async () => {
-          try {
-            await deleteAction();
-          } catch (e) {
-            alert(`削除に失敗しました: ${e instanceof Error ? e.message : '不明なエラー'}`);
+          const result = await deleteAction();
+          if (!result.ok) {
+            alert(result.error ?? '削除に失敗しました');
           }
         });
       }}
