@@ -32,7 +32,7 @@ encode() {
   if [ ! -f "$src" ]; then
     echo "  ❌ ソースなし: $(basename "$src")"
     fail=$((fail+1))
-    return 1
+    return 0
   fi
 
   echo "  🔄 エンコード中: $name"
@@ -128,4 +128,4 @@ echo "   健太: $KENTA_OUT ($(ls $KENTA_OUT 2>/dev/null | wc -l) ファイル)"
 echo "   正一: $SHOICHI_OUT ($(ls $SHOICHI_OUT 2>/dev/null | wc -l) ファイル)"
 echo "═══════════════════════════════════"
 echo ""
-echo "次: bash scripts/upload-raise-mobile-r2.sh"
+echo "次: python3 scripts/upload-raise-mobile-r2.py"
