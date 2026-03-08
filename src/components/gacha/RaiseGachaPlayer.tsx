@@ -519,7 +519,7 @@ function ActivePlayer({
                   <video
                     ref={videoRef}
                     src={resolvedSrc}
-                    className="absolute inset-0 block h-full w-full object-cover"
+                    className={`absolute inset-0 block h-full w-full ${isStandby ? 'object-contain' : 'object-cover'}`}
                     autoPlay muted preload="auto"
                     loop={isLoop}
                     playsInline
