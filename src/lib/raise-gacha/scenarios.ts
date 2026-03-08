@@ -72,17 +72,13 @@ export function findDondenRoute(characterId: RaiseCharacterId, fromCardId: strin
   return pickRandom(candidates);
 }
 
-/** デコイカード（ハズレ時に映像を流すための）をランダムに選ぶ */
-function pickDecoyCard(characterId: RaiseCharacterId): RaiseCardDef {
-  const cards = getAllCards(characterId).filter((c) => c.cardId !== 'hazure' && c.mainSceneSteps > 0);
-  return pickRandom(cards);
-}
 
 /**
  * シナリオ構築
- * - ハズレ時: ランダムなカード(decoyCard)の映像を流す → 最後にハズレカード表示
- * - 当選時: 当選カードの映像をそのまま流す → カード表示
- * - どんでん: fromCardの映像→どんでん映像→toCardで表示
+ * tensei に準拠:
+ * - ハズレ時: 映像なし（空）→ 直接ハズレカード表示（デコイ映像は流さない）
+ * - 当選時: TITLE → PRE × 2 → CHANCE → MAIN → (DONDEN × 2 if donden) → カード表示
+ * - どんでん: fromCardの映像 → どんでん映像 → toCardで表示
  */
 export function buildScenario(
   characterId: RaiseCharacterId,
@@ -91,21 +87,29 @@ export function buildScenario(
   hasDonden: boolean,
   dondenRoute?: RaiseDondenRoute,
 ): RaiseScenario {
+  // ハズレ時は映像なし → 直接結果表示（tensei仕様）
+  if (isLoss) {
+    return {
+      characterId,
+      isLoss: true,
+      cardId: 'hazure',
+      starLevel: 0,
+      rarity: 'N',
+      hasDonden: false,
+      steps: [],
+    };
+  }
+
   const char = characterId;
   const cardMap = getCardMap(characterId);
 
   // 表示するカード
   const resultCard = cardMap.get(cardId)!;
 
-  // 映像に使うカード（ハズレ時はデコイ）
-  let videoCard: RaiseCardDef;
-  if (isLoss) {
-    videoCard = pickDecoyCard(characterId);
-  } else if (hasDonden && dondenRoute) {
-    videoCard = cardMap.get(dondenRoute.fromCardId) ?? resultCard;
-  } else {
-    videoCard = resultCard;
-  }
+  // 映像に使うカード（どんでん時は fromCard）
+  const videoCard: RaiseCardDef = (hasDonden && dondenRoute)
+    ? (cardMap.get(dondenRoute.fromCardId) ?? resultCard)
+    : resultCard;
 
   const steps: RaiseStep[] = [];
 
@@ -155,19 +159,14 @@ export function buildScenario(
     });
   }
 
-  // 6. CARD_REVEAL — 最後のステップ（autoAdvance で結果画面へ）
-  // autoAdvance flag on the last main or donden step
-  if (steps.length > 0) {
-    const lastStep = steps[steps.length - 1];
-    if (!hasDonden) {
-      // 最後のmainステップをautoAdvanceにする
-      lastStep.autoAdvance = true;
-    }
+  // 6. 最後の main ステップに autoAdvance を設定（どんでんなし時）
+  if (steps.length > 0 && !hasDonden) {
+    steps[steps.length - 1].autoAdvance = true;
   }
 
   return {
     characterId,
-    isLoss,
+    isLoss: false,
     cardId: resultCard.cardId,
     starLevel: resultCard.starLevel,
     rarity: resultCard.rarity,
