@@ -8,6 +8,8 @@ export interface RaiseStep {
   name: string;
   file: string;
   autoAdvance?: boolean;
+  /** basePath を無視してこのURLを直接使う（共通映像など） */
+  src?: string;
 }
 
 export interface RaiseScenario {

@@ -46,7 +46,8 @@ function isAutoAdvanceStep(step: RaiseStep): boolean {
 }
 
 function stepToSrc(step: RaiseStep, basePath: string): string {
-  return `${basePath}/${step.file}?v=${VIDEO_VERSION}`;
+  const base = step.src ?? `${basePath}/${step.file}`;
+  return `${base}?v=${VIDEO_VERSION}`;
 }
 
 function getAllVideoSources(steps: RaiseStep[], basePath: string): string[] {
@@ -297,12 +298,8 @@ function ActivePlayer({
         const res = await startRaiseGacha(productId, quality, characterId);
         if (cancelled) return;
         setPlayState({ status: 'ready', ...res });
-        const STANDBY_FILES = [
-          'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
-          'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
-        ];
-        const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
-        setCurrentSrc(buildGachaAssetPath('cd2', 'standby', picked));
+        const folder = quality === 'low' ? `raise-${characterId}-mobile` : `raise-${characterId}`;
+        setCurrentSrc(buildGachaAssetPath(folder, `${characterId}_standby.mp4`));
         setIsStandby(true);
         setVideoReady(false);
       } catch (err) {
@@ -440,15 +437,11 @@ function ActivePlayer({
     lastReadyKeyRef.current = null;
     setShowResult(false);
     setVideoReady(false);
-    const STANDBY_FILES = [
-      'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
-      'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
-    ];
-    const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
-    setCurrentSrc(buildGachaAssetPath('cd2', 'standby', picked));
+    const folder = quality === 'low' ? `raise-${characterId}-mobile` : `raise-${characterId}`;
+    setCurrentSrc(buildGachaAssetPath(folder, `${characterId}_standby.mp4`));
     setIsStandby(true);
     setStepIdx(0);
-  }, [clearVideoSrc]);
+  }, [clearVideoSrc, quality, characterId]);
 
   const handleSkip = useCallback(() => {
     setShowResult(true);

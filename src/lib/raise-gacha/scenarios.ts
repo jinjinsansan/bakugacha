@@ -3,6 +3,7 @@ import type { RaiseCharacterId, RaiseStep, RaiseScenario, RaiseCardDef, RaiseDon
 import { KENTA_CARD_MAP, ALL_KENTA_CARDS, KENTA_DONDEN_ROUTES, getKentaCardByStarLevel } from './cards-kenta';
 import { SHOICHI_CARD_MAP, ALL_SHOICHI_CARDS, SHOICHI_DONDEN_ROUTES, getShoichiCardByStarLevel } from './cards-shoichi';
 import { weightedRandomIndex, pickRandom } from './utils';
+import { buildGachaAssetPath } from '@/lib/gacha/assets';
 
 // ── ヘルパー ──────────────────────────────────────────────────
 
@@ -81,16 +82,10 @@ export function findDondenRoute(characterId: RaiseCharacterId, fromCardId: strin
   return pickRandom(candidates);
 }
 
-/** ハズレ時のデコイカード（映像演出用）をランダムに選ぶ */
-function pickDecoyCard(characterId: RaiseCharacterId): RaiseCardDef {
-  const cards = getAllCards(characterId).filter((c) => c.cardId !== 'hazure' && c.mainSceneSteps > 0);
-  return pickRandom(cards);
-}
-
 /**
  * シナリオ構築
- * - ハズレ時: デコイカードの映像を流す → 最後にハズレカード表示（ドキドキ感を演出）
- * - 当選時: TITLE → PRE × 2 → CHANCE → MAIN → カード表示
+ * - ハズレ時: 示唆映像(ハズレ) → ハズレカード表示
+ * - 当選時: 示唆映像(当たり) → TITLE → PRE × 2 → CHANCE → MAIN → カード表示
  * - どんでん: fromCardの映像 → どんでん映像 → toCardで表示
  */
 export function buildScenario(
@@ -103,75 +98,67 @@ export function buildScenario(
   const char = characterId;
   const cardMap = getCardMap(characterId);
 
-  // 表示するカード
   const resultCard = cardMap.get(cardId)!;
 
-  // 映像に使うカード
-  // ハズレ: デコイ（ランダムカード）/ どんでん: fromCard / 通常: resultCard
-  let videoCard: RaiseCardDef;
-  if (isLoss) {
-    videoCard = pickDecoyCard(characterId);
-  } else if (hasDonden && dondenRoute) {
-    videoCard = cardMap.get(dondenRoute.fromCardId) ?? resultCard;
-  } else {
-    videoCard = resultCard;
-  }
-
+  const commonBase = buildGachaAssetPath('raise-common');
   const steps: RaiseStep[] = [];
 
-  // 1. TITLE
-  steps.push({
-    name: 'title',
-    file: `${char}_title_${videoCard.cardId}.mp4`,
-  });
-
-  // 2. PRE (2 steps) — ランダムなパターン(a-d)
-  const prePattern = pickRandom([...PRE_PATTERNS]);
-  steps.push({
-    name: 'pre1',
-    file: `${char}_pre_${prePattern}1.mp4`,
-  });
-  steps.push({
-    name: 'pre2',
-    file: `${char}_pre_${prePattern}2.mp4`,
-  });
-
-  // 3. CHANCE
-  steps.push({
-    name: 'chance',
-    file: `${char}_chance_${prePattern}.mp4`,
-  });
-
-  // 4. MAIN (2-5 steps) — mainStepNumbers があれば欠番に対応
-  const stepNumbers = videoCard.mainStepNumbers
-    ?? Array.from({ length: videoCard.mainSceneSteps }, (_, i) => i + 1);
-  for (const n of stepNumbers) {
+  if (isLoss) {
+    // ハズレ: 示唆映像のみ → autoAdvance でカード表示へ
     steps.push({
-      name: `main${n}`,
-      file: `${char}_${videoCard.cardId}_${n}.mp4`,
-    });
-  }
-
-  // 5. DONDEN (optional, 2 steps)
-  if (hasDonden && dondenRoute) {
-    steps.push({
-      name: 'donden1',
-      file: `${char}_rev_${dondenRoute.fromCardId}_${dondenRoute.toCardId}_1.mp4`,
-    });
-    steps.push({
-      name: 'donden2',
-      file: `${char}_rev_${dondenRoute.fromCardId}_${dondenRoute.toCardId}_2.mp4`,
+      name: 'loss_hint',
+      file: 'tensei_loss_hint.mp4',
+      src: `${commonBase}/tensei_loss_hint.mp4`,
       autoAdvance: true,
     });
+  } else {
+    // 当たり: 示唆映像 → タイトル以降
+    steps.push({
+      name: 'win_hint',
+      file: 'tensei_win_hint.mp4',
+      src: `${commonBase}/tensei_win_hint.mp4`,
+      autoAdvance: true,
+    });
+
+    // 映像に使うカード（どんでんはfromCard）
+    const videoCard: RaiseCardDef = (hasDonden && dondenRoute)
+      ? (cardMap.get(dondenRoute.fromCardId) ?? resultCard)
+      : resultCard;
+
+    // TITLE
+    steps.push({
+      name: 'title',
+      file: `${char}_title_${videoCard.cardId}.mp4`,
+    });
+
+    // PRE (2 steps)
+    const prePattern = pickRandom([...PRE_PATTERNS]);
+    steps.push({ name: 'pre1', file: `${char}_pre_${prePattern}1.mp4` });
+    steps.push({ name: 'pre2', file: `${char}_pre_${prePattern}2.mp4` });
+
+    // CHANCE
+    steps.push({ name: 'chance', file: `${char}_chance_${prePattern}.mp4` });
+
+    // MAIN
+    const stepNumbers = videoCard.mainStepNumbers
+      ?? Array.from({ length: videoCard.mainSceneSteps }, (_, i) => i + 1);
+    for (const n of stepNumbers) {
+      steps.push({ name: `main${n}`, file: `${char}_${videoCard.cardId}_${n}.mp4` });
+    }
+
+    // DONDEN
+    if (hasDonden && dondenRoute) {
+      steps.push({ name: 'donden1', file: `${char}_rev_${dondenRoute.fromCardId}_${dondenRoute.toCardId}_1.mp4` });
+      steps.push({ name: 'donden2', file: `${char}_rev_${dondenRoute.fromCardId}_${dondenRoute.toCardId}_2.mp4`, autoAdvance: true });
+    }
+
+    // 最後の main ステップに autoAdvance（どんでんなし時）
+    if (!hasDonden) {
+      steps[steps.length - 1].autoAdvance = true;
+    }
   }
 
-  // 6. 最後の main ステップに autoAdvance を設定（どんでんなし時）
-  if (steps.length > 0 && !hasDonden) {
-    steps[steps.length - 1].autoAdvance = true;
-  }
-
-  // ハズレ・どんでん: デコイ/fromCard映像 → ミスリード低★ / 通常当選: 高★
-  const starDisplay = selectTitleStars(!isLoss && !hasDonden);
+  const starDisplay = isLoss ? 0 : selectTitleStars(!hasDonden);
 
   return {
     characterId,

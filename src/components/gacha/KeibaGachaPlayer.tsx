@@ -378,12 +378,8 @@ function ActivePlayer({
         const res = await startKeibaGacha(productId, quality);
         if (cancelled) return;
         setPlayState({ status: 'ready', ...res });
-        const STANDBY_FILES = [
-          'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
-          'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
-        ];
-        const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
-        setCurrentSrc(buildGachaAssetPath('cd2', 'standby', picked));
+        const standbyFolder = quality === 'low' ? 'keiba-mobile' : 'keiba';
+        setCurrentSrc(buildGachaAssetPath(standbyFolder, 'keiba_standby.mp4'));
         setIsStandby(true);
         setVideoReady(false);
       } catch (err) {
@@ -529,15 +525,11 @@ function ActivePlayer({
     lastReadyKeyRef.current = null;
     setShowResult(false);
     setVideoReady(false);
-    const STANDBY_FILES = [
-      'blackstandby.mp4', 'bluestandby.mp4', 'rainbowstandby.mp4',
-      'redstandby.mp4', 'whitestandby.mp4', 'yellowstandby.mp4',
-    ];
-    const picked = STANDBY_FILES[Math.floor(Math.random() * STANDBY_FILES.length)];
-    setCurrentSrc(buildGachaAssetPath('cd2', 'standby', picked));
+    const standbyFolder = quality === 'low' ? 'keiba-mobile' : 'keiba';
+    setCurrentSrc(buildGachaAssetPath(standbyFolder, 'keiba_standby.mp4'));
     setIsStandby(true);
     setStepIdx(0);
-  }, [clearVideoSrc]);
+  }, [clearVideoSrc, quality]);
 
   const handleSkip = useCallback(() => {
     setShowResult(true);
