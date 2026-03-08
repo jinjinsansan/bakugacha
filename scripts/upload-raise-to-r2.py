@@ -3,7 +3,7 @@
 来世ガチャ映像・カード画像をbakugatcha R2にアップロードするスクリプト
 
 映像ソース: tensei プロジェクトの 健太映像/ 昭一映像/
-カード画像: tensei プロジェクトの 健太編カード修正/ 正一編修正カード/
+カード画像: tensei プロジェクトの kenta_cards/ shoichi_cards_v2/ (プレーンイラスト)
 
 R2 アップロード先:
   raise-kenta/   ← 健太映像/*.mp4
@@ -27,10 +27,20 @@ VIDEO_SOURCES = [
     (TENSEI_ROOT / '昭一映像',  'raise-shoichi'),
 ]
 
-# カード画像ソースフォルダ → R2 プレフィックス
-CARD_SOURCES = [
-    (TENSEI_ROOT / '健太編カード修正',  'raise-cards'),
-    (TENSEI_ROOT / '正一編修正カード',   'raise-cards'),
+# 健太カード: kenta_cards/ はプレフィックスなし + 一部名称違いがあるため明示マッピング
+KENTA_CARD_MAP = [
+    ('card01_convenience.png',   'kenta_card01_convenience.png'),
+    ('card02_warehouse.png',     'kenta_card02_warehouse.png'),
+    ('card03_youtuber.png',      'kenta_card03_youtuber.png'),
+    ('card04_civil_servant.png', 'kenta_card04_civil_servant.png'),
+    ('card05_ramen.png',         'kenta_card05_ramen.png'),
+    ('card06_boxer.png',         'kenta_card06_boxer.png'),
+    ('card07_surgeon.png',       'kenta_card07_surgeon.png'),
+    ('card08_business_owner.png','kenta_card08_business.png'),    # business_owner → business
+    ('card09_mercenary.png',     'kenta_card09_mercenary.png'),
+    ('card10_rockstar.png',      'kenta_card10_rockstar.png'),
+    ('card11_demon_king.png',    'kenta_card11_demon_lord.png'),  # demon_king → demon_lord
+    ('card12_hero.png',          'kenta_card12_hero.png'),
 ]
 
 def load_env():
@@ -89,12 +99,25 @@ def main():
         for f in sorted(src_dir.glob('*.mp4')):
             tasks.append((f, f'{prefix}/{f.name}'))
 
-    for src_dir, prefix in CARD_SOURCES:
-        if not src_dir.exists():
-            print(f'[WARN] {src_dir} が見つかりません、スキップ')
-            continue
-        for f in sorted(src_dir.glob('*.png')):
-            tasks.append((f, f'{prefix}/{f.name}'))
+    # 健太カード (明示マッピング)
+    kenta_dir = TENSEI_ROOT / 'kenta_cards'
+    if not kenta_dir.exists():
+        print(f'[WARN] {kenta_dir} が見つかりません、スキップ')
+    else:
+        for src_name, dst_name in KENTA_CARD_MAP:
+            src = kenta_dir / src_name
+            if src.exists():
+                tasks.append((src, f'raise-cards/{dst_name}'))
+            else:
+                print(f'[WARN] {src} が見つかりません、スキップ')
+
+    # 正一カード (shoichi_cards_v2/ はファイル名そのまま)
+    shoichi_dir = TENSEI_ROOT / 'shoichi_cards_v2'
+    if not shoichi_dir.exists():
+        print(f'[WARN] {shoichi_dir} が見つかりません、スキップ')
+    else:
+        for f in sorted(shoichi_dir.glob('shoichi_card*.png')):
+            tasks.append((f, f'raise-cards/{f.name}'))
 
     if not tasks:
         print('アップロード対象が見つかりません')
