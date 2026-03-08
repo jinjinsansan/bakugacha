@@ -18,6 +18,8 @@ export interface RaiseScenario {
   rarity: RaiseRarity;
   hasDonden: boolean;
   steps: RaiseStep[];
+  /** タイトル映像中に表示する期待度★（1-5）。LOSS時は0 */
+  starDisplay: number;
 }
 
 export interface RaiseSettings {

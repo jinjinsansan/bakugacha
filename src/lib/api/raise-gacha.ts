@@ -9,6 +9,7 @@ export type RaisePlayResponse = {
   rarity: string;
   hasDonden: boolean;
   steps: RaiseStep[];
+  starDisplay: number;
   videoBasePath: string;
   card: {
     serialNumber: string;

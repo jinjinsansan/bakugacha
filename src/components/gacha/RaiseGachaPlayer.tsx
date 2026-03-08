@@ -7,6 +7,7 @@ import { startRaiseGacha } from '@/lib/api/raise-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import { RaiseDigitalCard } from '@/components/gacha/raise/RaiseDigitalCard';
+import { StarOverlay } from '@/components/gacha/overlays/StarOverlay';
 import { downloadRaiseCardAsPng } from '@/lib/raise-gacha/card-download';
 import { getCardDef, rarityToCssClass } from '@/lib/raise-gacha/scenarios';
 import type { RaiseStep, RaiseCharacterId } from '@/lib/raise-gacha/types';
@@ -25,6 +26,7 @@ type PlayState =
       rarity: string;
       hasDonden: boolean;
       steps: RaiseStep[];
+      starDisplay: number;
       videoBasePath: string;
       card: {
         serialNumber: string;
@@ -322,9 +324,12 @@ function ActivePlayer({
   const steps          = playState.status === 'ready' ? playState.steps : [];
   const basePath       = playState.status === 'ready' ? playState.videoBasePath : '';
   const cardInfo       = playState.status === 'ready' ? playState.card : null;
+  const starDisplay    = playState.status === 'ready' ? playState.starDisplay : 0;
 
   const currentStep = !isStandby ? steps[stepIdx] : undefined;
   const isAutoStep = currentStep ? isAutoAdvanceStep(currentStep) : false;
+
+  const showStarOverlay = !isStandby && !showResult && currentStep?.name === 'title' && starDisplay > 0;
 
   // 解決済みURL
   const resolvedSrc = useMemo(() => {
@@ -533,6 +538,7 @@ function ActivePlayer({
                   />
                   <div className="pointer-events-none absolute inset-0 bg-black"
                     style={{ opacity: videoReady ? 0 : 1 }} />
+                  {showStarOverlay && <StarOverlay starCount={starDisplay} />}
                 </div>
               )}
             </div>
@@ -596,6 +602,7 @@ function ActivePlayer({
               />
               <div className="pointer-events-none absolute inset-0 bg-black"
                 style={{ opacity: videoReady ? 0 : 1 }} />
+              {showStarOverlay && <StarOverlay starCount={starDisplay} />}
             </div>
 
             {showStandbyStart && (

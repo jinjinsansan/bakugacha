@@ -37,6 +37,15 @@ export function rarityToCssClass(rarity: RaiseRarity): RaiseCardRarity {
   }
 }
 
+// ── 期待度★選択（tensei title-video-selector 準拠） ────────────
+
+/** タイトル映像中に表示する期待度★（1-5）を重み付きランダムで決定 */
+export function selectTitleStars(isRealCard: boolean): number {
+  // isRealCard=true: 4-5★ に偏る / false: 1-2★ に偏る（どんでんミスリード）
+  const weights = isRealCard ? [5, 10, 15, 35, 35] : [30, 30, 20, 15, 5];
+  return weightedRandomIndex(weights) + 1;
+}
+
 // ── Pre-scene パターン ─────────────────────────────────────────
 
 const PRE_PATTERNS = ['a', 'b', 'c', 'd'] as const;
@@ -97,6 +106,7 @@ export function buildScenario(
       rarity: 'N',
       hasDonden: false,
       steps: [],
+      starDisplay: 0,
     };
   }
 
@@ -164,6 +174,9 @@ export function buildScenario(
     steps[steps.length - 1].autoAdvance = true;
   }
 
+  // どんでん時はタイトルが fromCard（ミスリード）→ 低★ / 通常は高★
+  const starDisplay = selectTitleStars(!hasDonden);
+
   return {
     characterId,
     isLoss: false,
@@ -172,6 +185,7 @@ export function buildScenario(
     rarity: resultCard.rarity,
     hasDonden,
     steps,
+    starDisplay,
   };
 }
 

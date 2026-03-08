@@ -209,6 +209,7 @@ export async function POST(request: Request) {
       rarity: scenario.rarity,
       hasDonden: scenario.hasDonden,
       steps: scenario.steps,
+      starDisplay: scenario.starDisplay,
       videoBasePath: buildGachaAssetPath(baseFolder),
       card: cardData,
     });
