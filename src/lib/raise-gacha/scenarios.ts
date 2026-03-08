@@ -81,12 +81,16 @@ export function findDondenRoute(characterId: RaiseCharacterId, fromCardId: strin
   return pickRandom(candidates);
 }
 
+/** ハズレ時のデコイカード（映像演出用）をランダムに選ぶ */
+function pickDecoyCard(characterId: RaiseCharacterId): RaiseCardDef {
+  const cards = getAllCards(characterId).filter((c) => c.cardId !== 'hazure' && c.mainSceneSteps > 0);
+  return pickRandom(cards);
+}
 
 /**
  * シナリオ構築
- * tensei に準拠:
- * - ハズレ時: 映像なし（空）→ 直接ハズレカード表示（デコイ映像は流さない）
- * - 当選時: TITLE → PRE × 2 → CHANCE → MAIN → (DONDEN × 2 if donden) → カード表示
+ * - ハズレ時: デコイカードの映像を流す → 最後にハズレカード表示（ドキドキ感を演出）
+ * - 当選時: TITLE → PRE × 2 → CHANCE → MAIN → カード表示
  * - どんでん: fromCardの映像 → どんでん映像 → toCardで表示
  */
 export function buildScenario(
@@ -96,30 +100,22 @@ export function buildScenario(
   hasDonden: boolean,
   dondenRoute?: RaiseDondenRoute,
 ): RaiseScenario {
-  // ハズレ時は映像なし → 直接結果表示（tensei仕様）
-  if (isLoss) {
-    return {
-      characterId,
-      isLoss: true,
-      cardId: 'hazure',
-      starLevel: 0,
-      rarity: 'N',
-      hasDonden: false,
-      steps: [],
-      starDisplay: 0,
-    };
-  }
-
   const char = characterId;
   const cardMap = getCardMap(characterId);
 
   // 表示するカード
   const resultCard = cardMap.get(cardId)!;
 
-  // 映像に使うカード（どんでん時は fromCard）
-  const videoCard: RaiseCardDef = (hasDonden && dondenRoute)
-    ? (cardMap.get(dondenRoute.fromCardId) ?? resultCard)
-    : resultCard;
+  // 映像に使うカード
+  // ハズレ: デコイ（ランダムカード）/ どんでん: fromCard / 通常: resultCard
+  let videoCard: RaiseCardDef;
+  if (isLoss) {
+    videoCard = pickDecoyCard(characterId);
+  } else if (hasDonden && dondenRoute) {
+    videoCard = cardMap.get(dondenRoute.fromCardId) ?? resultCard;
+  } else {
+    videoCard = resultCard;
+  }
 
   const steps: RaiseStep[] = [];
 
@@ -174,12 +170,12 @@ export function buildScenario(
     steps[steps.length - 1].autoAdvance = true;
   }
 
-  // どんでん時はタイトルが fromCard（ミスリード）→ 低★ / 通常は高★
-  const starDisplay = selectTitleStars(!hasDonden);
+  // ハズレ・どんでん: デコイ/fromCard映像 → ミスリード低★ / 通常当選: 高★
+  const starDisplay = selectTitleStars(!isLoss && !hasDonden);
 
   return {
     characterId,
-    isLoss: false,
+    isLoss,
     cardId: resultCard.cardId,
     starLevel: resultCard.starLevel,
     rarity: resultCard.rarity,
