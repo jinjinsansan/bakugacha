@@ -16,6 +16,8 @@ export interface KeibaCardDef {
   atk: number;
   def: number;
   illustFile: string;  // R2 key under keiba-cards/
+  illustBgPos?: string; // background-position override (e.g. 'center top')
+  illustBgSize?: string; // background-size override (e.g. '120%')
 }
 
 const CARD_DEFS: KeibaCardDef[] = [
@@ -47,6 +49,8 @@ const CARD_DEFS: KeibaCardDef[] = [
     atk: 1800,
     def: 1600,
     illustFile: 'A-01_shirogane.png',
+    illustBgPos: 'center top',
+    illustBgSize: 'cover',
   },
   {
     charaId: 'darkbolt',

@@ -116,7 +116,11 @@ export function KeibaDigitalCard({
         {/* Illustration — background-imageでhtml2canvasのobject-fit非対応を回避 */}
         <div
           className={styles.cardIllust}
-          style={{ backgroundImage: `url(${illustUrl})` }}
+          style={{
+            backgroundImage: `url(${illustUrl})`,
+            backgroundPosition: def.illustBgPos ?? 'center 15%',
+            backgroundSize: def.illustBgSize ?? 'cover',
+          }}
         >
           {holoClass && <div className={holoClass} />}
           {hasSparkles && (
@@ -135,18 +139,9 @@ export function KeibaDigitalCard({
           )}
         </div>
 
-        {/* Type */}
-        <div className={styles.cardType}>{def.typeLine}</div>
-
         {/* Effect */}
         <div className={styles.cardEffect}>
           <p>{def.effectText}</p>
-        </div>
-
-        {/* Stats */}
-        <div className={styles.cardStats}>
-          <div className={styles.stat}>ATK/<span>{def.atk}</span></div>
-          <div className={styles.stat}>DEF/<span>{def.def}</span></div>
         </div>
 
         {/* Card ID / Serial */}
