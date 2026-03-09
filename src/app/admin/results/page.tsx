@@ -29,34 +29,30 @@ export default async function AdminResultsPage() {
           <table className="w-full text-xs text-white/70">
             <thead>
               <tr className="border-b border-white/10 text-left text-white/50">
-                <th className="px-4 py-3">結果</th>
-                <th className="px-4 py-3">商品</th>
-                <th className="px-4 py-3">ユーザー</th>
-                <th className="px-4 py-3">コスト</th>
-                <th className="px-4 py-3">日時</th>
+                <th className="px-3 py-3">結果</th>
+                <th className="px-3 py-3">商品</th>
+                <th className="px-3 py-3 hidden sm:table-cell">コスト</th>
+                <th className="px-3 py-3">日時</th>
               </tr>
             </thead>
             <tbody>
               {(results ?? []).map((row) => {
-                type UserRow = { email: string };
                 type ProductRow = { title: string };
-                const uRaw = row.app_users as unknown;
-                const u: UserRow | null = (Array.isArray(uRaw) ? uRaw[0] : uRaw) as UserRow | null;
                 const pRaw = row.gacha_products as unknown;
                 const p: ProductRow | null = (Array.isArray(pRaw) ? pRaw[0] : pRaw) as ProductRow | null;
                 return (
                   <tr key={row.id} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="px-4 py-2.5">
-                      <span className={row.result === 'win'
-                        ? 'text-yellow-300 font-bold'
-                        : 'text-zinc-500'}>
+                    <td className="px-3 py-2.5">
+                      <span className={row.result === 'win' ? 'text-yellow-300 font-bold' : 'text-zinc-500'}>
                         {row.result === 'win' ? '🏆 当選' : '💀 ハズレ'}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 max-w-[140px] truncate">{p?.title ?? row.prize_name ?? '???'}</td>
-                    <td className="px-4 py-2.5 max-w-[160px] truncate text-white/40">{u?.email ?? '???'}</td>
-                    <td className="px-4 py-2.5">🪙 {(row.coins_spent as number).toLocaleString()}</td>
-                    <td className="px-4 py-2.5 text-white/40">
+                    <td className="px-3 py-2.5">
+                      <span className="block truncate max-w-[130px] sm:max-w-[200px]">{p?.title ?? row.prize_name ?? '???'}</span>
+                      <span className="sm:hidden text-white/30 text-[11px]">🪙 {(row.coins_spent as number).toLocaleString()}</span>
+                    </td>
+                    <td className="px-3 py-2.5 hidden sm:table-cell">🪙 {(row.coins_spent as number).toLocaleString()}</td>
+                    <td className="px-3 py-2.5 text-white/40 text-[11px]">
                       {new Date(row.played_at as string).toLocaleString('ja-JP', {
                         month: '2-digit', day: '2-digit',
                         hour: '2-digit', minute: '2-digit',
