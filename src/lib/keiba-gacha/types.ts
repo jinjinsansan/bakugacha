@@ -48,6 +48,8 @@ export interface KeibaSettings {
   dontenPatternWeights: Record<string, number>;
 }
 
+export type CardStatus = 'held' | 'buyback_pending' | 'transferred' | 'converted';
+
 export interface KeibaCardIssued {
   id: string;
   userId: string;
@@ -57,4 +59,6 @@ export interface KeibaCardIssued {
   serialSeq: number;
   cardNumber: string;
   issuedAt: string;
+  status: CardStatus;
+  buybackCode: string | null;
 }

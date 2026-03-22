@@ -5,9 +5,9 @@ import { fetchElevatorSettings } from '@/lib/data/elevator-gacha';
 import { fetchKeibaSettings } from '@/lib/data/keiba-gacha';
 import { fetchRaiseSettings } from '@/lib/data/raise-gacha';
 import { fetchAppSettings } from '@/lib/data/app-settings';
-import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateRaiseKentaSettings, updateRaiseShoichiSettings, updateAppSettings, updateWinnerSettings } from '@/app/admin/actions';
+import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateRaiseKentaSettings, updateRaiseShoichiSettings, updateAppSettings, updateWinnerSettings, updateCardExchangeRates } from '@/app/admin/actions';
 import { fetchCardIssuanceCounts } from '@/lib/data/keiba-cards';
-import { fetchRaiseCardIssuanceCounts } from '@/lib/data/raise-cards';
+import { fetchRaiseCardIssuanceCounts, fetchExchangeRates } from '@/lib/data/raise-cards';
 import { ALL_KEIBA_CARDS } from '@/lib/keiba-gacha/cards';
 import { ALL_KENTA_CARDS } from '@/lib/raise-gacha/cards-kenta';
 import { ALL_SHOICHI_CARDS } from '@/lib/raise-gacha/cards-shoichi';
@@ -20,7 +20,7 @@ export default async function AdminSettingsPage({
 }) {
   const params = await searchParams;
   const supabase = getServiceSupabase();
-  const [settings, ecardSettings, elevatorSettings, keibaSettings, raiseKentaSettings, raiseShoichiSettings, appSettings, cardCounts, raiseKentaCounts, raiseShoichiCounts] = await Promise.all([
+  const [settings, ecardSettings, elevatorSettings, keibaSettings, raiseKentaSettings, raiseShoichiSettings, appSettings, cardCounts, raiseKentaCounts, raiseShoichiCounts, keibaExRates, kentaExRates, shoichiExRates] = await Promise.all([
     fetchCd2Settings(supabase),
     fetchEcardSettings(supabase),
     fetchElevatorSettings(supabase),
@@ -31,6 +31,9 @@ export default async function AdminSettingsPage({
     fetchCardIssuanceCounts(supabase),
     fetchRaiseCardIssuanceCounts(supabase, 'kenta'),
     fetchRaiseCardIssuanceCounts(supabase, 'shoichi'),
+    fetchExchangeRates(supabase, 'keiba'),
+    fetchExchangeRates(supabase, 'raise_kenta'),
+    fetchExchangeRates(supabase, 'raise_shoichi'),
   ]);
 
   return (
@@ -385,6 +388,35 @@ export default async function AdminSettingsPage({
         </button>
       </form>
 
+      {/* 競馬ガチャ ポイント交換レート */}
+      <h2 className="text-lg font-black text-white mt-4">競馬ガチャ ポイント交換レート</h2>
+      <form action={updateCardExchangeRates} className="card-premium p-6 flex flex-col gap-6">
+        <input type="hidden" name="gacha_type" value="keiba" />
+        <p className="text-xs text-white/50">各カードをコインに交換する際のレートを設定します（0 = 交換不可）</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ALL_KEIBA_CARDS.map((card) => (
+            <div key={card.charaId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">
+                {'★'.repeat(card.stars)} {card.name} ({card.cardNumber})
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number" name={`rate_${card.charaId}`}
+                  defaultValue={keibaExRates[card.charaId] ?? 0}
+                  min={0}
+                  className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+                />
+                <span className="text-sm text-white/50">コイン</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
       {/* 来世ガチャ（健太編）設定 */}
       <h2 className="text-lg font-black text-white mt-4">来世ガチャ（健太編）設定</h2>
       <form action={updateRaiseKentaSettings} className="card-premium p-6 flex flex-col gap-6">
@@ -442,6 +474,35 @@ export default async function AdminSettingsPage({
         </button>
       </form>
 
+      {/* 来世ガチャ（健太編）ポイント交換レート */}
+      <h2 className="text-lg font-black text-white mt-4">来世ガチャ（健太編）ポイント交換レート</h2>
+      <form action={updateCardExchangeRates} className="card-premium p-6 flex flex-col gap-6">
+        <input type="hidden" name="gacha_type" value="raise_kenta" />
+        <p className="text-xs text-white/50">各カードをコインに交換する際のレートを設定します（0 = 交換不可）</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ALL_KENTA_CARDS.map((card) => (
+            <div key={card.cardId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">
+                {'★'.repeat(card.starLevel || 1)} {card.name} ({card.cardNumber})
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number" name={`rate_${card.cardId}`}
+                  defaultValue={kentaExRates[card.cardId] ?? 0}
+                  min={0}
+                  className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+                />
+                <span className="text-sm text-white/50">コイン</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
       {/* 来世ガチャ（正一編）設定 */}
       <h2 className="text-lg font-black text-white mt-4">来世ガチャ（正一編）設定</h2>
       <form action={updateRaiseShoichiSettings} className="card-premium p-6 flex flex-col gap-6">
@@ -489,6 +550,35 @@ export default async function AdminSettingsPage({
                 <span className="text-xs text-white/30 ml-2">
                   現在: <strong className="text-white/60">{raiseShoichiCounts[card.cardId] ?? 0}</strong>枚
                 </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      {/* 来世ガチャ（正一編）ポイント交換レート */}
+      <h2 className="text-lg font-black text-white mt-4">来世ガチャ（正一編）ポイント交換レート</h2>
+      <form action={updateCardExchangeRates} className="card-premium p-6 flex flex-col gap-6">
+        <input type="hidden" name="gacha_type" value="raise_shoichi" />
+        <p className="text-xs text-white/50">各カードをコインに交換する際のレートを設定します（0 = 交換不可）</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ALL_SHOICHI_CARDS.map((card) => (
+            <div key={card.cardId} className="flex flex-col gap-1">
+              <label className="text-xs text-white/60">
+                {'★'.repeat(card.starLevel || 1)} {card.name} ({card.cardNumber})
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number" name={`rate_${card.cardId}`}
+                  defaultValue={shoichiExRates[card.cardId] ?? 0}
+                  min={0}
+                  className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+                />
+                <span className="text-sm text-white/50">コイン</span>
               </div>
             </div>
           ))}

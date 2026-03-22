@@ -56,6 +56,8 @@ export interface RaiseDondenRoute {
   toCardId: string;
 }
 
+export type CardStatus = 'held' | 'buyback_pending' | 'transferred' | 'converted';
+
 export interface RaiseCardIssued {
   id: string;
   userId: string;
@@ -68,4 +70,6 @@ export interface RaiseCardIssued {
   rarity: string;
   starLevel: number;
   issuedAt: string;
+  status: CardStatus;
+  buybackCode: string | null;
 }

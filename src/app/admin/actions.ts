@@ -10,6 +10,7 @@ import { upsertElevatorSettings } from '@/lib/data/elevator-gacha';
 import { upsertKeibaSettings } from '@/lib/data/keiba-gacha';
 import { upsertRaiseSettings } from '@/lib/data/raise-gacha';
 import { upsertAppSettings } from '@/lib/data/app-settings';
+import { upsertExchangeRates } from '@/lib/data/raise-cards';
 
 // ── 商品作成 ──────────────────────────────────────────────────
 export async function createProduct(formData: FormData) {
@@ -476,6 +477,36 @@ export async function updateDeliveryStatus(deliveryId: string, formData: FormDat
   const { data } = await supabase.from('deliveries').select('user_id').eq('id', deliveryId).single();
   await supabase.from('deliveries').update(update).eq('id', deliveryId);
   if (data?.user_id) revalidatePath(`/admin/users/${data.user_id}`);
+}
+
+// ── カードポイント交換レート更新 ──────────────────────────────────
+export async function updateCardExchangeRates(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    const gachaType = String(formData.get('gacha_type') ?? '');
+    if (!gachaType) redirect('/admin/settings?error=1');
+
+    const rates: Record<string, number> = {};
+    for (const key of formData.keys()) {
+      if (key.startsWith('rate_')) {
+        const cardId = key.replace('rate_', '');
+        const v = formData.get(key);
+        if (v != null && String(v).trim() !== '') {
+          rates[cardId] = Number(v);
+        }
+      }
+    }
+
+    await upsertExchangeRates(supabase, gachaType, rates);
+  } catch (err) {
+    console.error('[admin] updateCardExchangeRates failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  redirect('/admin/settings?saved=1');
 }
 
 // ── 紹介ボーナス設定更新 ────────────────────────────────────────
