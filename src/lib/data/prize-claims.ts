@@ -7,18 +7,22 @@ export interface PrizeClaim {
   gachaResultId: string;
   productId: string;
   prizeName: string;
-  status: 'pending' | 'delivery_requested' | 'shipped' | 'delivered' | 'converted';
+  status: 'pending' | 'delivery_requested' | 'shipped' | 'delivered' | 'code_sent' | 'converted';
   recipientName: string | null;
   postalCode: string | null;
   address: string | null;
   phone: string | null;
   trackingNumber: string | null;
+  giftCode: string | null;
   notes: string | null;
   exchangeCoins: number;
   createdAt: string;
+  /** 管理者一覧用 */
+  userEmail?: string;
+  userDisplayName?: string;
 }
 
-const COLUMNS = 'id, user_id, gacha_result_id, product_id, prize_name, status, recipient_name, postal_code, address, phone, tracking_number, notes, created_at';
+const COLUMNS = 'id, user_id, gacha_result_id, product_id, prize_name, status, recipient_name, postal_code, address, phone, tracking_number, gift_code, notes, created_at';
 
 /** ユーザーの当選品一覧（converted除外） */
 export async function fetchUserPrizeClaims(
@@ -38,6 +42,38 @@ export async function fetchUserPrizeClaims(
   }
 
   return (data ?? []).map(mapRow);
+}
+
+/** 管理者用: 全当選品一覧（ステータスフィルター可） */
+export async function fetchAllPrizeClaims(
+  client: SupabaseClient,
+  statusFilter?: string,
+): Promise<PrizeClaim[]> {
+  let query = client
+    .from('prize_claims')
+    .select(`${COLUMNS}, gacha_products(exchange_coins), app_users(email, display_name)`)
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (statusFilter && statusFilter !== 'all') {
+    query = query.eq('status', statusFilter);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('[prize-claims] fetchAll failed:', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => {
+    const claim = mapRow(row);
+    const userRaw = row.app_users as unknown;
+    const user = (Array.isArray(userRaw) ? userRaw[0] : userRaw) as Record<string, unknown> | null;
+    claim.userEmail = (user?.email as string) ?? '';
+    claim.userDisplayName = (user?.display_name as string) ?? '';
+    return claim;
+  });
 }
 
 /** 配送希望（住所入力） */
@@ -74,7 +110,6 @@ export async function convertPrizeToCoins(
   claimId: string,
   userId: string,
 ): Promise<{ ok: boolean; coins?: number }> {
-  // claim取得
   const { data: claim } = await client
     .from('prize_claims')
     .select('id, status, product_id, prize_name')
@@ -84,7 +119,6 @@ export async function convertPrizeToCoins(
 
   if (!claim || claim.status !== 'pending') return { ok: false };
 
-  // 交換コイン数を商品から取得
   const { data: product } = await client
     .from('gacha_products')
     .select('exchange_coins')
@@ -94,13 +128,9 @@ export async function convertPrizeToCoins(
   const coins = (product?.exchange_coins as number) ?? 0;
   if (coins <= 0) return { ok: false };
 
-  // ステータス更新
   const { error } = await client
     .from('prize_claims')
-    .update({
-      status: 'converted',
-      converted_at: new Date().toISOString(),
-    })
+    .update({ status: 'converted', converted_at: new Date().toISOString() })
     .eq('id', claimId);
 
   if (error) {
@@ -108,26 +138,26 @@ export async function convertPrizeToCoins(
     return { ok: false };
   }
 
-  // コイン付与
   await grantCoins(client, userId, coins, `賞品交換: ${claim.prize_name}`);
   return { ok: true, coins };
 }
 
-/** 管理者用: ステータス更新 */
+/** 管理者用: ステータス更新（ギフトコード対応） */
 export async function updateClaimStatus(
   client: SupabaseClient,
   claimId: string,
   status: string,
-  trackingNumber?: string,
-  notes?: string,
+  opts?: { trackingNumber?: string; giftCode?: string; notes?: string },
 ): Promise<boolean> {
   const update: Record<string, unknown> = {
     status,
-    tracking_number: trackingNumber ?? null,
-    notes: notes ?? null,
+    tracking_number: opts?.trackingNumber ?? null,
+    gift_code: opts?.giftCode ?? null,
+    notes: opts?.notes ?? null,
   };
   if (status === 'shipped') update.shipped_at = new Date().toISOString();
   if (status === 'delivered') update.delivered_at = new Date().toISOString();
+  if (status === 'code_sent') update.delivered_at = new Date().toISOString();
 
   const { error } = await client
     .from('prize_claims')
@@ -157,6 +187,7 @@ function mapRow(row: Record<string, unknown>): PrizeClaim {
     address: row.address as string | null,
     phone: row.phone as string | null,
     trackingNumber: row.tracking_number as string | null,
+    giftCode: row.gift_code as string | null,
     notes: row.notes as string | null,
     exchangeCoins: (product?.exchange_coins as number) ?? 0,
     createdAt: row.created_at as string,

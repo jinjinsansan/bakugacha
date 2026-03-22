@@ -11,6 +11,7 @@ import { upsertKeibaSettings } from '@/lib/data/keiba-gacha';
 import { upsertRaiseSettings } from '@/lib/data/raise-gacha';
 import { upsertAppSettings } from '@/lib/data/app-settings';
 import { upsertExchangeRates } from '@/lib/data/raise-cards';
+import { updateClaimStatus } from '@/lib/data/prize-claims';
 
 // ── 商品作成 ──────────────────────────────────────────────────
 export async function createProduct(formData: FormData) {
@@ -421,6 +422,34 @@ export async function updateWinnerSettings(formData: FormData) {
   revalidatePath('/admin/settings');
   revalidatePath('/');
   redirect('/admin/settings?saved=1');
+}
+
+// ── 当選品ステータス更新 ────────────────────────────────────────
+export async function updatePrizeClaim(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  const claimId = String(formData.get('claim_id') ?? '');
+  const status = String(formData.get('status') ?? '');
+  const trackingNumber = formData.get('tracking_number') ? String(formData.get('tracking_number')) : undefined;
+  const giftCode = formData.get('gift_code') ? String(formData.get('gift_code')) : undefined;
+  const notes = formData.get('notes') ? String(formData.get('notes')) : undefined;
+  const currentFilter = formData.get('current_filter') ? String(formData.get('current_filter')) : '';
+
+  if (!claimId || !status) {
+    redirect('/admin/prizes?error=1');
+  }
+
+  try {
+    await updateClaimStatus(supabase, claimId, status, { trackingNumber, giftCode, notes });
+  } catch (err) {
+    console.error('[admin] updatePrizeClaim failed:', err);
+    redirect('/admin/prizes?error=1');
+  }
+
+  revalidatePath('/admin/prizes');
+  const filterParam = currentFilter && currentFilter !== 'all' ? `&status=${currentFilter}` : '';
+  redirect(`/admin/prizes?saved=1${filterParam}`);
 }
 
 // ── ユーザーブロック ─────────────────────────────────────────────

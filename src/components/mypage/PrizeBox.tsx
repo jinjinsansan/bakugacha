@@ -88,6 +88,7 @@ export function PrizeBox() {
     delivery_requested: { label: '配送手続き中', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)' },
     shipped: { label: '発送済み', color: '#4ade80', bg: 'rgba(74,222,128,0.1)' },
     delivered: { label: '配達完了', color: '#9ca3af', bg: 'rgba(156,163,175,0.1)' },
+    code_sent: { label: 'コード送付済み', color: '#4ade80', bg: 'rgba(74,222,128,0.1)' },
   };
 
   return (
@@ -126,6 +127,21 @@ export function PrizeBox() {
                   <div className="mt-2 rounded-lg px-3 py-2" style={{ background: 'rgba(74,222,128,0.1)' }}>
                     <p className="text-[10px] text-gray-400">追跡番号</p>
                     <p className="text-sm font-bold text-white select-all">{claim.trackingNumber}</p>
+                  </div>
+                )}
+
+                {/* ギフトコード（code_sent） */}
+                {claim.status === 'code_sent' && claim.giftCode && (
+                  <div className="mt-2 rounded-lg px-3 py-2" style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)' }}>
+                    <p className="text-[10px] text-green-400">ギフトコード</p>
+                    <p
+                      className="text-base font-black text-green-300 tracking-wider cursor-pointer select-all mt-0.5"
+                      onClick={() => navigator.clipboard.writeText(claim.giftCode || '')}
+                      title="クリックでコピー"
+                    >
+                      {claim.giftCode}
+                    </p>
+                    <p className="text-[9px] text-green-400/60 mt-1">タップでコピー</p>
                   </div>
                 )}
 
