@@ -80,6 +80,11 @@ export function ProductFormFields({
         <Field name="sort_order" label="表示順" type="number" defaultValue={(defaults?.sort_order as string) ?? '0'} />
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Field name="exchange_coins" label="コイン交換レート" type="number" placeholder="0=交換不可" defaultValue={(defaults?.exchange_coins as string) ?? '0'} />
+      </div>
+      <p className="text-xs text-white/40 -mt-2">当選品をコインに交換する際のコイン数（CD2/ROYALガチャ用。0=交換不可）</p>
+
       <div className="flex items-center gap-6">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-white/60">ステータス</label>

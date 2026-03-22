@@ -129,29 +129,38 @@ export async function POST(request: Request) {
     // 期待度★
     const expectationStars = computeExpectationStars(settings.star5Rate, settings.star4Rate);
 
-    // コイン消費 & 結果保存（非同期・失敗しても結果は返す）
+    // コイン消費 & 結果保存
     if (user && productId) {
-      const savePromises: Promise<unknown>[] = [];
-
       if (!isAdmin && price > 0) {
-        savePromises.push(
-          deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error),
-        );
+        await deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error);
       }
 
-      savePromises.push(
-        Promise.resolve(
-          supabase.from('gacha_results').insert({
-            user_id: user.id,
-            product_id: productId,
-            result: scenario.isWin ? 'win' : 'loss',
-            prize_name: product?.title ?? productId,
-            coins_spent: price,
-          }),
-        ).then(({ error }) => { if (error) console.error('[gacha_results insert]', error); }),
-      );
+      const { data: resultRow, error: resultError } = await supabase
+        .from('gacha_results')
+        .insert({
+          user_id: user.id,
+          product_id: productId,
+          result: scenario.isWin ? 'win' : 'loss',
+          prize_name: product?.title ?? productId,
+          coins_spent: price,
+        })
+        .select('id')
+        .single();
 
-      await Promise.all(savePromises);
+      if (resultError) {
+        console.error('[gacha_results insert]', resultError);
+      }
+
+      // 当選時は prize_claims に登録
+      if (scenario.isWin && resultRow?.id) {
+        await supabase.from('prize_claims').insert({
+          user_id: user.id,
+          gacha_result_id: resultRow.id,
+          product_id: productId,
+          prize_name: product?.title ?? productId,
+          status: 'pending',
+        }).then(({ error }) => { if (error) console.error('[prize_claims insert]', error); });
+      }
 
       // 在庫デクリメント & sold-out 自動化
       if (product && product.stock_remaining != null) {

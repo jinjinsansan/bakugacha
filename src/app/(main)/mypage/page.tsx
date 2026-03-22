@@ -5,6 +5,7 @@ import { getUserFromSession } from '@/lib/data/session';
 import { fetchAppSettings } from '@/lib/data/app-settings';
 import { logoutAction } from '@/app/(auth)/actions';
 import { CopyReferralLink } from '@/components/referral/CopyReferralLink';
+import { PrizeBox } from '@/components/mypage/PrizeBox';
 import { KeibaCardCollection } from '@/components/mypage/KeibaCardCollection';
 import { RaiseCardCollection } from '@/components/mypage/RaiseCardCollection';
 
@@ -118,6 +119,9 @@ export default async function MyPage() {
           </Link>
         </div>
       </div>
+
+      {/* 当選品ボックス */}
+      <PrizeBox />
 
       {/* カードコレクション */}
       <KeibaCardCollection />
