@@ -92,13 +92,18 @@ export function ProductFormFields({
             name="win_rate_override"
             label="当選率 (%)"
             type="number"
-            placeholder="空欄=共通設定を使用 / 例: 1.0"
+            step="any"
+            min={0}
+            max={100}
+            placeholder="空欄=共通設定を使用 / 例: 0.1"
             defaultValue={defaults?.win_rate_override != null ? String(defaults.win_rate_override) : ''}
           />
           <Field
             name="max_winners"
             label="当選上限（台数）"
             type="number"
+            step={1}
+            min={0}
             placeholder="空欄=無制限 / 例: 100"
             defaultValue={defaults?.max_winners != null ? String(defaults.max_winners) : ''}
           />
@@ -133,7 +138,7 @@ export function ProductFormFields({
 }
 
 function Field({
-  name, label, type = 'text', placeholder, required, defaultValue, readOnly, multiline,
+  name, label, type = 'text', placeholder, required, defaultValue, readOnly, multiline, step, min, max,
 }: {
   name: string;
   label: string;
@@ -143,6 +148,9 @@ function Field({
   defaultValue?: string;
   readOnly?: boolean;
   multiline?: boolean;
+  step?: string | number;
+  min?: string | number;
+  max?: string | number;
 }) {
   const cls = 'rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-yellow-400/50 w-full disabled:opacity-50';
   return (
@@ -156,6 +164,7 @@ function Field({
       ) : (
         <input name={name} type={type} placeholder={placeholder} required={required}
           defaultValue={defaultValue} readOnly={readOnly} disabled={readOnly}
+          step={step} min={min} max={max}
           className={cls} />
       )}
     </div>
