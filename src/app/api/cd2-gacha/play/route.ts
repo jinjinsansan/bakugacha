@@ -1,10 +1,15 @@
+export const runtime = 'nodejs';
+export const maxDuration = 15;
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
 import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';
-import { deductCoins } from '@/lib/data/coins';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
+import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
+import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 const WIN_STAR_WEIGHTS  = [5, 10, 20, 30, 35];
@@ -93,6 +98,16 @@ export async function POST(request: Request) {
     const quality = normalizeQuality(body?.quality);
 
     const supabase = getServiceSupabase();
+
+    // Rate limit: 10秒に10回まで
+    const rl = await checkGachaRateLimit(supabase, getClientIp(request));
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'リクエストが多すぎます。しばらく待ってから再試行してください。' },
+        { status: 429 },
+      );
+    }
+
     const settings = await fetchCd2Settings(supabase);
 
     if (!settings.isEnabled) {
@@ -116,7 +131,7 @@ export async function POST(request: Request) {
     const isAdmin = (!!user?.line_user_id && adminLineIds.includes(user.line_user_id as string))
                  || (!!user?.email && adminEmails.includes(user.email as string));
 
-    // 在庫切れチェック
+    // 早期チェック (RPC が最終的な正としてチェックする)
     if (product && product.stock_remaining != null && product.stock_remaining <= 0) {
       return NextResponse.json(
         { success: false, error: 'この商品は売り切れです。' },
@@ -124,7 +139,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // コイン不足チェック（管理者はスキップ）
     if (!isAdmin && price > 0) {
       if (!user) {
         return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
@@ -160,48 +174,24 @@ export async function POST(request: Request) {
     const sequence = buildSequence(isWin, isDonden, isPatlite, isFreeze);
     const expectationStars = computeExpectationStars(isWin, isDonden);
 
-    // コイン消費 & 結果保存（非同期・失敗しても結果は返す）
+    // ── 原子的ガチャ実行 (migration 019 の play_gacha RPC) ──
     if (user && productId) {
-      if (!isAdmin && price > 0) {
-        await deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error);
-      }
+      const rpcResult = await callPlayGacha(supabase, {
+        userId: user.id as string,
+        productId,
+        price,
+        isAdmin,
+        result: isWin ? 'win' : 'loss',
+        prizeName: product?.title ?? productId,
+        cardInfo: null,
+        createPrizeClaim: isWin,
+      });
 
-      const { data: resultRow, error: resultError } = await supabase
-        .from('gacha_results')
-        .insert({
-          user_id: user.id,
-          product_id: productId,
-          result: isWin ? 'win' : 'loss',
-          prize_name: product?.title ?? productId,
-          coins_spent: price,
-        })
-        .select('id')
-        .single();
-
-      if (resultError) {
-        console.error('[gacha_results insert]', resultError);
-      }
-
-      // 当選時は prize_claims に登録
-      if (isWin && resultRow?.id) {
-        await supabase.from('prize_claims').insert({
-          user_id: user.id,
-          gacha_result_id: resultRow.id,
-          product_id: productId,
-          prize_name: product?.title ?? productId,
-          status: 'pending',
-        }).then(({ error }) => { if (error) console.error('[prize_claims insert]', error); });
-      }
-
-      // 在庫デクリメント & sold-out 自動化
-      if (product && product.stock_remaining != null) {
-        const newRemaining = (product.stock_remaining as number) - 1;
-        const update: Record<string, unknown> = { stock_remaining: newRemaining };
-        if (newRemaining <= 0) update.status = 'sold-out';
-        await supabase
-          .from('gacha_products')
-          .update(update)
-          .eq('id', productId);
+      if (!rpcResult.success) {
+        return NextResponse.json(
+          { success: false, error: mapPlayGachaError(rpcResult.error_code) },
+          { status: 400 },
+        );
       }
     }
 

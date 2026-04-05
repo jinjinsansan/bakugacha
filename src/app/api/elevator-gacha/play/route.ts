@@ -1,11 +1,16 @@
+export const runtime = 'nodejs';
+export const maxDuration = 15;
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { fetchElevatorSettings } from '@/lib/data/elevator-gacha';
 import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';
-import { deductCoins } from '@/lib/data/coins';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import { generateScenario } from '@/lib/elevator-gacha/scenarios';
+import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
+import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
 
 type ElevatorQuality = 'high' | 'low';
 
@@ -20,6 +25,16 @@ export async function POST(request: Request) {
     const quality = normalizeQuality(body?.quality);
 
     const supabase = getServiceSupabase();
+
+    // Rate limit: 10秒に10回まで
+    const rl = await checkGachaRateLimit(supabase, getClientIp(request));
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'リクエストが多すぎます。しばらく待ってから再試行してください。' },
+        { status: 429 },
+      );
+    }
+
     const settings = await fetchElevatorSettings(supabase);
 
     if (!settings.isActive) {
@@ -72,7 +87,7 @@ export async function POST(request: Request) {
         .from('gacha_results')
         .select('result')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .order('played_at', { ascending: false })
         .limit(settings.chainLoseThreshold);
       if (
         recentResults &&
@@ -89,39 +104,24 @@ export async function POST(request: Request) {
     // シナリオ生成
     const scenario = generateScenario(isWin);
 
-    // コイン消費 & 結果保存
+    // ── 原子的ガチャ実行 (migration 019 の play_gacha RPC) ──
     if (user && productId) {
-      const savePromises: Promise<unknown>[] = [];
+      const rpcResult = await callPlayGacha(supabase, {
+        userId: user.id as string,
+        productId,
+        price,
+        isAdmin,
+        result: isWin ? 'win' : 'loss',
+        prizeName: product?.title ?? productId,
+        cardInfo: null,
+        createPrizeClaim: false,
+      });
 
-      if (!isAdmin && price > 0) {
-        savePromises.push(
-          deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error),
+      if (!rpcResult.success) {
+        return NextResponse.json(
+          { success: false, error: mapPlayGachaError(rpcResult.error_code) },
+          { status: 400 },
         );
-      }
-
-      savePromises.push(
-        Promise.resolve(
-          supabase.from('gacha_results').insert({
-            user_id: user.id,
-            product_id: productId,
-            result: isWin ? 'win' : 'loss',
-            prize_name: product?.title ?? productId,
-            coins_spent: price,
-          }),
-        ).then(({ error }) => { if (error) console.error('[gacha_results insert]', error); }),
-      );
-
-      await Promise.all(savePromises);
-
-      // 在庫デクリメント & sold-out 自動化
-      if (product && product.stock_remaining != null) {
-        const newRemaining = (product.stock_remaining as number) - 1;
-        const update: Record<string, unknown> = { stock_remaining: newRemaining };
-        if (newRemaining <= 0) update.status = 'sold-out';
-        await supabase
-          .from('gacha_products')
-          .update(update)
-          .eq('id', productId);
       }
     }
 

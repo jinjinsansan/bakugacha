@@ -1,11 +1,16 @@
+export const runtime = 'nodejs';
+export const maxDuration = 15;
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { fetchEcardSettings } from '@/lib/data/ecard-gacha';
 import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';
-import { deductCoins } from '@/lib/data/coins';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import { generateScenario } from '@/lib/ecard-gacha/scenarios';
+import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
+import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
 import type { EcardAxis } from '@/lib/ecard-gacha/types';
 
 type EcardQuality = 'high' | 'low';
@@ -45,6 +50,16 @@ export async function POST(request: Request) {
     const quality = normalizeQuality(body?.quality);
 
     const supabase = getServiceSupabase();
+
+    // Rate limit: 10秒に10回まで
+    const rl = await checkGachaRateLimit(supabase, getClientIp(request));
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'リクエストが多すぎます。しばらく待ってから再試行してください。' },
+        { status: 429 },
+      );
+    }
+
     const settings = await fetchEcardSettings(supabase);
 
     if (!settings.isActive) {
@@ -129,48 +144,24 @@ export async function POST(request: Request) {
     // 期待度★
     const expectationStars = computeExpectationStars(settings.star5Rate, settings.star4Rate);
 
-    // コイン消費 & 結果保存
+    // ── 原子的ガチャ実行 (migration 019 の play_gacha RPC) ──
     if (user && productId) {
-      if (!isAdmin && price > 0) {
-        await deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error);
-      }
+      const rpcResult = await callPlayGacha(supabase, {
+        userId: user.id as string,
+        productId,
+        price,
+        isAdmin,
+        result: scenario.isWin ? 'win' : 'loss',
+        prizeName: product?.title ?? productId,
+        cardInfo: null,
+        createPrizeClaim: scenario.isWin,
+      });
 
-      const { data: resultRow, error: resultError } = await supabase
-        .from('gacha_results')
-        .insert({
-          user_id: user.id,
-          product_id: productId,
-          result: scenario.isWin ? 'win' : 'loss',
-          prize_name: product?.title ?? productId,
-          coins_spent: price,
-        })
-        .select('id')
-        .single();
-
-      if (resultError) {
-        console.error('[gacha_results insert]', resultError);
-      }
-
-      // 当選時は prize_claims に登録
-      if (scenario.isWin && resultRow?.id) {
-        await supabase.from('prize_claims').insert({
-          user_id: user.id,
-          gacha_result_id: resultRow.id,
-          product_id: productId,
-          prize_name: product?.title ?? productId,
-          status: 'pending',
-        }).then(({ error }) => { if (error) console.error('[prize_claims insert]', error); });
-      }
-
-      // 在庫デクリメント & sold-out 自動化
-      if (product && product.stock_remaining != null) {
-        const newRemaining = (product.stock_remaining as number) - 1;
-        const update: Record<string, unknown> = { stock_remaining: newRemaining };
-        if (newRemaining <= 0) update.status = 'sold-out';
-        await supabase
-          .from('gacha_products')
-          .update(update)
-          .eq('id', productId);
+      if (!rpcResult.success) {
+        return NextResponse.json(
+          { success: false, error: mapPlayGachaError(rpcResult.error_code) },
+          { status: 400 },
+        );
       }
     }
 

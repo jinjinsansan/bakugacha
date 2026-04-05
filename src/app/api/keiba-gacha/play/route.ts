@@ -1,11 +1,16 @@
+export const runtime = 'nodejs';
+export const maxDuration = 15;
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { fetchKeibaSettings } from '@/lib/data/keiba-gacha';
 import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';
-import { deductCoins } from '@/lib/data/coins';
-import { issueCard } from '@/lib/data/keiba-cards';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
+import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
+import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
+import { KEIBA_CARD_MAP } from '@/lib/keiba-gacha/cards';
 import {
   pickCharacter,
   pickFanfareCourse,
@@ -67,6 +72,16 @@ export async function POST(request: Request) {
     const quality = normalizeQuality(body?.quality);
 
     const supabase = getServiceSupabase();
+
+    // Rate limit: 10秒に10回まで
+    const rl = await checkGachaRateLimit(supabase, getClientIp(request));
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'リクエストが多すぎます。しばらく待ってから再試行してください。' },
+        { status: 429 },
+      );
+    }
+
     const settings = await fetchKeibaSettings(supabase);
 
     if (!settings.isActive) {
@@ -125,7 +140,7 @@ export async function POST(request: Request) {
         .from('gacha_results')
         .select('result')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .order('played_at', { ascending: false })
         .limit(settings.chainLoseThreshold);
       if (
         recentResults &&
@@ -172,62 +187,45 @@ export async function POST(request: Request) {
       scenario = generateScenario(isWin, chara.id, fanfareCourse.id);
     }
 
-    // 7. コイン消費 & 結果保存
-    let gachaResultId: string | null = null;
+    // ── 7. 原子的ガチャ実行 (migration 019 の play_gacha RPC) ──
     let cardData: { serialNumber: string; charaId: string; cardNumber: string } | null = null;
 
     if (user && productId) {
-      const savePromises: Promise<unknown>[] = [];
+      // カード発行対象 charaId (当選=resultCharaId, ハズレ=hazure)
+      const cardCharaId = scenario.isWin ? scenario.resultCharaId : 'hazure';
+      const cardDef = KEIBA_CARD_MAP.get(cardCharaId);
 
-      if (!isAdmin && price > 0) {
-        savePromises.push(
-          deductCoins(supabase, user.id as string, price, `ガチャ: ${product?.title ?? productId}`).catch(console.error),
+      const rpcResult = await callPlayGacha(supabase, {
+        userId: user.id as string,
+        productId,
+        price,
+        isAdmin,
+        result: scenario.isWin ? 'win' : 'loss',
+        prizeName: product?.title ?? productId,
+        cardInfo: cardDef
+          ? {
+              type: 'keiba',
+              chara_id: cardCharaId,
+              card_number: cardDef.cardNumber,
+              max_issuance: settings.cardMaxIssuance?.[cardCharaId] ?? 0,
+            }
+          : null,
+        createPrizeClaim: false,
+      });
+
+      if (!rpcResult.success) {
+        return NextResponse.json(
+          { success: false, error: mapPlayGachaError(rpcResult.error_code) },
+          { status: 400 },
         );
       }
 
-      // gacha_results を insert して ID を取得
-      const { data: resultRow, error: resultError } = await supabase
-        .from('gacha_results')
-        .insert({
-          user_id: user.id,
-          product_id: productId,
-          result: scenario.isWin ? 'win' : 'loss',
-          prize_name: product?.title ?? productId,
-          coins_spent: price,
-        })
-        .select('id')
-        .single();
-
-      if (resultError) {
-        console.error('[gacha_results insert]', resultError);
-      } else {
-        gachaResultId = resultRow.id;
-      }
-
-      await Promise.all(savePromises);
-
-      // カード発行（当選=resultCharaIdのカード、ハズレ=ハズレカード）
-      if (gachaResultId) {
-        const cardCharaId = scenario.isWin ? scenario.resultCharaId : 'hazure';
-        const card = await issueCard(supabase, user.id as string, cardCharaId, gachaResultId, settings);
-        if (card) {
-          cardData = {
-            serialNumber: card.serialNumber,
-            charaId: card.charaId,
-            cardNumber: card.cardNumber,
-          };
-        }
-      }
-
-      // 在庫デクリメント & sold-out 自動化
-      if (product && product.stock_remaining != null) {
-        const newRemaining = (product.stock_remaining as number) - 1;
-        const update: Record<string, unknown> = { stock_remaining: newRemaining };
-        if (newRemaining <= 0) update.status = 'sold-out';
-        await supabase
-          .from('gacha_products')
-          .update(update)
-          .eq('id', productId);
+      if (rpcResult.card_serial && cardDef) {
+        cardData = {
+          serialNumber: rpcResult.card_serial,
+          charaId: cardCharaId,
+          cardNumber: cardDef.cardNumber,
+        };
       }
     }
 
