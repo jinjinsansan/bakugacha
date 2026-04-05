@@ -134,17 +134,20 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* ボタン */}
         {product.buttons ? (
           <div className="flex gap-2">
-            {product.buttons.map((label, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`text-xs font-bold flex basis-0 grow h-10 items-center justify-center rounded-xl tracking-wider ${
-                  i === 0 ? 'btn-gold' : i === 1 ? 'btn-silver' : 'btn-bronze'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+            {product.buttons.map((label, i) => {
+              const count = label.startsWith('100') ? 100 : label.startsWith('10') ? 10 : 1;
+              return (
+                <Link
+                  key={i}
+                  href={`${product.href}?count=${count}`}
+                  className={`text-xs font-bold flex basis-0 grow h-10 items-center justify-center rounded-xl tracking-wider ${
+                    i === 0 ? 'btn-gold' : i === 1 ? 'btn-silver' : 'btn-bronze'
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
         ) : (
           <div className="flex gap-2">
