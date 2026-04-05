@@ -8,6 +8,7 @@ import { CopyReferralLink } from '@/components/referral/CopyReferralLink';
 import { PrizeBox } from '@/components/mypage/PrizeBox';
 import { KeibaCardCollection } from '@/components/mypage/KeibaCardCollection';
 import { RaiseCardCollection } from '@/components/mypage/RaiseCardCollection';
+import { DailyLoginBonus } from '@/components/mypage/DailyLoginBonus';
 
 export default async function MyPage() {
   const supabase = getServiceSupabase();
@@ -32,6 +33,14 @@ export default async function MyPage() {
 
   const winCount = (history ?? []).filter((h) => h.result === 'win').length;
   const appSettings = await fetchAppSettings(supabase);
+
+  // JST基準で本日のログインボーナス受取状況を判定
+  const lastBonusAt = user.last_login_bonus_at as string | null;
+  const todayJst = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const lastBonusJst = lastBonusAt
+    ? new Date(new Date(lastBonusAt).getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    : null;
+  const alreadyClaimedBonus = lastBonusJst === todayJst;
 
   return (
     <div className="max-w-[860px] mx-auto px-4 py-10">
@@ -91,6 +100,12 @@ export default async function MyPage() {
           <p className="text-lg font-black mt-2" style={{ color: '#4ade80' }}>{winCount} 当選</p>
         </div>
       </div>
+
+      {/* デイリーログインボーナス */}
+      <DailyLoginBonus
+        amount={appSettings.dailyLoginBonusAmount}
+        alreadyClaimed={alreadyClaimedBonus}
+      />
 
       {/* 友達紹介 */}
       {user.referral_code && (

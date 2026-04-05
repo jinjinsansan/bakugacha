@@ -14,6 +14,7 @@ export interface AppSettings {
   maintenanceMode: boolean;
   maintenanceTitle: string;
   maintenanceMessage: string;
+  dailyLoginBonusAmount: number;
 }
 
 export async function fetchAppSettings(client: SupabaseClient): Promise<AppSettings> {
@@ -32,6 +33,7 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
       maintenanceMode: false,
       maintenanceTitle: DEFAULT_MAINTENANCE_TITLE,
       maintenanceMessage: DEFAULT_MAINTENANCE_MESSAGE,
+      dailyLoginBonusAmount: 0,
     };
   }
 
@@ -44,6 +46,7 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
     maintenanceMode: Boolean(row.maintenance_mode ?? false),
     maintenanceTitle: String(row.maintenance_title ?? DEFAULT_MAINTENANCE_TITLE),
     maintenanceMessage: String(row.maintenance_message ?? DEFAULT_MAINTENANCE_MESSAGE),
+    dailyLoginBonusAmount: Number(row.daily_login_bonus_amount ?? 0),
   };
 }
 
@@ -61,6 +64,7 @@ export async function upsertAppSettings(
   if (updates.maintenanceMode !== undefined) patch.maintenance_mode = updates.maintenanceMode;
   if (updates.maintenanceTitle !== undefined) patch.maintenance_title = updates.maintenanceTitle;
   if (updates.maintenanceMessage !== undefined) patch.maintenance_message = updates.maintenanceMessage;
+  if (updates.dailyLoginBonusAmount !== undefined) patch.daily_login_bonus_amount = updates.dailyLoginBonusAmount;
 
   const { error } = await client.from('app_settings').upsert(patch, { onConflict: 'id' });
   if (error) {

@@ -643,7 +643,7 @@ export async function updateCardExchangeRates(formData: FormData) {
   redirect('/admin/settings?saved=1');
 }
 
-// ── 紹介ボーナス設定更新 ────────────────────────────────────────
+// ── 紹介ボーナス / ログインボーナス設定更新 ─────────────────────
 export async function updateAppSettings(formData: FormData) {
   await requireAdmin();
   const supabase = getServiceSupabase();
@@ -652,6 +652,7 @@ export async function updateAppSettings(formData: FormData) {
     await upsertAppSettings(supabase, {
       referralBonusReferrer: Number(formData.get('referral_bonus_referrer') ?? 200),
       referralBonusReferee:  Number(formData.get('referral_bonus_referee')  ?? 100),
+      dailyLoginBonusAmount: Number(formData.get('daily_login_bonus_amount') ?? 0),
     });
   } catch (err) {
     console.error('[admin] updateAppSettings failed:', err);

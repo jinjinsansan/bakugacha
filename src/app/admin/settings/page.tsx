@@ -659,9 +659,9 @@ export default async function AdminSettingsPage({
       </form>
 
       {/* 紹介ボーナス設定 */}
-      <h2 className="text-lg font-black text-white mt-4">紹介ボーナス設定</h2>
+      <h2 className="text-lg font-black text-white mt-4">紹介ボーナス / ログインボーナス設定</h2>
       <form action={updateAppSettings} className="card-premium p-6 flex flex-col gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs text-white/60">紹介者への報酬</label>
             <p className="text-xs text-white/40 mb-1">友達を紹介したユーザーに付与するコイン数</p>
@@ -682,6 +682,17 @@ export default async function AdminSettingsPage({
                 className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
               />
               <span className="text-sm text-white/50">コイン</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">🎁 デイリーログインボーナス</label>
+            <p className="text-xs text-white/40 mb-1">毎日1回、マイページで受け取れるコイン数 (0で無効)</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="number" name="daily_login_bonus_amount" defaultValue={appSettings.dailyLoginBonusAmount} min={0}
+                className="w-24 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+              />
+              <span className="text-sm text-white/50">コイン/日</span>
             </div>
           </div>
         </div>
