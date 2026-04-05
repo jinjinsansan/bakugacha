@@ -22,9 +22,18 @@ export async function createProduct(formData: FormData) {
   if (!id) redirect('/admin/products/new?error=' + encodeURIComponent('ID は必須です'));
 
   const stockTotalRaw = formData.get('stock_total');
-  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') redirect('/admin/products/new?error=' + encodeURIComponent('在庫総数は必須です'));
+  if (stockTotalRaw == null || String(stockTotalRaw).trim() === '') {
+    redirect('/admin/products/new?error=' + encodeURIComponent('在庫総数は必須です (0 で終了ガチャ)'));
+  }
   const stockTotal = Number(stockTotalRaw);
-  const stockRemaining = formData.get('stock_remaining') ? Number(formData.get('stock_remaining')) : stockTotal;
+  const stockRemainingRaw = formData.get('stock_remaining');
+  const stockRemaining = stockRemainingRaw != null && String(stockRemainingRaw).trim() !== ''
+    ? Number(stockRemainingRaw)
+    : stockTotal;
+
+  // 在庫が 0 以下なら自動的に sold-out (終了ガチャ) 扱いにする
+  const requestedStatus = String(formData.get('status') ?? 'active');
+  const status = (stockTotal <= 0 || stockRemaining <= 0) ? 'sold-out' : requestedStatus;
 
   await supabase.from('gacha_products').insert({
     id,
@@ -39,13 +48,15 @@ export async function createProduct(formData: FormData) {
     is_featured:         formData.get('is_featured') === 'on',
     stock_total:         stockTotal,
     stock_remaining:     stockRemaining,
-    status:              String(formData.get('status') ?? 'active'),
+    status,
     sort_order:          Number(formData.get('sort_order') ?? 0),
     gacha_type:          String(formData.get('gacha_type') ?? 'cd2'),
     exchange_coins:      Number(formData.get('exchange_coins') ?? 0),
   });
 
   revalidatePath('/admin/products');
+  revalidatePath('/');
+  revalidatePath('/home');
   redirect('/admin/products');
 }
 
@@ -55,9 +66,18 @@ export async function updateProduct(id: string, formData: FormData) {
   const supabase = getServiceSupabase();
 
   const stockTotalRaw = formData.get('stock_total');
-  if (!stockTotalRaw || String(stockTotalRaw).trim() === '') redirect(`/admin/products/${id}?error=` + encodeURIComponent('在庫総数は必須です'));
+  if (stockTotalRaw == null || String(stockTotalRaw).trim() === '') {
+    redirect(`/admin/products/${id}?error=` + encodeURIComponent('在庫総数は必須です (0 で終了ガチャ)'));
+  }
   const stockTotal = Number(stockTotalRaw);
-  const stockRemaining = formData.get('stock_remaining') ? Number(formData.get('stock_remaining')) : null;
+  const stockRemainingRaw = formData.get('stock_remaining');
+  const stockRemaining = stockRemainingRaw != null && String(stockRemainingRaw).trim() !== ''
+    ? Number(stockRemainingRaw)
+    : stockTotal;
+
+  // 在庫が 0 以下なら自動的に sold-out (終了ガチャ) 扱いにする
+  const requestedStatus = String(formData.get('status') ?? 'active');
+  const status = (stockTotal <= 0 || stockRemaining <= 0) ? 'sold-out' : requestedStatus;
 
   const imageUrl = formData.get('image_url') ? String(formData.get('image_url')) : null;
 
@@ -73,7 +93,7 @@ export async function updateProduct(id: string, formData: FormData) {
     is_featured:         formData.get('is_featured') === 'on',
     stock_total:         stockTotal,
     stock_remaining:     stockRemaining,
-    status:              String(formData.get('status') ?? 'active'),
+    status,
     sort_order:          Number(formData.get('sort_order') ?? 0),
     gacha_type:          String(formData.get('gacha_type') ?? 'cd2'),
     exchange_coins:      Number(formData.get('exchange_coins') ?? 0),
@@ -83,6 +103,9 @@ export async function updateProduct(id: string, formData: FormData) {
 
   revalidatePath('/admin/products');
   revalidatePath(`/admin/products/${id}`);
+  revalidatePath('/');
+  revalidatePath('/home');
+  revalidatePath(`/gacha/${id}`);
   redirect('/admin/products');
 }
 

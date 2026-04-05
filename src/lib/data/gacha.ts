@@ -4,6 +4,12 @@ import type { Product } from '@/types/product';
 // DB行 → Product型に変換
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowToProduct(row: Record<string, any>): Product {
+  // 在庫 0 以下なら安全網として sold-out 扱い (DBのstatusが古くても確実に表示)
+  const stockTotal = row.stock_total as number | null | undefined;
+  const stockRemaining = row.stock_remaining as number | null | undefined;
+  const isZeroStock = stockTotal != null && (stockTotal <= 0 || (stockRemaining != null && stockRemaining <= 0));
+  const effectiveStatus: 'active' | 'sold-out' = isZeroStock ? 'sold-out' : (row.status as 'active' | 'sold-out');
+
   return {
     id: row.id,
     title: row.title,
@@ -11,14 +17,14 @@ function rowToProduct(row: Record<string, any>): Product {
     imageSrc: row.image_url ?? '',
     imageSizes: '',
     price: row.price,
-    stock: row.stock_total != null
+    stock: stockTotal != null
       ? {
-          text: `残り${((row.stock_remaining ?? 0) as number).toLocaleString()}回 / ${(row.stock_total as number).toLocaleString()}回`,
-          progressClass: buildProgressClass(row.stock_remaining ?? 0, row.stock_total),
+          text: `残り${((stockRemaining ?? 0) as number).toLocaleString()}回 / ${stockTotal.toLocaleString()}回`,
+          progressClass: buildProgressClass(stockRemaining ?? 0, stockTotal || 1),
         }
       : null,
-    buttons: row.status === 'sold-out' ? null : buildButtons(row.price),
-    status: row.status,
+    buttons: effectiveStatus === 'sold-out' ? null : buildButtons(row.price),
+    status: effectiveStatus,
     category: row.category,
     thumbnailGradient: row.thumbnail_gradient ?? undefined,
     thumbnailEmoji: row.thumbnail_emoji ?? undefined,
