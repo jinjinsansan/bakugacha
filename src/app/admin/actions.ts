@@ -35,6 +35,16 @@ export async function createProduct(formData: FormData) {
   const requestedStatus = String(formData.get('status') ?? 'active');
   const status = (stockTotal <= 0 || stockRemaining <= 0) ? 'sold-out' : requestedStatus;
 
+  // 商品別当選率・当選上限 (空欄なら null)
+  const winRateRaw = formData.get('win_rate_override');
+  const winRateOverride = winRateRaw != null && String(winRateRaw).trim() !== ''
+    ? Number(winRateRaw)
+    : null;
+  const maxWinnersRaw = formData.get('max_winners');
+  const maxWinners = maxWinnersRaw != null && String(maxWinnersRaw).trim() !== ''
+    ? Number(maxWinnersRaw)
+    : null;
+
   await supabase.from('gacha_products').insert({
     id,
     title:               String(formData.get('title') ?? ''),
@@ -52,6 +62,8 @@ export async function createProduct(formData: FormData) {
     sort_order:          Number(formData.get('sort_order') ?? 0),
     gacha_type:          String(formData.get('gacha_type') ?? 'cd2'),
     exchange_coins:      Number(formData.get('exchange_coins') ?? 0),
+    win_rate_override:   winRateOverride,
+    max_winners:         maxWinners,
   });
 
   revalidatePath('/admin/products');
@@ -81,6 +93,16 @@ export async function updateProduct(id: string, formData: FormData) {
 
   const imageUrl = formData.get('image_url') ? String(formData.get('image_url')) : null;
 
+  // 商品別当選率・当選上限 (空欄なら null)
+  const winRateRaw = formData.get('win_rate_override');
+  const winRateOverride = winRateRaw != null && String(winRateRaw).trim() !== ''
+    ? Number(winRateRaw)
+    : null;
+  const maxWinnersRaw = formData.get('max_winners');
+  const maxWinners = maxWinnersRaw != null && String(maxWinnersRaw).trim() !== ''
+    ? Number(maxWinnersRaw)
+    : null;
+
   const { error: updateError } = await supabase.from('gacha_products').update({
     title:               String(formData.get('title') ?? ''),
     category:            String(formData.get('category') ?? 'その他'),
@@ -97,6 +119,8 @@ export async function updateProduct(id: string, formData: FormData) {
     sort_order:          Number(formData.get('sort_order') ?? 0),
     gacha_type:          String(formData.get('gacha_type') ?? 'cd2'),
     exchange_coins:      Number(formData.get('exchange_coins') ?? 0),
+    win_rate_override:   winRateOverride,
+    max_winners:         maxWinners,
   }).eq('id', id);
 
   if (updateError) console.error('[updateProduct]', updateError);

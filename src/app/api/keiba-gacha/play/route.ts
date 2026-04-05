@@ -151,11 +151,16 @@ export async function POST(request: Request) {
       }
     }
 
+    // 商品別当選率のオーバーライド (null なら共通設定を使用)
+    // override が設定されている場合はどんでん返し抽選をスキップし、
+    // 通常フローの当選率をその値で直接上書きする
+    const winRateOverride = product?.win_rate_override != null ? Number(product.win_rate_override) : null;
+
     // 4. どんでん返し抽選
     let scenario: KeibaScenario | null = null;
     let forcedStar: number | null = null;
 
-    const isDonten = Math.random() * 100 < settings.dontenRate;
+    const isDonten = winRateOverride == null && Math.random() * 100 < settings.dontenRate;
 
     if (isDonten) {
       const dontenType = rollDontenType(
@@ -182,8 +187,10 @@ export async function POST(request: Request) {
 
     // 通常フロー（どんでん不発 or パターンなし）
     if (!scenario) {
-      const effectiveWinRate = getEffectiveWinRate(chara.id, fanfareCourse.id, settings);
-      const isWin = forcedWin || Math.random() * 100 < effectiveWinRate;
+      const baseWinRate = winRateOverride != null
+        ? Math.max(0, Math.min(100, winRateOverride))
+        : getEffectiveWinRate(chara.id, fanfareCourse.id, settings);
+      const isWin = forcedWin || Math.random() * 100 < baseWinRate;
       scenario = generateScenario(isWin, chara.id, fanfareCourse.id);
     }
 

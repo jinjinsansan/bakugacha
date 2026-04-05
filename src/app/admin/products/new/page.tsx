@@ -82,6 +82,32 @@ export function ProductFormFields({
       </div>
       <StockZeroWarning />
 
+      <div className="rounded-xl border border-yellow-500/30 bg-yellow-950/20 p-4">
+        <h3 className="text-sm font-black text-yellow-200 mb-1">🎯 商品別 当選制御（任意）</h3>
+        <p className="text-xs text-yellow-100/70 mb-3">
+          この商品だけ当選率や当選上限を個別に設定できます。空欄ならガチャタイプ共通設定が使われます。
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field
+            name="win_rate_override"
+            label="当選率 (%)"
+            type="number"
+            placeholder="空欄=共通設定を使用 / 例: 1.0"
+            defaultValue={defaults?.win_rate_override != null ? String(defaults.win_rate_override) : ''}
+          />
+          <Field
+            name="max_winners"
+            label="当選上限（台数）"
+            type="number"
+            placeholder="空欄=無制限 / 例: 100"
+            defaultValue={defaults?.max_winners != null ? String(defaults.max_winners) : ''}
+          />
+        </div>
+        <p className="text-xs text-yellow-100/60 mt-2">
+          💡 例: Switch 100台限定なら「当選率 1.0 / 当選上限 100」で設定。上限に達した時点で以降は自動的にハズレになります。
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field name="exchange_coins" label="コイン交換レート" type="number" placeholder="0=交換不可" defaultValue={(defaults?.exchange_coins as string) ?? '0'} />
       </div>

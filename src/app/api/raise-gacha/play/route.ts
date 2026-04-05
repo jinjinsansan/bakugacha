@@ -100,8 +100,15 @@ export async function POST(request: Request) {
       }
     }
 
+    // 商品別当選率のオーバーライド (null なら共通設定を使用)
+    // win_rate_override が設定されている場合、lossRate = 100 - win_rate_override として扱う
+    const winRateOverride = product?.win_rate_override != null ? Number(product.win_rate_override) : null;
+    const effectiveLossRate = winRateOverride != null
+      ? Math.max(0, Math.min(100, 100 - winRateOverride))
+      : settings.lossRate;
+
     // 1. ハズレ判定
-    const isLoss = Math.random() * 100 < settings.lossRate;
+    const isLoss = Math.random() * 100 < effectiveLossRate;
 
     // 2. ★抽選（当選時のみ実質的に使用、ハズレ時はダミー）
     const starLevel = drawStarLevel(settings.starDistribution);

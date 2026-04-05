@@ -98,8 +98,14 @@ export async function POST(request: Request) {
       }
     }
 
+    // 商品別当選率のオーバーライド (null なら共通設定を使用)
+    const winRateOverride = product?.win_rate_override != null ? Number(product.win_rate_override) : null;
+    const effectiveWinRate = winRateOverride != null
+      ? Math.max(0, Math.min(100, winRateOverride))
+      : settings.winRate;
+
     // 勝敗決定
-    const isWin = forcedWin || Math.random() * 100 < settings.winRate;
+    const isWin = forcedWin || Math.random() * 100 < effectiveWinRate;
 
     // シナリオ生成
     const scenario = generateScenario(isWin);

@@ -152,8 +152,14 @@ export async function POST(request: Request) {
       }
     }
 
+    // 商品別当選率のオーバーライド (null なら共通設定を使用)
+    const winRateOverride = product?.win_rate_override != null ? Number(product.win_rate_override) : null;
+    const effectiveLossRate = winRateOverride != null
+      ? Math.max(0, Math.min(100, 100 - winRateOverride))
+      : settings.lossRate;
+
     // 勝敗決定
-    const rawLoss = Math.random() * 100 < settings.lossRate;
+    const rawLoss = Math.random() * 100 < effectiveLossRate;
     let isDonden = false;
     let isWin: boolean;
 
