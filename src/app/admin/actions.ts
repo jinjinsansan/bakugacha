@@ -110,20 +110,70 @@ export async function updateProduct(id: string, formData: FormData) {
 }
 
 // ── 商品削除 ──────────────────────────────────────────────────
+// 依存関係 (FK) は以下の通りで、順番に削除しないと FK 制約エラーになる:
+//   deliveries.gacha_result_id     → gacha_results(id)
+//   prize_claims.gacha_result_id   → gacha_results(id)
+//   prize_claims.product_id        → gacha_products(id)
+//   gacha_results.product_id       → gacha_products(id)
+//   keiba_cards / raise_cards      → gacha_results(id)  ※ ON DELETE SET NULL (015)
 export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();
   const supabase = getServiceSupabase();
 
-  // 関連する gacha_results を先に削除して外部キー制約を回避
+  // 1) この商品に紐づく gacha_results の id を取得
+  const { data: results, error: fetchError } = await supabase
+    .from('gacha_results')
+    .select('id')
+    .eq('product_id', id);
+  if (fetchError) {
+    console.error('[deleteProduct] gacha_results 取得失敗:', fetchError);
+    return { ok: false, error: `関連データ取得に失敗: ${fetchError.message}` };
+  }
+  const resultIds = (results ?? []).map((r) => r.id as string);
+
+  if (resultIds.length > 0) {
+    // 2) deliveries を先に削除 (gacha_results を参照)
+    const { error: delivError } = await supabase
+      .from('deliveries')
+      .delete()
+      .in('gacha_result_id', resultIds);
+    if (delivError) {
+      console.error('[deleteProduct] deliveries 削除失敗:', delivError);
+      return { ok: false, error: `配送データの削除に失敗: ${delivError.message}` };
+    }
+
+    // 3) prize_claims を gacha_result_id 経由で削除
+    const { error: claimByResultError } = await supabase
+      .from('prize_claims')
+      .delete()
+      .in('gacha_result_id', resultIds);
+    if (claimByResultError) {
+      console.error('[deleteProduct] prize_claims (by result) 削除失敗:', claimByResultError);
+      return { ok: false, error: `当選品データの削除に失敗: ${claimByResultError.message}` };
+    }
+  }
+
+  // 4) prize_claims を product_id 経由でも念のため削除 (孤立レコード対策)
+  const { error: claimByProductError } = await supabase
+    .from('prize_claims')
+    .delete()
+    .eq('product_id', id);
+  if (claimByProductError) {
+    console.error('[deleteProduct] prize_claims (by product) 削除失敗:', claimByProductError);
+    return { ok: false, error: `当選品データの削除に失敗: ${claimByProductError.message}` };
+  }
+
+  // 5) gacha_results を削除
   const { error: fkError } = await supabase
     .from('gacha_results')
     .delete()
     .eq('product_id', id);
   if (fkError) {
-    console.error('[deleteProduct] 関連データ削除失敗:', fkError);
+    console.error('[deleteProduct] gacha_results 削除失敗:', fkError);
     return { ok: false, error: `関連データの削除に失敗: ${fkError.message}` };
   }
 
+  // 6) gacha_products 本体を削除
   const { error } = await supabase.from('gacha_products').delete().eq('id', id);
   if (error) {
     console.error('[deleteProduct]', error);
