@@ -138,11 +138,45 @@ export async function touchLastLogin(
   userId: string,
 ): Promise<void> {
   const now = new Date().toISOString();
-  await client
-    .from('app_users')
-    .update({ last_login_at: now, updated_at: now })
-    .eq('id', userId);
+  // UPDATE と INSERT を並列実行
+  await Promise.all([
+    client.from('app_users').update({ last_login_at: now, updated_at: now }).eq('id', userId),
+    client.from('login_history').insert({ user_id: userId, logged_in_at: now }),
+  ]);
+}
 
-  // ログイン履歴を記録
-  await client.from('login_history').insert({ user_id: userId, logged_in_at: now });
+/**
+ * fire-and-forget 版: レスポンスをブロックせずに最終ログイン時刻と履歴を更新。
+ * ログイン後のリダイレクトを高速化するために使用する。
+ */
+export function touchLastLoginFireAndForget(
+  client: SupabaseClient,
+  userId: string,
+): void {
+  const now = new Date().toISOString();
+  Promise.all([
+    client.from('app_users').update({ last_login_at: now, updated_at: now }).eq('id', userId),
+    client.from('login_history').insert({ user_id: userId, logged_in_at: now }),
+  ]).catch((err) => {
+    console.warn('[touchLastLoginFireAndForget]', err);
+  });
+}
+
+/**
+ * セッションから user_id だけ取得する軽量版。
+ * app_users のフルフェッチが不要な場面で使用。
+ */
+export async function getUserIdFromSessionToken(
+  client: SupabaseClient,
+  token: string,
+): Promise<string | null> {
+  const { data } = await client
+    .from('sessions')
+    .select('user_id, expires_at')
+    .eq('token', token)
+    .maybeSingle();
+
+  if (!data) return null;
+  if (new Date(data.expires_at as string) < new Date()) return null;
+  return data.user_id as string;
 }

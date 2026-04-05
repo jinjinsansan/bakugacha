@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerEnv } from '@/lib/env';
 import { getServiceSupabase } from '@/lib/supabase/service';
-import { findUserByLineId, createLineUser, touchLastLogin, isUserBlocked } from '@/lib/data/users';
+import { findUserByLineId, createLineUser, touchLastLoginFireAndForget } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
 import { processReferral } from '@/lib/data/referral';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 type LineTokenResponse = {
   access_token: string;
@@ -77,10 +80,10 @@ export async function GET(request: NextRequest) {
 
   const supabase = getServiceSupabase();
 
-  // state 検証
+  // state 検証 (必要カラムのみ取得)
   const { data: stateRow, error: stateError } = await supabase
     .from('line_link_states')
-    .select('*')
+    .select('id, user_id, referral_code')
     .eq('state', state)
     .maybeSingle();
 
@@ -106,13 +109,14 @@ export async function GET(request: NextRequest) {
     }
 
     const existingUserId: string | null = stateRow.user_id ?? null;
+    const now = new Date().toISOString();
 
     // ─── パターン3: ログイン済みユーザーが LINE 連携 ───
     if (existingUserId) {
       // 重複チェック（他ユーザーが同じLINEアカウントで連携済み）
       const { data: duplicate } = await supabase
         .from('line_link_states')
-        .select('id, user_id, rewarded_at')
+        .select('user_id, rewarded_at')
         .eq('line_user_id', lineUserId)
         .not('rewarded_at', 'is', null)
         .maybeSingle();
@@ -124,45 +128,51 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}/mypage/line?status=already-linked`);
       }
 
-      // app_users に LINE 情報を保存
-      await supabase
-        .from('app_users')
-        .update({
-          line_user_id: lineUserId,
-          line_display_name: profile.displayName,
-          line_picture_url: profile.pictureUrl ?? null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingUserId);
-
-      // 連携完了記録
-      await supabase
-        .from('line_link_states')
-        .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
-        .eq('id', stateRow.id);
+      // app_users 更新 と line_link_states 更新を並列実行
+      await Promise.all([
+        supabase
+          .from('app_users')
+          .update({
+            line_user_id: lineUserId,
+            line_display_name: profile.displayName,
+            line_picture_url: profile.pictureUrl ?? null,
+            updated_at: now,
+          })
+          .eq('id', existingUserId),
+        supabase
+          .from('line_link_states')
+          .update({ line_user_id: lineUserId, rewarded_at: now })
+          .eq('id', stateRow.id),
+      ]);
 
       return NextResponse.redirect(`${origin}/`);
     }
 
     // ─── パターン1 & 2: 未認証 OAuth（LINE ログイン / LINE 登録）───
+    // findUserByLineId は is_blocked を含む全カラムを返すので個別クエリは不要
     const existingLineUser = await findUserByLineId(supabase, lineUserId);
 
     if (existingLineUser) {
-      // ブロックチェック
-      if (await isUserBlocked(supabase, existingLineUser.id as string)) {
+      // ブロックチェック (既に取得済みのデータを使用)
+      if (existingLineUser.is_blocked === true) {
         return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('アカウントがブロックされています。')}`);
       }
 
       // パターン2: 既存 LINE ユーザーとしてログイン
       const sessionToken = await getOrCreateSessionToken();
-      await createSession(supabase, sessionToken, existingLineUser.id as string);
-      await touchLastLogin(supabase, existingLineUser.id as string);
+      const userId = existingLineUser.id as string;
 
-      // state 行にも記録
-      await supabase
-        .from('line_link_states')
-        .update({ line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
-        .eq('id', stateRow.id);
+      // セッション作成・state更新を並列実行 (login_history は fire-and-forget)
+      await Promise.all([
+        createSession(supabase, sessionToken, userId),
+        supabase
+          .from('line_link_states')
+          .update({ line_user_id: lineUserId, rewarded_at: now })
+          .eq('id', stateRow.id),
+      ]);
+
+      // last_login と login_history は fire-and-forget (レスポンスをブロックしない)
+      touchLastLoginFireAndForget(supabase, userId);
 
       return NextResponse.redirect(`${origin}/`);
     }
@@ -175,21 +185,25 @@ export async function GET(request: NextRequest) {
       initialCoins: 0,
     });
 
-    // 紹介コードがあれば紹介処理
+    const newUserId = newUser.id as string;
+    const sessionToken = await getOrCreateSessionToken();
+
+    // セッション作成・state更新を並列実行
+    await Promise.all([
+      createSession(supabase, sessionToken, newUserId),
+      supabase
+        .from('line_link_states')
+        .update({ user_id: newUser.id, line_user_id: lineUserId, rewarded_at: now })
+        .eq('id', stateRow.id),
+    ]);
+
+    // 紹介コードがあれば紹介処理 (fire-and-forget でリダイレクトをブロックしない)
     const storedReferralCode = stateRow.referral_code as string | null;
     if (storedReferralCode) {
-      await processReferral(supabase, newUser.id as string, storedReferralCode);
+      processReferral(supabase, newUserId, storedReferralCode).catch((err) => {
+        console.warn('[LINE callback] processReferral failed:', err);
+      });
     }
-
-    // セッション作成
-    const sessionToken = await getOrCreateSessionToken();
-    await createSession(supabase, sessionToken, newUser.id as string);
-
-    // state 行に記録
-    await supabase
-      .from('line_link_states')
-      .update({ user_id: newUser.id, line_user_id: lineUserId, rewarded_at: new Date().toISOString() })
-      .eq('id', stateRow.id);
 
     return NextResponse.redirect(`${origin}/`);
   } catch (error) {

@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/service';
-import { findUserByLineId, createLineUser, touchLastLogin, isUserBlocked } from '@/lib/data/users';
+import { findUserByLineId, createLineUser, touchLastLoginFireAndForget } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
 import { processReferral } from '@/lib/data/referral';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 type LineProfile = {
   userId: string;
@@ -41,30 +44,35 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getServiceSupabase();
+    const now = new Date().toISOString();
 
-    // 既存ユーザーをチェック
+    // 既存ユーザーをチェック (is_blocked を含む全カラムを取得)
     const existingUser = await findUserByLineId(supabase, lineUserId);
 
     if (existingUser) {
-      // ブロックチェック
-      if (await isUserBlocked(supabase, existingUser.id as string)) {
+      // ブロックチェック (既取得データを使用)
+      if (existingUser.is_blocked === true) {
         return NextResponse.json({ error: 'アカウントがブロックされています' }, { status: 403 });
       }
 
-      // 既存ユーザー → セッション作成
       const sessionToken = await getOrCreateSessionToken();
-      await createSession(supabase, sessionToken, existingUser.id as string);
-      await touchLastLogin(supabase, existingUser.id as string);
+      const userId = existingUser.id as string;
 
-      // LINE情報を最新に更新
-      await supabase
-        .from('app_users')
-        .update({
-          line_display_name: profile.displayName,
-          line_picture_url: profile.pictureUrl ?? null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingUser.id);
+      // セッション作成と LINE 情報更新を並列実行
+      await Promise.all([
+        createSession(supabase, sessionToken, userId),
+        supabase
+          .from('app_users')
+          .update({
+            line_display_name: profile.displayName,
+            line_picture_url: profile.pictureUrl ?? null,
+            updated_at: now,
+          })
+          .eq('id', userId),
+      ]);
+
+      // last_login と login_history は fire-and-forget
+      touchLastLoginFireAndForget(supabase, userId);
 
       return NextResponse.json({ ok: true });
     }
@@ -77,13 +85,16 @@ export async function POST(request: NextRequest) {
       initialCoins: 0,
     });
 
-    // 紹介コードがあれば紹介処理
-    if (referralCode && typeof referralCode === 'string') {
-      await processReferral(supabase, newUser.id as string, referralCode);
-    }
-
+    const newUserId = newUser.id as string;
     const sessionToken = await getOrCreateSessionToken();
-    await createSession(supabase, sessionToken, newUser.id as string);
+    await createSession(supabase, sessionToken, newUserId);
+
+    // 紹介コードがあれば紹介処理 (fire-and-forget)
+    if (referralCode && typeof referralCode === 'string') {
+      processReferral(supabase, newUserId, referralCode).catch((err) => {
+        console.warn('[LIFF login] processReferral failed:', err);
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
