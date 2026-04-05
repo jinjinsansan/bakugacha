@@ -159,12 +159,13 @@ export async function POST(request: Request) {
       : settings.lossRate;
 
     // 勝敗決定
+    // 商品別当選率が設定されている場合は、純粋にその確率通りにするため donden をスキップ
     const rawLoss = Math.random() * 100 < effectiveLossRate;
     let isDonden = false;
     let isWin: boolean;
 
     if (rawLoss) {
-      isDonden = Math.random() * 100 < settings.dondenRate;
+      isDonden = winRateOverride == null && Math.random() * 100 < settings.dondenRate;
       isWin = isDonden;
     } else {
       isWin = true;
