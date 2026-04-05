@@ -113,6 +113,42 @@ export function ProductFormFields({
         </p>
       </div>
 
+      <div className="rounded-xl border border-blue-500/30 bg-blue-950/20 p-4">
+        <h3 className="text-sm font-black text-blue-200 mb-1">🎮 TOPページに表示するボタン</h3>
+        <p className="text-xs text-blue-100/70 mb-3">
+          商品サムネイルに表示するガチャボタンを個別に選択できます。チェックを外したボタンは非表示になります。
+        </p>
+        <div className="flex flex-wrap items-center gap-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="button_1"
+              defaultChecked={defaults?.button_1 !== false}
+              className="w-4 h-4 accent-blue-400"
+            />
+            <span className="text-sm text-white">1回ガチャ</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="button_10"
+              defaultChecked={defaults?.button_10 !== false}
+              className="w-4 h-4 accent-blue-400"
+            />
+            <span className="text-sm text-white">10連ガチャ</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="button_100"
+              defaultChecked={defaults?.button_100 !== false}
+              className="w-4 h-4 accent-blue-400"
+            />
+            <span className="text-sm text-white">100連ガチャ</span>
+          </label>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field name="exchange_coins" label="コイン交換レート" type="number" placeholder="0=交換不可" defaultValue={(defaults?.exchange_coins as string) ?? '0'} />
       </div>

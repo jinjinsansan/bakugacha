@@ -23,7 +23,11 @@ function rowToProduct(row: Record<string, any>): Product {
           progressClass: buildProgressClass(stockRemaining ?? 0, stockTotal || 1),
         }
       : null,
-    buttons: effectiveStatus === 'sold-out' ? null : buildButtons(row.price),
+    buttons: effectiveStatus === 'sold-out' ? null : buildButtons({
+      single:  row.button_1 !== false,
+      ten:     row.button_10 !== false,
+      hundred: row.button_100 !== false,
+    }),
     status: effectiveStatus,
     category: row.category,
     thumbnailGradient: row.thumbnail_gradient ?? undefined,
@@ -32,11 +36,14 @@ function rowToProduct(row: Record<string, any>): Product {
   };
 }
 
-function buildButtons(price: number): string[] {
-  if (price === 0) return ['1回ガチャ', '10連ガチャ', '100連ガチャ'];
-  if (price <= 100) return ['1回ガチャ', '10連ガチャ', '100連ガチャ'];
-  if (price <= 1000) return ['1回ガチャ', '10連ガチャ'];
-  return ['1回ガチャ'];
+function buildButtons(
+  flags: { single: boolean; ten: boolean; hundred: boolean },
+): string[] | null {
+  const labels: string[] = [];
+  if (flags.single)  labels.push('1回ガチャ');
+  if (flags.ten)     labels.push('10連ガチャ');
+  if (flags.hundred) labels.push('100連ガチャ');
+  return labels.length > 0 ? labels : null;
 }
 
 function buildProgressClass(remaining: number, total: number): string {

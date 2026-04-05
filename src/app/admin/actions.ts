@@ -64,6 +64,9 @@ export async function createProduct(formData: FormData) {
     exchange_coins:      Number(formData.get('exchange_coins') ?? 0),
     win_rate_override:   winRateOverride,
     max_winners:         maxWinners,
+    button_1:            formData.get('button_1') === 'on',
+    button_10:           formData.get('button_10') === 'on',
+    button_100:          formData.get('button_100') === 'on',
   });
 
   revalidatePath('/admin/products');
@@ -121,6 +124,9 @@ export async function updateProduct(id: string, formData: FormData) {
     exchange_coins:      Number(formData.get('exchange_coins') ?? 0),
     win_rate_override:   winRateOverride,
     max_winners:         maxWinners,
+    button_1:            formData.get('button_1') === 'on',
+    button_10:           formData.get('button_10') === 'on',
+    button_100:          formData.get('button_100') === 'on',
   }).eq('id', id);
 
   if (updateError) console.error('[updateProduct]', updateError);
