@@ -1,6 +1,7 @@
 import { createProduct } from '@/app/admin/actions';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
 import { AdminForm } from '@/components/admin/AdminForm';
+import { StockZeroWarning } from '@/components/admin/StockZeroWarning';
 
 const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト券', 'ゲーム機', 'その他'];
 
@@ -79,9 +80,7 @@ export function ProductFormFields({
         <Field name="stock_remaining" label="残り回数" type="number" placeholder="空欄=提供回数と同じ" defaultValue={defaults?.stock_remaining as string} />
         <Field name="sort_order" label="表示順" type="number" defaultValue={(defaults?.sort_order as string) ?? '0'} />
       </div>
-      <p className="text-xs text-yellow-300/70 -mt-2">
-        💡 提供回数を <strong>0</strong> で作成すると、サイトに<strong>「SOLD OUT（終了ガチャ）」</strong>として表示されます。
-      </p>
+      <StockZeroWarning />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field name="exchange_coins" label="コイン交換レート" type="number" placeholder="0=交換不可" defaultValue={(defaults?.exchange_coins as string) ?? '0'} />
