@@ -558,3 +558,25 @@ export async function updateAppSettings(formData: FormData) {
   revalidatePath('/admin/settings');
   redirect('/admin/settings?saved=1');
 }
+
+// ── メンテナンスモード設定更新 ───────────────────────────────────
+export async function updateMaintenanceSettings(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  try {
+    await upsertAppSettings(supabase, {
+      maintenanceMode:    formData.get('maintenance_mode') === 'on',
+      maintenanceTitle:   String(formData.get('maintenance_title') ?? '').trim() || 'ただいまメンテナンス中です',
+      maintenanceMessage: String(formData.get('maintenance_message') ?? '').trim()
+        || 'より良いサービスをご提供するため、ただいまメンテナンスを実施しております。ご不便をおかけして申し訳ございません。',
+    });
+  } catch (err) {
+    console.error('[admin] updateMaintenanceSettings failed:', err);
+    redirect('/admin/settings?error=1');
+  }
+
+  revalidatePath('/admin/settings');
+  revalidatePath('/', 'layout');
+  redirect('/admin/settings?saved=1');
+}

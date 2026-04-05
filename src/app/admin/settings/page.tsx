@@ -5,7 +5,7 @@ import { fetchElevatorSettings } from '@/lib/data/elevator-gacha';
 import { fetchKeibaSettings } from '@/lib/data/keiba-gacha';
 import { fetchRaiseSettings } from '@/lib/data/raise-gacha';
 import { fetchAppSettings } from '@/lib/data/app-settings';
-import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateRaiseKentaSettings, updateRaiseShoichiSettings, updateAppSettings, updateWinnerSettings, updateCardExchangeRates } from '@/app/admin/actions';
+import { updateCd2Settings, updateEcardSettings, updateElevatorSettings, updateKeibaSettings, updateKeibaCardSettings, updateRaiseKentaSettings, updateRaiseShoichiSettings, updateAppSettings, updateWinnerSettings, updateCardExchangeRates, updateMaintenanceSettings } from '@/app/admin/actions';
 import { fetchCardIssuanceCounts } from '@/lib/data/keiba-cards';
 import { fetchRaiseCardIssuanceCounts, fetchExchangeRates } from '@/lib/data/raise-cards';
 import { ALL_KEIBA_CARDS } from '@/lib/keiba-gacha/cards';
@@ -38,8 +38,6 @@ export default async function AdminSettingsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-black text-white">CD2ガチャ設定</h1>
-
       {params?.saved && (
         <div className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3">
           <p className="text-sm font-semibold text-emerald-300">✅ 保存しました</p>
@@ -50,6 +48,77 @@ export default async function AdminSettingsPage({
           <p className="text-sm font-semibold text-red-300">❌ 保存に失敗しました。再度お試しください。</p>
         </div>
       )}
+
+      {/* ── メンテナンスモード ── */}
+      <h2 className="text-lg font-black text-white">🛠 メンテナンスモード</h2>
+      <form
+        action={updateMaintenanceSettings}
+        className="card-premium p-6 flex flex-col gap-5"
+        style={appSettings.maintenanceMode ? {
+          borderColor: 'rgba(201,168,76,0.5)',
+          boxShadow: '0 0 0 1px rgba(201,168,76,0.3), 0 0 24px rgba(201,168,76,0.15)',
+        } : undefined}
+      >
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="maintenance_mode"
+            defaultChecked={appSettings.maintenanceMode}
+            className="w-5 h-5 accent-yellow-400"
+          />
+          <div>
+            <p className="text-sm font-bold text-white">メンテナンスモードを有効化</p>
+            <p className="text-xs text-white/40">
+              有効にすると、一般ユーザーにはメンテナンス画面が表示されます。管理者 (あなた) は引き続き全ページにアクセス可能です。
+            </p>
+          </div>
+        </label>
+
+        {appSettings.maintenanceMode && (
+          <div className="rounded-xl border border-yellow-400/40 bg-yellow-400/10 px-4 py-3">
+            <p className="text-xs font-bold text-yellow-300">
+              ⚠️ 現在メンテナンスモードが ON です。一般ユーザーはサイトにアクセスできません。
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="maintenance_title" className="text-xs font-bold text-white/70">
+            メンテナンスタイトル
+          </label>
+          <input
+            id="maintenance_title"
+            type="text"
+            name="maintenance_title"
+            defaultValue={appSettings.maintenanceTitle}
+            maxLength={60}
+            placeholder="ただいまメンテナンス中です"
+            className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="maintenance_message" className="text-xs font-bold text-white/70">
+            メンテナンスメッセージ
+          </label>
+          <textarea
+            id="maintenance_message"
+            name="maintenance_message"
+            defaultValue={appSettings.maintenanceMessage}
+            rows={4}
+            maxLength={500}
+            placeholder="ユーザーに表示するメッセージを入力してください。改行はそのまま反映されます。"
+            className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50 resize-y"
+          />
+          <p className="text-[11px] text-white/30">改行はそのままユーザーに表示されます</p>
+        </div>
+
+        <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold self-start">
+          保存
+        </button>
+      </form>
+
+      <h1 className="text-xl font-black text-white mt-4">CD2ガチャ設定</h1>
 
       <form action={updateCd2Settings} className="card-premium p-6 flex flex-col gap-6">
         <label className="flex items-center gap-3 cursor-pointer">
