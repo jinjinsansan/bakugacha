@@ -29,6 +29,24 @@ export function HeroSection() {
 
           {/* テキスト */}
           <div className="flex-1 text-center md:text-left md:order-1">
+            {/* プレリリースバッジ */}
+            <div className="flex justify-center md:justify-start mb-3">
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-[0.15em]"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06))',
+                  border: '1px solid rgba(201,168,76,0.5)',
+                  color: '#e8c76a',
+                  boxShadow: '0 0 12px rgba(201,168,76,0.15)',
+                }}
+              >
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: '#e8c76a', boxShadow: '0 0 6px #e8c76a' }}
+                />
+                PRE-RELEASE β
+              </span>
+            </div>
             <p className="text-[10px] font-bold tracking-[0.4em] text-gold uppercase mb-4">
               Premium Gacha Experience
             </p>
@@ -44,7 +62,7 @@ export function HeroSection() {
               ポケモン・ワンピース・遊戯王・任天堂スイッチ・Amazonギフト券<br className="hidden md:block" />
               厳選されたガチャがここに集結。今すぐレアをGETしよう。
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start mb-5">
               <Link href="/#products" className="w-full sm:w-auto">
                 <button className="btn-gold px-8 py-4 rounded-full text-sm font-bold w-full shadow-xl">
                   🎰 今すぐガチャを引く
@@ -55,6 +73,21 @@ export function HeroSection() {
                   ガチャ一覧を見る →
                 </button>
               </Link>
+            </div>
+
+            {/* プレリリース注意文 */}
+            <div
+              className="rounded-xl px-4 py-3 text-left"
+              style={{
+                background: 'rgba(201,168,76,0.06)',
+                border: '1px solid rgba(201,168,76,0.22)',
+              }}
+            >
+              <p className="text-[11px] leading-relaxed text-white/70">
+                <span className="font-black text-gold">⚠ お知らせ</span>
+                <span className="mx-2 text-white/20">|</span>
+                現在プレリリース版として公開中です。機能追加・改善のため予告なくメンテナンスを行う場合がございます。
+              </p>
             </div>
           </div>
 
