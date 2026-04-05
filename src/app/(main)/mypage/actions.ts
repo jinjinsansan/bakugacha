@@ -77,3 +77,61 @@ export async function claimDailyLoginBonus(): Promise<DailyBonusResult> {
   revalidatePath('/mypage');
   return { ok: true, amount, newBalance };
 }
+
+// ── プロモコード引換 ─────────────────────────────────────────
+export type PromoRedeemResult =
+  | { ok: true; amount: number; newBalance: number }
+  | { ok: false; error: string };
+
+const PROMO_ERROR_MESSAGES: Record<string, string> = {
+  NOT_FOUND: '無効なプロモコードです。',
+  INACTIVE: 'このプロモコードは現在利用できません。',
+  EXPIRED: 'このプロモコードは有効期限が切れています。',
+  LIMIT_REACHED: 'このプロモコードは利用上限に達しました。',
+  ALREADY_REDEEMED: 'このプロモコードは既に利用済みです。',
+  USER_NOT_FOUND: 'ユーザー情報の取得に失敗しました。',
+};
+
+export async function redeemPromoCode(code: string): Promise<PromoRedeemResult> {
+  const supabase = getServiceSupabase();
+
+  const user = await getUserFromSession(supabase);
+  if (!user) {
+    return { ok: false, error: 'ログインが必要です。' };
+  }
+
+  const trimmed = code.trim();
+  if (!trimmed) {
+    return { ok: false, error: 'プロモコードを入力してください。' };
+  }
+
+  const { data, error } = await supabase.rpc('redeem_promo_code', {
+    p_user_id: user.id as string,
+    p_code: trimmed,
+  });
+
+  if (error) {
+    console.error('[redeemPromoCode] rpc error:', error);
+    return { ok: false, error: 'プロモコードの引換に失敗しました。' };
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) {
+    return { ok: false, error: 'プロモコードの引換に失敗しました。' };
+  }
+
+  if (!row.success) {
+    const code = String(row.error_code ?? '');
+    return {
+      ok: false,
+      error: PROMO_ERROR_MESSAGES[code] ?? 'プロモコードの引換に失敗しました。',
+    };
+  }
+
+  revalidatePath('/mypage');
+  return {
+    ok: true,
+    amount: Number(row.coin_amount ?? 0),
+    newBalance: Number(row.new_balance ?? 0),
+  };
+}

@@ -684,3 +684,65 @@ export async function updateMaintenanceSettings(formData: FormData) {
   revalidatePath('/', 'layout');
   redirect('/admin/settings?saved=1');
 }
+
+// ── プロモコード作成 ────────────────────────────────────────────
+export async function createPromoCode(formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  const code = String(formData.get('code') ?? '').trim().toUpperCase();
+  if (!code) {
+    redirect('/admin/promo-codes?error=' + encodeURIComponent('コードは必須です'));
+  }
+
+  const coinAmount = Number(formData.get('coin_amount') ?? 0);
+  if (coinAmount <= 0) {
+    redirect('/admin/promo-codes?error=' + encodeURIComponent('コイン数は1以上で入力してください'));
+  }
+
+  const maxUsesRaw = formData.get('max_uses');
+  const maxUses = maxUsesRaw != null && String(maxUsesRaw).trim() !== ''
+    ? Number(maxUsesRaw)
+    : null;
+
+  const expiresAtRaw = formData.get('expires_at');
+  const expiresAt = expiresAtRaw != null && String(expiresAtRaw).trim() !== ''
+    ? new Date(String(expiresAtRaw)).toISOString()
+    : null;
+
+  const description = formData.get('description') ? String(formData.get('description')) : null;
+
+  const { error } = await supabase.from('promo_codes').insert({
+    code,
+    coin_amount: coinAmount,
+    max_uses: maxUses,
+    expires_at: expiresAt,
+    description,
+    is_active: true,
+  });
+
+  if (error) {
+    console.error('[createPromoCode]', error);
+    const msg = error.code === '23505' ? '同じコードが既に存在します' : `作成に失敗: ${error.message}`;
+    redirect('/admin/promo-codes?error=' + encodeURIComponent(msg));
+  }
+
+  revalidatePath('/admin/promo-codes');
+  redirect('/admin/promo-codes?saved=1');
+}
+
+// ── プロモコード有効/無効切替 ────────────────────────────────────
+export async function togglePromoCode(id: string, isActive: boolean) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  await supabase.from('promo_codes').update({ is_active: isActive }).eq('id', id);
+  revalidatePath('/admin/promo-codes');
+}
+
+// ── プロモコード削除 ────────────────────────────────────────────
+export async function deletePromoCode(id: string) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  await supabase.from('promo_codes').delete().eq('id', id);
+  revalidatePath('/admin/promo-codes');
+}

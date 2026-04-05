@@ -9,6 +9,7 @@ import { PrizeBox } from '@/components/mypage/PrizeBox';
 import { KeibaCardCollection } from '@/components/mypage/KeibaCardCollection';
 import { RaiseCardCollection } from '@/components/mypage/RaiseCardCollection';
 import { DailyLoginBonus } from '@/components/mypage/DailyLoginBonus';
+import { PromoCodeInput } from '@/components/mypage/PromoCodeInput';
 
 export default async function MyPage() {
   const supabase = getServiceSupabase();
@@ -106,6 +107,9 @@ export default async function MyPage() {
         amount={appSettings.dailyLoginBonusAmount}
         alreadyClaimed={alreadyClaimedBonus}
       />
+
+      {/* プロモコード */}
+      <PromoCodeInput />
 
       {/* 友達紹介 */}
       {user.referral_code && (
