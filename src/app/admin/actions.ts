@@ -660,6 +660,8 @@ export async function updateAppSettings(formData: FormData) {
   }
 
   revalidatePath('/admin/settings');
+  revalidatePath('/mypage');
+  revalidatePath('/', 'layout');
   redirect('/admin/settings?saved=1');
 }
 

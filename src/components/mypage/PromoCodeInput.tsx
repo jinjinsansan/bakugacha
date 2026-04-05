@@ -27,14 +27,14 @@ export function PromoCodeInput() {
 
   return (
     <div
-      className="rounded-2xl p-5 mb-6"
+      className="rounded-2xl p-5 mb-6 overflow-hidden"
       style={{
         background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04))',
         border: '1px solid rgba(139,92,246,0.35)',
       }}
     >
-      <div className="flex items-start gap-3 mb-3">
-        <div className="flex-1">
+      <div className="flex items-start gap-3 mb-3 min-w-0">
+        <div className="flex-1 min-w-0">
           <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-1">
             Promo Code
           </p>
@@ -44,26 +44,26 @@ export function PromoCodeInput() {
           </p>
         </div>
       </div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2 w-full min-w-0">
         <input
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="コードを入力"
           disabled={isPending}
-          className="flex-1 rounded-lg bg-white/10 border border-white/15 px-4 py-2.5 text-sm font-bold text-white placeholder-white/30 focus:outline-none focus:border-violet-400/70 uppercase tracking-wider disabled:opacity-60"
+          className="flex-1 min-w-0 w-full rounded-lg bg-white/10 border border-white/15 px-3 py-2.5 text-sm font-bold text-white placeholder-white/30 focus:outline-none focus:border-violet-400/70 uppercase tracking-wide disabled:opacity-60"
           maxLength={40}
         />
         <button
           type="submit"
           disabled={isPending || !code.trim()}
-          className="px-5 py-2.5 rounded-lg text-xs font-black tracking-wider whitespace-nowrap text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="shrink-0 px-4 py-2.5 rounded-lg text-xs font-black whitespace-nowrap text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
             boxShadow: '0 2px 8px rgba(124,58,237,0.35)',
           }}
         >
-          {isPending ? '処理中...' : '引換'}
+          {isPending ? '処理中' : '引換'}
         </button>
       </form>
     </div>
