@@ -200,18 +200,18 @@ export function ProductFormFields({
       <p className="text-xs text-white/40 -mt-2">当選品をコインに交換する際のコイン数（CD2/ROYALガチャ用。0=交換不可）</p>
 
       <div className="rounded-xl border border-red-500/30 bg-red-950/20 p-4">
-        <h3 className="text-sm font-black text-red-200 mb-1">🎬 当選後ボーナス映像（CD2専用・任意）</h3>
+        <h3 className="text-sm font-black text-red-200 mb-1">🎬 当選時・シーケンス末尾追加映像（CD2専用・任意）</h3>
         <p className="text-xs text-red-100/70 mb-3">
-          当選時のみ、通常演出の後に追加で再生される映像のURLを設定できます。設定しない場合は通常通り結果画面が表示されます。
+          当選時のみ、カウントダウン演出の最後のコマとして追加再生される映像のURLを設定できます。ハズレ・未設定の場合はスキップされます。
         </p>
         <Field
           name="bonus_win_video_url"
-          label="ボーナス映像URL"
-          placeholder="https://example.com/bonus.mp4"
+          label="追加映像URL"
+          placeholder="https://example.com/extra.mp4"
           defaultValue={(defaults?.bonus_win_video_url as string) ?? ''}
         />
         <p className="text-[10px] text-red-100/50 mt-2">
-          💡 R2 や外部 CDN の公開 URL を入力してください。当選時のみ再生され、ハズレ時はスキップされます。
+          💡 R2 や外部 CDN の公開 URL を入力してください。jackpot などの演出の直後・結果画面の前に再生されます。
         </p>
       </div>
 

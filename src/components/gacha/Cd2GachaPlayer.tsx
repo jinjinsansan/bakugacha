@@ -290,52 +290,6 @@ function ResultCard({
   );
 }
 
-// ── ボーナス映像プレイヤー ────────────────────────────────────
-function BonusVideoPlayer({
-  src, onFinished,
-}: {
-  src: string;
-  onFinished: () => void;
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    void v.play().then(() => { if (videoRef.current) videoRef.current.muted = false; }).catch(() => undefined);
-  }, [src]);
-
-  return (
-    <div className="fixed inset-0 z-[210] flex flex-col items-center justify-center bg-black">
-      <div className="relative w-full h-full max-w-[430px] mx-auto">
-        <div className="absolute inset-0 bg-black" style={{ opacity: ready ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: 1 }} />
-        <video
-          ref={videoRef}
-          src={src}
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          onCanPlayThrough={() => setReady(true)}
-          onLoadedData={() => setReady(true)}
-          onEnded={onFinished}
-          onError={onFinished}
-        />
-        <button
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3 rounded-full text-sm font-bold text-white/70 z-10"
-          style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}
-          onClick={onFinished}
-        >
-          SKIP
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── メインプレイヤー ──────────────────────────────────────────
 function ActivePlayer({
   onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality, accessCode, bonusWinVideoUrl,
@@ -357,7 +311,6 @@ function ActivePlayer({
   const [index, setIndex]         = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [showBonusVideo, setShowBonusVideo] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
 
   const videoRef        = useRef<HTMLVideoElement>(null);
@@ -372,7 +325,11 @@ function ActivePlayer({
       try {
         const res = await startCd2Gacha(productId, quality, accessCode);
         if (cancelled) return;
-        setQueue(buildQueue(res.sequence, res.videoBasePath));
+        const builtQueue = buildQueue(res.sequence, res.videoBasePath);
+        if (res.isWin && bonusWinVideoUrl) {
+          builtQueue.push({ key: 'bonus-win', src: bonusWinVideoUrl, step: 'bonus_win', autoAdvance: false });
+        }
+        setQueue(builtQueue);
         setPlayState({ status: 'ready', ...res });
         setIndex(0);
         setVideoReady(false);
@@ -436,16 +393,11 @@ function ActivePlayer({
     v.pause(); v.src = ''; v.load();
   }, []);
 
-  const triggerEnd = useCallback(() => {
-    const win = playState.status === 'ready' ? playState.isWin : false;
-    if (win && bonusWinVideoUrl) { setShowBonusVideo(true); } else { setShowResult(true); }
-  }, [playState, bonusWinVideoUrl]);
-
   useEffect(() => {
     if (!current?.isFreeze) return undefined;
-    const t = setTimeout(() => triggerEnd(), 10000);
+    const t = setTimeout(() => setShowResult(true), 10000);
     return () => clearTimeout(t);
-  }, [current?.isFreeze, videoKey, triggerEnd]);
+  }, [current?.isFreeze, videoKey]);
 
   const handleReady = useCallback(() => {
     if (lastReadyKeyRef.current === videoKey) return;
@@ -459,12 +411,12 @@ function ActivePlayer({
       clearVideoSrc();
       allowUnmuteRef.current = true;
       const next = index + 1;
-      if (next >= queue.length) { triggerEnd(); return; }
+      if (next >= queue.length) { setShowResult(true); return; }
       setVideoReady(false); setIndex(next);
     } else {
       setVideoReady(true);
     }
-  }, [videoKey, current?.autoAdvance, index, queue.length, clearVideoSrc, triggerEnd]);
+  }, [videoKey, current?.autoAdvance, index, queue.length, clearVideoSrc]);
 
   const handleError = useCallback(() => { setVideoReady(true); }, []);
 
@@ -480,9 +432,9 @@ function ActivePlayer({
     clearVideoSrc();
     allowUnmuteRef.current = true;
     const next = index + 1;
-    if (next >= queue.length) { triggerEnd(); return; }
+    if (next >= queue.length) { setShowResult(true); return; }
     setVideoReady(false); setIndex(next);
-  }, [index, queue.length, clearVideoSrc, triggerEnd]);
+  }, [index, queue.length, clearVideoSrc]);
 
   // 演出をもう一度見る（API再コールなし）
   const handleReplayAnimation = useCallback(() => {
@@ -582,13 +534,9 @@ function ActivePlayer({
             {/* NEXT/SKIPボタン（常時表示・枠外・固定） */}
             <div className="flex items-center justify-center gap-4 mt-6" style={{ flexShrink: 0 }}>
               <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
-              <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={triggerEnd} />
+              <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
             </div>
           </>
-        )}
-
-        {showBonusVideo && bonusWinVideoUrl && (
-          <BonusVideoPlayer src={bonusWinVideoUrl} onFinished={() => { setShowBonusVideo(false); setShowResult(true); }} />
         )}
 
         {/* 先読み */}
@@ -646,14 +594,10 @@ function ActivePlayer({
             {!isFreezeStep && (
               <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-4">
                 <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
-                <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={triggerEnd} />
+                <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
               </div>
             )}
           </>
-        )}
-
-        {showBonusVideo && bonusWinVideoUrl && (
-          <BonusVideoPlayer src={bonusWinVideoUrl} onFinished={() => { setShowBonusVideo(false); setShowResult(true); }} />
         )}
 
         {showResult && playState.status === 'ready' && (
