@@ -31,6 +31,7 @@ type PlayState =
       sequence: Cd2Step[];
       videoBasePath: string;
       expectationStars: number;
+      accessCode?: string;
     };
 
 const VIDEO_VERSION = '3';
@@ -132,7 +133,7 @@ function FreezeOverlay() {
 // ── 結果カード（オリパワン型） ───────────────────────────────
 function ResultCard({
   isWin, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost,
-  onClose, onRetry, onReplayAnimation,
+  onClose, onRetry, onReplayAnimation, accessCode,
 }: {
   isWin: boolean;
   prizeName?: string;
@@ -143,6 +144,7 @@ function ResultCard({
   onClose?: () => void;
   onRetry?: () => void;
   onReplayAnimation?: () => void;
+  accessCode?: string;
 }) {
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: '#f2f2ed' }}>
@@ -232,6 +234,25 @@ function ResultCard({
           </div>
         </div>
 
+        {/* 権利コード（当選 + コード発行時） */}
+        {isWin && accessCode && (
+          <div className="bg-white rounded-2xl p-4 mt-3"
+            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '2px solid #7c3aed' }}>
+            <p className="text-xs font-bold mb-1" style={{ color: '#7c3aed' }}>🎟️ 権利コードを獲得！</p>
+            <p
+              className="text-2xl font-black tracking-[0.2em] text-center py-2 cursor-pointer select-all"
+              style={{ color: '#7c3aed' }}
+              onClick={() => navigator.clipboard?.writeText(accessCode)}
+              title="タップでコピー"
+            >
+              {accessCode}
+            </p>
+            <p className="text-[10px] text-center" style={{ color: '#999' }}>
+              タップでコピー / マイページの当選品ボックスからも確認できます
+            </p>
+          </div>
+        )}
+
         {/* ハズレ時メッセージ */}
         {!isWin && (
           <p className="text-center text-sm mt-4" style={{ color: '#999' }}>
@@ -271,7 +292,7 @@ function ResultCard({
 
 // ── メインプレイヤー ──────────────────────────────────────────
 function ActivePlayer({
-  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
+  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality, accessCode,
 }: {
   onClose?: () => void;
   onRetry?: () => void;
@@ -282,6 +303,7 @@ function ActivePlayer({
   coinCost?: number;
   productId: string;
   quality: 'high' | 'low';
+  accessCode?: string;
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
   const [queue, setQueue]         = useState<VideoItem[]>([]);
@@ -300,7 +322,7 @@ function ActivePlayer({
     let cancelled = false;
     (async () => {
       try {
-        const res = await startCd2Gacha(productId, quality);
+        const res = await startCd2Gacha(productId, quality, accessCode);
         if (cancelled) return;
         setQueue(buildQueue(res.sequence, res.videoBasePath));
         setPlayState({ status: 'ready', ...res });
@@ -312,7 +334,7 @@ function ActivePlayer({
       }
     })();
     return () => { cancelled = true; };
-  }, [productId, quality]);
+  }, [productId, quality, accessCode]);
 
   const allSources = useMemo(() => queue.map((v) => v.src).filter(Boolean), [queue]);
   const { resolveAssetSrc } = useSignedAssetResolver(allSources);
@@ -446,6 +468,7 @@ function ActivePlayer({
               onClose={onClose}
               onRetry={onRetry}
               onReplayAnimation={handleReplayAnimation}
+              accessCode={playState.accessCode}
             />
           </div>
         )}
@@ -583,6 +606,7 @@ function ActivePlayer({
             onClose={onClose}
             onRetry={onRetry}
             onReplayAnimation={handleReplayAnimation}
+            accessCode={playState.accessCode}
           />
         )}
       </div>
@@ -599,7 +623,7 @@ function ActivePlayer({
 
 // ── Portal ────────────────────────────────────────────────────
 export function Cd2GachaPlayer({
-  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
+  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality, accessCode,
 }: {
   open: boolean;
   onClose?: () => void;
@@ -611,6 +635,7 @@ export function Cd2GachaPlayer({
   coinCost?: number;
   productId: string;
   quality: 'high' | 'low';
+  accessCode?: string;
 }) {
   useEffect(() => {
     if (!open || typeof document === 'undefined') return undefined;
@@ -638,6 +663,7 @@ export function Cd2GachaPlayer({
       coinCost={coinCost}
       productId={productId}
       quality={quality}
+      accessCode={accessCode}
     />,
     portalTarget,
   );

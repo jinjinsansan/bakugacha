@@ -10,6 +10,7 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
 import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
+import { generateAccessCode, validateAndUseAccessCode } from '@/lib/data/access-codes';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 const WIN_STAR_WEIGHTS  = [5, 10, 20, 30, 35];
@@ -123,7 +124,9 @@ export async function POST(request: Request) {
       getUserFromSession(supabase),
     ]);
 
-    const price: number = product?.price ?? 0;
+    const requiresAccessCode = product?.requires_access_code === true;
+    const accessCodeInput = typeof body?.accessCode === 'string' ? body.accessCode : null;
+    const price: number = requiresAccessCode ? 0 : (product?.price ?? 0);
 
     // 管理者判定（コインチェック・消費をスキップ）
     const adminLineIds = (process.env.ADMIN_LINE_IDS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -139,7 +142,21 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!isAdmin && price > 0) {
+    // 権利コードが必要な商品の場合、コード検証
+    let usedAccessCodeId: string | null = null;
+    if (requiresAccessCode && !isAdmin) {
+      if (!user) {
+        return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
+      }
+      if (!accessCodeInput) {
+        return NextResponse.json({ success: false, error: '権利コードを入力してください。' }, { status: 400 });
+      }
+      const codeResult = await validateAndUseAccessCode(supabase, accessCodeInput, productId ?? '', user.id as string);
+      if (!codeResult.ok) {
+        return NextResponse.json({ success: false, error: codeResult.error }, { status: 400 });
+      }
+      usedAccessCodeId = codeResult.codeId;
+    } else if (!isAdmin && price > 0) {
       if (!user) {
         return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
       }
@@ -182,6 +199,7 @@ export async function POST(request: Request) {
     const expectationStars = computeExpectationStars(isWin, isDonden);
 
     // ── 原子的ガチャ実行 (migration 019 の play_gacha RPC) ──
+    let gachaResultId: string | null = null;
     if (user && productId) {
       const rpcResult = await callPlayGacha(supabase, {
         userId: user.id as string,
@@ -200,6 +218,22 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
+      gachaResultId = rpcResult.gacha_result_id;
+    }
+
+    // 当選時に権利コードを生成
+    let accessCode: string | null = null;
+    if (isWin && product?.access_code_target_id && user && productId) {
+      try {
+        accessCode = await generateAccessCode(supabase, {
+          sourceProductId: productId,
+          targetProductId: product.access_code_target_id as string,
+          winnerUserId: user.id as string,
+          gachaResultId,
+        });
+      } catch (err) {
+        console.error('[cd2-gacha] access code generation failed:', err);
+      }
     }
 
     const baseFolder = quality === 'low' ? 'cd2-mobile' : 'cd2';
@@ -209,6 +243,7 @@ export async function POST(request: Request) {
       isWin, isDonden, isPatlite, isFreeze, sequence,
       videoBasePath: buildGachaAssetPath(baseFolder),
       expectationStars,
+      ...(accessCode ? { accessCode } : {}),
     });
   } catch (error) {
     console.error('[cd2-gacha/play]', error);

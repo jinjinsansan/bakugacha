@@ -2,6 +2,7 @@ import { createProduct } from '@/app/admin/actions';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
 import { AdminForm } from '@/components/admin/AdminForm';
 import { StockZeroWarning } from '@/components/admin/StockZeroWarning';
+import { getServiceSupabase } from '@/lib/supabase/service';
 
 const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト券', 'ゲーム機', 'その他'];
 
@@ -14,12 +15,18 @@ export const GACHA_TYPES = [
   { value: 'raise_shoichi', label: '来世ガチャ（正一編）' },
 ] as const;
 
-export default function AdminProductNewPage() {
+export default async function AdminProductNewPage() {
+  const supabase = getServiceSupabase();
+  const { data: products } = await supabase
+    .from('gacha_products')
+    .select('id, title')
+    .order('sort_order', { ascending: true });
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">商品追加</h1>
       <AdminForm action={createProduct}>
-        <ProductFormFields />
+        <ProductFormFields allProducts={products ?? []} />
         <div className="flex gap-3 pt-2">
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             作成
@@ -35,8 +42,10 @@ export default function AdminProductNewPage() {
 
 export function ProductFormFields({
   defaults,
+  allProducts,
 }: {
   defaults?: Record<string, unknown>;
+  allProducts?: { id: string; title: string }[];
 }) {
   return (
     <>
@@ -146,6 +155,42 @@ export function ProductFormFields({
             />
             <span className="text-sm text-white">100連ガチャ</span>
           </label>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-purple-500/30 bg-purple-950/20 p-4">
+        <h3 className="text-sm font-black text-purple-200 mb-1">🎟️ 権利コード設定</h3>
+        <p className="text-xs text-purple-100/70 mb-3">
+          当選時に別商品を引ける権利コードを発行したり、権利コードでしか引けない商品を設定できます。
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">当選時に権利コードを発行する対象商品</label>
+            <select
+              name="access_code_target_id"
+              defaultValue={(defaults?.access_code_target_id as string) ?? ''}
+              className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400/50"
+            >
+              <option value="" className="bg-zinc-900">なし（通常の当選処理）</option>
+              {(allProducts ?? []).map((p) => (
+                <option key={p.id} value={p.id} className="bg-zinc-900">{p.title}</option>
+              ))}
+            </select>
+            <p className="text-[10px] text-white/40">当選すると選択した商品を引ける権利コードが発行されます</p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/60">この商品は権利コードが必要</label>
+            <label className="flex items-center gap-2 mt-1 cursor-pointer">
+              <input
+                type="checkbox"
+                name="requires_access_code"
+                defaultChecked={defaults?.requires_access_code === true}
+                className="w-4 h-4 accent-purple-400"
+              />
+              <span className="text-sm text-white">はい（コイン不要、権利コードでのみプレイ可能）</span>
+            </label>
+            <p className="text-[10px] text-white/40">ONにすると詳細ページに権利コード入力欄が表示されます</p>
+          </div>
         </div>
       </div>
 

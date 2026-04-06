@@ -5,6 +5,7 @@ export type ElevatorPlayResponse = {
   isWin: boolean;
   steps: ElevatorStep[];
   videoBasePath: string;
+  accessCode?: string;
 };
 
 export type ElevatorQuality = 'high' | 'low';
@@ -15,7 +16,7 @@ function fetchWithTimeout(url: string, options: RequestInit, ms: number): Promis
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-export async function startElevatorGacha(productId: string, quality: ElevatorQuality = 'high'): Promise<ElevatorPlayResponse> {
+export async function startElevatorGacha(productId: string, quality: ElevatorQuality = 'high', accessCode?: string): Promise<ElevatorPlayResponse> {
   let res: Response;
   try {
     res = await fetchWithTimeout(
@@ -23,7 +24,7 @@ export async function startElevatorGacha(productId: string, quality: ElevatorQua
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quality }),
+        body: JSON.stringify({ productId, quality, ...(accessCode ? { accessCode } : {}) }),
       },
       30000,
     );

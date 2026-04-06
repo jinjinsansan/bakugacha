@@ -19,6 +19,7 @@ export type RaisePlayResponse = {
     rarity: string;
     starLevel: number;
   } | null;
+  accessCode?: string;
 };
 
 export type RaiseQuality = 'high' | 'low';
@@ -33,6 +34,7 @@ export async function startRaiseGacha(
   productId: string,
   quality: RaiseQuality,
   characterId: RaiseCharacterId,
+  accessCode?: string,
 ): Promise<RaisePlayResponse> {
   let res: Response;
   try {
@@ -41,7 +43,7 @@ export async function startRaiseGacha(
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quality, characterId }),
+        body: JSON.stringify({ productId, quality, characterId, ...(accessCode ? { accessCode } : {}) }),
       },
       30000,
     );

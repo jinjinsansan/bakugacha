@@ -172,7 +172,7 @@ function ResultCard({
 // ── メインプレイヤー ──────────────────────────────────────────
 
 function ActivePlayer({
-  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
+  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality, accessCode,
 }: {
   onClose?: () => void;
   onRetry?: () => void;
@@ -183,6 +183,7 @@ function ActivePlayer({
   coinCost?: number;
   productId: string;
   quality: 'high' | 'low';
+  accessCode?: string;
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
   const [isStandby, setIsStandby] = useState(true);
@@ -203,7 +204,7 @@ function ActivePlayer({
     let cancelled = false;
     (async () => {
       try {
-        const res = await startElevatorGacha(productId, quality);
+        const res = await startElevatorGacha(productId, quality, accessCode);
         if (cancelled) return;
         setPlayState({ status: 'ready', ...res });
         // standby で開始
@@ -221,7 +222,7 @@ function ActivePlayer({
       }
     })();
     return () => { cancelled = true; };
-  }, [productId, quality]);
+  }, [productId, quality, accessCode]);
 
   // 全動画ソース（プリフェッチ用）
   const allSources = useMemo(() => {
@@ -529,7 +530,7 @@ function ActivePlayer({
 // ── Portal ──────────────────────────────────────────────────
 
 export function ElevatorGachaPlayer({
-  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
+  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality, accessCode,
 }: {
   open: boolean;
   onClose?: () => void;
@@ -541,6 +542,7 @@ export function ElevatorGachaPlayer({
   coinCost?: number;
   productId: string;
   quality: 'high' | 'low';
+  accessCode?: string;
 }) {
   useEffect(() => {
     if (!open || typeof document === 'undefined') return undefined;
@@ -568,6 +570,7 @@ export function ElevatorGachaPlayer({
       coinCost={coinCost}
       productId={productId}
       quality={quality}
+      accessCode={accessCode}
     />,
     portalTarget,
   );

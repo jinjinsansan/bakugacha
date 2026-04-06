@@ -9,6 +9,7 @@ export type Cd2PlayResponse = {
   sequence: Cd2Step[];
   videoBasePath: string;
   expectationStars: number;
+  accessCode?: string;
 };
 
 export type Cd2Quality = 'high' | 'low';
@@ -19,7 +20,7 @@ function fetchWithTimeout(url: string, options: RequestInit, ms: number): Promis
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-export async function startCd2Gacha(productId: string, quality: Cd2Quality = 'high'): Promise<Cd2PlayResponse> {
+export async function startCd2Gacha(productId: string, quality: Cd2Quality = 'high', accessCode?: string): Promise<Cd2PlayResponse> {
   let res: Response;
   try {
     res = await fetchWithTimeout(
@@ -27,7 +28,7 @@ export async function startCd2Gacha(productId: string, quality: Cd2Quality = 'hi
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quality }),
+        body: JSON.stringify({ productId, quality, ...(accessCode ? { accessCode } : {}) }),
       },
       30000,
     );

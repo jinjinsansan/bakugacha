@@ -45,6 +45,11 @@ export async function createProduct(formData: FormData) {
     ? Number(maxWinnersRaw)
     : null;
 
+  const accessCodeTargetRaw = formData.get('access_code_target_id');
+  const accessCodeTargetId = accessCodeTargetRaw && String(accessCodeTargetRaw).trim()
+    ? String(accessCodeTargetRaw).trim()
+    : null;
+
   await supabase.from('gacha_products').insert({
     id,
     title:               String(formData.get('title') ?? ''),
@@ -67,6 +72,8 @@ export async function createProduct(formData: FormData) {
     button_1:            formData.get('button_1') === 'on',
     button_10:           formData.get('button_10') === 'on',
     button_100:          formData.get('button_100') === 'on',
+    access_code_target_id: accessCodeTargetId,
+    requires_access_code:  formData.get('requires_access_code') === 'on',
   });
 
   revalidatePath('/admin/products');
@@ -106,6 +113,11 @@ export async function updateProduct(id: string, formData: FormData) {
     ? Number(maxWinnersRaw)
     : null;
 
+  const accessCodeTargetRaw = formData.get('access_code_target_id');
+  const accessCodeTargetId = accessCodeTargetRaw && String(accessCodeTargetRaw).trim()
+    ? String(accessCodeTargetRaw).trim()
+    : null;
+
   const { error: updateError } = await supabase.from('gacha_products').update({
     title:               String(formData.get('title') ?? ''),
     category:            String(formData.get('category') ?? 'その他'),
@@ -127,6 +139,8 @@ export async function updateProduct(id: string, formData: FormData) {
     button_1:            formData.get('button_1') === 'on',
     button_10:           formData.get('button_10') === 'on',
     button_100:          formData.get('button_100') === 'on',
+    access_code_target_id: accessCodeTargetId,
+    requires_access_code:  formData.get('requires_access_code') === 'on',
   }).eq('id', id);
 
   if (updateError) console.error('[updateProduct]', updateError);

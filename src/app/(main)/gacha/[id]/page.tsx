@@ -115,6 +115,7 @@ export default async function GachaDetailPage({ params }: Props) {
             prizeImageUrl={imageUrl || undefined}
             prizeEmoji={row.thumbnail_emoji ?? undefined}
             prizeGradient={row.thumbnail_gradient ?? undefined}
+            requiresAccessCode={row.requires_access_code === true}
           />
         )}
 

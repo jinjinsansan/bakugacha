@@ -266,7 +266,7 @@ function ResultCard({
 // ── メインプレイヤー ──────────────────────────────────────────
 
 function ActivePlayer({
-  onClose, onRetry, coinCost, productId, quality, characterId,
+  onClose, onRetry, coinCost, productId, quality, characterId, accessCode,
 }: {
   onClose?: () => void;
   onRetry?: () => void;
@@ -274,6 +274,7 @@ function ActivePlayer({
   productId: string;
   quality: 'high' | 'low';
   characterId: RaiseCharacterId;
+  accessCode?: string;
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
   const [isStandby, setIsStandby] = useState(true);
@@ -295,7 +296,7 @@ function ActivePlayer({
     let cancelled = false;
     (async () => {
       try {
-        const res = await startRaiseGacha(productId, quality, characterId);
+        const res = await startRaiseGacha(productId, quality, characterId, accessCode);
         if (cancelled) return;
         setPlayState({ status: 'ready', ...res });
         const folder = quality === 'low' ? `raise-${characterId}-mobile` : `raise-${characterId}`;
@@ -308,7 +309,7 @@ function ActivePlayer({
       }
     })();
     return () => { cancelled = true; };
-  }, [productId, quality, characterId]);
+  }, [productId, quality, characterId, accessCode]);
 
   // 全動画ソース
   const allSources = useMemo(() => {
@@ -638,7 +639,7 @@ function ActivePlayer({
 // ── Portal ──────────────────────────────────────────────────
 
 export function RaiseGachaPlayer({
-  open, onClose, onRetry, coinCost, productId, quality, characterId,
+  open, onClose, onRetry, coinCost, productId, quality, characterId, accessCode,
 }: {
   open: boolean;
   onClose?: () => void;
@@ -647,6 +648,7 @@ export function RaiseGachaPlayer({
   productId: string;
   quality: 'high' | 'low';
   characterId: RaiseCharacterId;
+  accessCode?: string;
 }) {
   useEffect(() => {
     if (!open || typeof document === 'undefined') return undefined;
@@ -671,6 +673,7 @@ export function RaiseGachaPlayer({
       productId={productId}
       quality={quality}
       characterId={characterId}
+      accessCode={accessCode}
     />,
     portalTarget,
   );

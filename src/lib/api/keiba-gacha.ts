@@ -16,6 +16,7 @@ export type KeibaPlayResponse = {
   steps: KeibaStep[];
   videoBasePath: string;
   card: { serialNumber: string; charaId: string; cardNumber: string } | null;
+  accessCode?: string;
 };
 
 export type KeibaQuality = 'high' | 'low';
@@ -26,7 +27,7 @@ function fetchWithTimeout(url: string, options: RequestInit, ms: number): Promis
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-export async function startKeibaGacha(productId: string, quality: KeibaQuality = 'high'): Promise<KeibaPlayResponse> {
+export async function startKeibaGacha(productId: string, quality: KeibaQuality = 'high', accessCode?: string): Promise<KeibaPlayResponse> {
   let res: Response;
   try {
     res = await fetchWithTimeout(
@@ -34,7 +35,7 @@ export async function startKeibaGacha(productId: string, quality: KeibaQuality =
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quality }),
+        body: JSON.stringify({ productId, quality, ...(accessCode ? { accessCode } : {}) }),
       },
       30000,
     );

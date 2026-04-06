@@ -235,7 +235,7 @@ function ResultCard({
 
 // ── メインプレイヤー ──────────────────────────────────────────
 function ActivePlayer({
-  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
+  onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality, accessCode,
 }: {
   onClose?: () => void;
   onRetry?: () => void;
@@ -246,6 +246,7 @@ function ActivePlayer({
   coinCost?: number;
   productId: string;
   quality: 'high' | 'low';
+  accessCode?: string;
 }) {
   const [playState, setPlayState] = useState<PlayState>({ status: 'loading' });
   const [queue, setQueue]         = useState<VideoItem[]>([]);
@@ -264,7 +265,7 @@ function ActivePlayer({
     let cancelled = false;
     (async () => {
       try {
-        const res = await startEcardGacha(productId, quality);
+        const res = await startEcardGacha(productId, quality, accessCode);
         if (cancelled) return;
         setQueue(buildQueue(res.sequence, res.videoBasePath));
         setPlayState({ status: 'ready', ...res });
@@ -276,7 +277,7 @@ function ActivePlayer({
       }
     })();
     return () => { cancelled = true; };
-  }, [productId, quality]);
+  }, [productId, quality, accessCode]);
 
   const allSources = useMemo(() => queue.map((v) => v.src).filter(Boolean), [queue]);
   const { resolveAssetSrc } = useSignedAssetResolver(allSources);
@@ -541,7 +542,7 @@ function ActivePlayer({
 
 // ── Portal ──────────────────────────────────────────────────
 export function EcardGachaPlayer({
-  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality,
+  open, onClose, onRetry, prizeName, prizeImageUrl, prizeEmoji, prizeGradient, coinCost, productId, quality, accessCode,
 }: {
   open: boolean;
   onClose?: () => void;
@@ -553,6 +554,7 @@ export function EcardGachaPlayer({
   coinCost?: number;
   productId: string;
   quality: 'high' | 'low';
+  accessCode?: string;
 }) {
   useEffect(() => {
     if (!open || typeof document === 'undefined') return undefined;
@@ -580,6 +582,7 @@ export function EcardGachaPlayer({
       coinCost={coinCost}
       productId={productId}
       quality={quality}
+      accessCode={accessCode}
     />,
     portalTarget,
   );

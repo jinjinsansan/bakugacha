@@ -8,6 +8,7 @@ export type EcardPlayResponse = {
   videoBasePath: string;
   expectationStars: number;
   scenarioCode: string;
+  accessCode?: string;
 };
 
 export type EcardQuality = 'high' | 'low';
@@ -18,7 +19,7 @@ function fetchWithTimeout(url: string, options: RequestInit, ms: number): Promis
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-export async function startEcardGacha(productId: string, quality: EcardQuality = 'high'): Promise<EcardPlayResponse> {
+export async function startEcardGacha(productId: string, quality: EcardQuality = 'high', accessCode?: string): Promise<EcardPlayResponse> {
   let res: Response;
   try {
     res = await fetchWithTimeout(
@@ -26,7 +27,7 @@ export async function startEcardGacha(productId: string, quality: EcardQuality =
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quality }),
+        body: JSON.stringify({ productId, quality, ...(accessCode ? { accessCode } : {}) }),
       },
       30000,
     );
