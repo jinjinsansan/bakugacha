@@ -74,6 +74,7 @@ export async function createProduct(formData: FormData) {
     button_100:          formData.get('button_100') === 'on',
     access_code_target_id: accessCodeTargetId,
     requires_access_code:  formData.get('requires_access_code') === 'on',
+    bonus_win_video_url:   formData.get('bonus_win_video_url') ? String(formData.get('bonus_win_video_url')) : null,
   });
 
   revalidatePath('/admin/products');
@@ -141,6 +142,7 @@ export async function updateProduct(id: string, formData: FormData) {
     button_100:          formData.get('button_100') === 'on',
     access_code_target_id: accessCodeTargetId,
     requires_access_code:  formData.get('requires_access_code') === 'on',
+    bonus_win_video_url:   formData.get('bonus_win_video_url') ? String(formData.get('bonus_win_video_url')) : null,
   }).eq('id', id);
 
   if (updateError) console.error('[updateProduct]', updateError);

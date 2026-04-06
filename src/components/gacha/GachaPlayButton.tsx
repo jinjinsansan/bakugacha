@@ -17,11 +17,13 @@ type Props = {
   prizeEmoji?: string;
   prizeGradient?: string;
   requiresAccessCode?: boolean;
+  bonusWinVideoUrl?: string;
 };
 
 export function GachaPlayButton({
   productId, productTitle, price, isLoggedIn, gachaType = 'cd2',
   prizeImageUrl, prizeEmoji, prizeGradient, requiresAccessCode = false,
+  bonusWinVideoUrl,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [quality, setQuality] = useState<'high' | 'low'>('high');
@@ -127,6 +129,7 @@ export function GachaPlayButton({
           productId={productId}
           quality={quality}
           accessCode={accessCode}
+          bonusWinVideoUrl={bonusWinVideoUrl}
         />
       )}
       {gachaType === 'ecard' && (
