@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+export const dynamic = 'force-dynamic';
+
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';

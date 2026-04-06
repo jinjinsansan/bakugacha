@@ -339,7 +339,7 @@ function ActivePlayer({
       }
     })();
     return () => { cancelled = true; };
-  }, [productId, quality, accessCode]);
+  }, [productId, quality, accessCode, bonusWinVideoUrl]);
 
   const allSources = useMemo(() => queue.map((v) => v.src).filter(Boolean), [queue]);
   const { resolveAssetSrc } = useSignedAssetResolver(allSources);
