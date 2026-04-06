@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { HeroSection } from '@/components/home/HeroSection';
+import { WelcomeGuide } from '@/components/home/WelcomeGuide';
 import { CampaignBanner } from '@/components/home/CampaignBanner';
 import { CategoryTabs } from '@/components/home/CategoryTabs';
 import { FilterTags } from '@/components/home/FilterTags';
@@ -31,6 +32,7 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
+      <WelcomeGuide />
       <CampaignBanner banners={banners.length > 0 ? banners : undefined} />
       <CategoryTabs />
       <div className="py-4 px-0">

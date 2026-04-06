@@ -1,14 +1,17 @@
 /**
  * 商品データ初期投入スクリプト
- * 実行: npx tsx scripts/seed-products.ts
+ * 実行: npx tsx --env-file=.env.local scripts/seed-products.ts
  */
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  'https://jetyojivnweyakuqozmj.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpldHlvaml2bndleWFrdXFvem1qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjI3MjI2OSwiZXhwIjoyMDg3ODQ4MjY5fQ.s2a-bizywGwLy4-Y6zTc3b_2qngSZksJf98YyJIqgeo',
-  { auth: { persistSession: false } },
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseUrl || !serviceRoleKey) {
+  console.error('SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。');
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
 const PHOTOS: Record<string, string> = {
   pokemon1:  'https://picsum.photos/seed/poke1/640/360',
