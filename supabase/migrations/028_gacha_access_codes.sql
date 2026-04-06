@@ -1,12 +1,12 @@
 ALTER TABLE gacha_products
-  ADD COLUMN IF NOT EXISTS access_code_target_id UUID REFERENCES gacha_products(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS access_code_target_id TEXT REFERENCES gacha_products(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS requires_access_code BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE TABLE IF NOT EXISTS gacha_access_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code TEXT NOT NULL UNIQUE,
-  source_product_id UUID NOT NULL REFERENCES gacha_products(id) ON DELETE CASCADE,
-  target_product_id UUID NOT NULL REFERENCES gacha_products(id) ON DELETE CASCADE,
+  source_product_id TEXT NOT NULL REFERENCES gacha_products(id) ON DELETE CASCADE,
+  target_product_id TEXT NOT NULL REFERENCES gacha_products(id) ON DELETE CASCADE,
   winner_user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
   gacha_result_id UUID REFERENCES gacha_results(id) ON DELETE SET NULL,
   is_used BOOLEAN NOT NULL DEFAULT FALSE,
