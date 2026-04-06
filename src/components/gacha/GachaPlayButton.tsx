@@ -117,7 +117,7 @@ export function GachaPlayButton({
       {gachaType === 'cd2' && (
         <Cd2GachaPlayer
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => { setOpen(false); if (requiresAccessCode) setAccessCode(''); }}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
           prizeName={productTitle}
           prizeImageUrl={prizeImageUrl}
@@ -132,7 +132,7 @@ export function GachaPlayButton({
       {gachaType === 'ecard' && (
         <EcardGachaPlayer
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => { setOpen(false); if (requiresAccessCode) setAccessCode(''); }}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
           prizeName={productTitle}
           prizeImageUrl={prizeImageUrl}
@@ -147,7 +147,7 @@ export function GachaPlayButton({
       {gachaType === 'elevator' && (
         <ElevatorGachaPlayer
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => { setOpen(false); if (requiresAccessCode) setAccessCode(''); }}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
           prizeName={productTitle}
           prizeImageUrl={prizeImageUrl}
@@ -162,7 +162,7 @@ export function GachaPlayButton({
       {gachaType === 'keiba' && (
         <KeibaGachaPlayer
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => { setOpen(false); if (requiresAccessCode) setAccessCode(''); }}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
           prizeName={productTitle}
           prizeImageUrl={prizeImageUrl}
@@ -177,7 +177,7 @@ export function GachaPlayButton({
       {gachaType === 'raise_kenta' && (
         <RaiseGachaPlayer
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => { setOpen(false); if (requiresAccessCode) setAccessCode(''); }}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
           coinCost={price}
           productId={productId}
@@ -189,7 +189,7 @@ export function GachaPlayButton({
       {gachaType === 'raise_shoichi' && (
         <RaiseGachaPlayer
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => { setOpen(false); if (requiresAccessCode) setAccessCode(''); }}
           onRetry={() => { setOpen(false); setTimeout(() => setOpen(true), 100); }}
           coinCost={price}
           productId={productId}

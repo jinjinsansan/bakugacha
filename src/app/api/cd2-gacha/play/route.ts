@@ -142,20 +142,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // 権利コードが必要な商品の場合、コード検証
+    // 権利コードが必要な商品の場合、コード検証（管理者でもコード提供時は消費する）
     let usedAccessCodeId: string | null = null;
-    if (requiresAccessCode && !isAdmin) {
+    if (requiresAccessCode) {
       if (!user) {
         return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
       }
-      if (!accessCodeInput) {
+      if (!accessCodeInput && !isAdmin) {
         return NextResponse.json({ success: false, error: '権利コードを入力してください。' }, { status: 400 });
       }
-      const codeResult = await validateAndUseAccessCode(supabase, accessCodeInput, productId ?? '', user.id as string);
-      if (!codeResult.ok) {
-        return NextResponse.json({ success: false, error: codeResult.error }, { status: 400 });
+      if (accessCodeInput) {
+        const codeResult = await validateAndUseAccessCode(supabase, accessCodeInput, productId ?? '', user.id as string);
+        if (!codeResult.ok) {
+          return NextResponse.json({ success: false, error: codeResult.error }, { status: 400 });
+        }
+        usedAccessCodeId = codeResult.codeId;
       }
-      usedAccessCodeId = codeResult.codeId;
     } else if (!isAdmin && price > 0) {
       if (!user) {
         return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });

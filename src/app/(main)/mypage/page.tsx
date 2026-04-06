@@ -12,6 +12,7 @@ import { KeibaCardCollection } from '@/components/mypage/KeibaCardCollection';
 import { RaiseCardCollection } from '@/components/mypage/RaiseCardCollection';
 import { DailyLoginBonus } from '@/components/mypage/DailyLoginBonus';
 import { PromoCodeInput } from '@/components/mypage/PromoCodeInput';
+import { AccessCodeList } from '@/components/mypage/AccessCodeList';
 
 export default async function MyPage() {
   const supabase = getServiceSupabase();
@@ -140,6 +141,9 @@ export default async function MyPage() {
           </Link>
         </div>
       </div>
+
+      {/* 権利コード */}
+      <AccessCodeList />
 
       {/* 当選品ボックス */}
       <PrizeBox />
