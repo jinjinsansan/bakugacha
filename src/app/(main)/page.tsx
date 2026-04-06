@@ -32,7 +32,6 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
-      <WelcomeGuide />
       <CampaignBanner banners={banners.length > 0 ? banners : undefined} />
       <CategoryTabs />
       <div className="py-4 px-0">
@@ -48,6 +47,7 @@ export default async function HomePage() {
         <section id="winners">
           <WinnerFeed />
         </section>
+        <WelcomeGuide />
         <NewsSection />
         <div className="h-20 md:h-0" />
       </div>
