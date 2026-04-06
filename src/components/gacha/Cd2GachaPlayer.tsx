@@ -327,7 +327,7 @@ function ActivePlayer({
         if (cancelled) return;
         const builtQueue = buildQueue(res.sequence, res.videoBasePath);
         if (res.isWin && bonusWinVideoUrl) {
-          builtQueue.push({ key: 'bonus-win', src: bonusWinVideoUrl, step: 'bonus_win', autoAdvance: false });
+          builtQueue.push({ key: 'bonus-win', src: `${res.videoBasePath}/${bonusWinVideoUrl}`, step: 'bonus_win', autoAdvance: false });
         }
         setQueue(builtQueue);
         setPlayState({ status: 'ready', ...res });
