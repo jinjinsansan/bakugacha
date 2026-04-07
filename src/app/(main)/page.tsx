@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { HeroSection } from '@/components/home/HeroSection';
-import { WelcomeGuide } from '@/components/home/WelcomeGuide';
+import { LotteryGuide } from '@/components/home/LotteryGuide';
 import { CampaignBanner } from '@/components/home/CampaignBanner';
 import { CategoryTabs } from '@/components/home/CategoryTabs';
 import { FilterTags } from '@/components/home/FilterTags';
@@ -47,7 +47,7 @@ export default async function HomePage() {
         <section id="winners">
           <WinnerFeed />
         </section>
-        <WelcomeGuide />
+        <LotteryGuide />
         <NewsSection />
         <div className="h-20 md:h-0" />
       </div>
