@@ -39,16 +39,23 @@ async function handleFollowEvent(lineUserId: string) {
     return;
   }
 
-  // 300コイン付与
+  // フラグを先にセット（二重付与防止 — コイン付与前に記録）
+  const { count } = await supabase
+    .from('app_users')
+    .update({ line_friend_bonus_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', user.id)
+    .is('line_friend_bonus_at', null)
+    .select('id');
+
+  if (!count || count === 0) {
+    console.log('Follow event: bonus already granted (race condition prevented) for', user.id);
+    return;
+  }
+
+  // コイン付与
   if (LINE_REWARD_COINS > 0) {
     await grantCoins(supabase, user.id as string, LINE_REWARD_COINS, `公式LINE友だち追加ボーナス (+${LINE_REWARD_COINS}コイン)`);
   }
-
-  // ボーナス付与済みフラグ
-  await supabase
-    .from('app_users')
-    .update({ line_friend_bonus_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-    .eq('id', user.id);
 
   console.log('Follow event: granted', LINE_REWARD_COINS, 'coins to user', user.id);
 }

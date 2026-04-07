@@ -18,7 +18,7 @@ export async function Header() {
 
   return (
     <header
-      className="sticky z-50 top-0"
+      className="relative z-50"
       style={{
         background: 'linear-gradient(180deg, #07071a 0%, #050514 100%)',
         borderBottom: '1px solid rgba(201,168,76,0.2)',
