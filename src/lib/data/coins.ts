@@ -1,37 +1,27 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+// migration 035: grant_coins RPC で原子的に UPDATE coins = coins + amount を実行
 export async function grantCoins(
   client: SupabaseClient,
   userId: string,
   amount: number,
   description: string,
+  type: string = 'bonus',
 ): Promise<number> {
-  // 現在の残高取得
-  const { data: user } = await client
-    .from('app_users')
-    .select('coins')
-    .eq('id', userId)
-    .single();
-
-  const currentCoins = (user?.coins as number) ?? 0;
-  const newBalance = currentCoins + amount;
-
-  // コイン更新
-  await client
-    .from('app_users')
-    .update({ coins: newBalance, updated_at: new Date().toISOString() })
-    .eq('id', userId);
-
-  // トランザクション記録
-  await client.from('coin_transactions').insert({
-    user_id: userId,
-    type: 'bonus',
-    amount,
-    balance_after: newBalance,
-    description,
+  const { data, error } = await client.rpc('grant_coins', {
+    p_user_id:    userId,
+    p_amount:     amount,
+    p_description: description,
+    p_type:       type,
   });
 
-  return newBalance;
+  if (error) {
+    console.error('[grantCoins] rpc error:', error);
+    throw new Error(`コイン付与に失敗しました: ${error.message}`);
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+  return Number(row?.new_balance ?? 0);
 }
 
 export async function deductCoins(

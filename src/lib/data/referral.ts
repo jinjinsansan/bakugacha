@@ -22,11 +22,16 @@ export async function processReferral(
     // 自分自身の紹介コードでないか確認
     if (referrer.id === newUserId) return;
 
-    // referred_by をセット
-    await client
+    // referred_by IS NULL の場合のみ更新（再送・二重処理防止）
+    const { data: updated } = await client
       .from('app_users')
       .update({ referred_by: referrer.id, updated_at: new Date().toISOString() })
-      .eq('id', newUserId);
+      .eq('id', newUserId)
+      .is('referred_by', null)
+      .select('id');
+
+    // 既に紹介処理済み（referred_by がセット済み）ならコイン付与をスキップ
+    if (!updated || updated.length === 0) return;
 
     // ボーナス額を取得
     const settings = await fetchAppSettings(client);
