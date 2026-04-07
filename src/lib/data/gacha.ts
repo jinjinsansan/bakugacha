@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '@/types/product';
+import { checkAvailability } from '@/lib/gacha/availability';
 
 // DB行 → Product型に変換
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,6 +10,12 @@ function rowToProduct(row: Record<string, any>): Product {
   const stockRemaining = row.stock_remaining as number | null | undefined;
   const isZeroStock = stockTotal != null && (stockTotal <= 0 || (stockRemaining != null && stockRemaining <= 0));
   const effectiveStatus: 'active' | 'sold-out' = isZeroStock ? 'sold-out' : (row.status as 'active' | 'sold-out');
+
+  const avail = checkAvailability(row.available_from as string | null, row.available_until as string | null);
+  const availabilityStatus = avail.available ? 'open'
+    : avail.reason === 'before_open' ? 'before_open'
+    : 'after_close';
+  const isUnavailable = availabilityStatus !== 'open';
 
   return {
     id: row.id,
@@ -23,7 +30,7 @@ function rowToProduct(row: Record<string, any>): Product {
           progressClass: buildProgressClass(stockRemaining ?? 0, stockTotal || 1),
         }
       : null,
-    buttons: effectiveStatus === 'sold-out' ? null : buildButtons({
+    buttons: (effectiveStatus === 'sold-out' || isUnavailable) ? null : buildButtons({
       single:  row.button_1 !== false,
       ten:     row.button_10 !== false,
       hundred: row.button_100 !== false,
@@ -33,6 +40,9 @@ function rowToProduct(row: Record<string, any>): Product {
     thumbnailGradient: row.thumbnail_gradient ?? undefined,
     thumbnailEmoji: row.thumbnail_emoji ?? undefined,
     thumbnailLabel: row.thumbnail_label ?? undefined,
+    availabilityStatus,
+    opensAt: avail.available ? undefined : (avail as { opensAt?: string }).opensAt,
+    closedAt: avail.available ? undefined : (avail as { closedAt?: string }).closedAt,
   };
 }
 

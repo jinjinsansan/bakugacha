@@ -13,8 +13,19 @@ const categoryStyle: Record<string, { bg: string; color: string }> = {
   'ゲーム機': { bg: 'rgba(180,20,20,0.7)',  color: '#fca5a5' },
 };
 
+function formatJst(iso: string): string {
+  return new Date(iso).toLocaleString('ja-JP', {
+    timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
 export function ProductCard({ product }: ProductCardProps) {
   const isSoldOut = product.status === 'sold-out';
+  const availStat = product.availabilityStatus ?? 'open';
+  const isBeforeOpen = availStat === 'before_open';
+  const isAfterClose = availStat === 'after_close';
+  const isUnavailable = isBeforeOpen || isAfterClose;
   const cat = product.category ? categoryStyle[product.category] : null;
 
   return (
@@ -95,6 +106,29 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             </div>
           )}
+
+          {isBeforeOpen && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/60 gap-2">
+              <span className="text-xs font-black tracking-widest px-4 py-1.5 rounded-full"
+                style={{ background: 'rgba(201,168,76,0.9)', color: '#0a0800' }}>
+                受付前
+              </span>
+              {product.opensAt && (
+                <span className="text-[10px] text-yellow-300/80 font-bold">
+                  {formatJst(product.opensAt)} 開始
+                </span>
+              )}
+            </div>
+          )}
+
+          {isAfterClose && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/60">
+              <span className="text-xs font-black tracking-widest px-4 py-1.5 rounded-full"
+                style={{ background: 'rgba(0,0,0,0.8)', color: '#888', border: '1px solid rgba(255,255,255,0.1)' }}>
+                受付終了
+              </span>
+            </div>
+          )}
         </div>
       </Link>
 
@@ -132,7 +166,18 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* ボタン */}
-        {product.buttons ? (
+        {isBeforeOpen ? (
+          <Link href={product.href}
+            className="flex items-center justify-center w-full h-10 rounded-xl text-xs font-black tracking-wider"
+            style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)', color: '#e8c76a' }}>
+            詳細・カウントダウンを見る →
+          </Link>
+        ) : isAfterClose ? (
+          <div className="flex items-center justify-center w-full h-10 rounded-xl text-xs font-bold text-white/30"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            受付終了
+          </div>
+        ) : product.buttons ? (
           <div className="flex gap-2">
             {product.buttons.map((label, i) => {
               const count = label.startsWith('100') ? 100 : label.startsWith('10') ? 10 : 1;

@@ -18,4 +18,7 @@ export interface Product {
   readonly category?: string;
   readonly thumbnailLabel?: string;
   readonly thumbnailEmoji?: string;
+  readonly availabilityStatus?: 'open' | 'before_open' | 'after_close';
+  readonly opensAt?: string;
+  readonly closedAt?: string;
 }
