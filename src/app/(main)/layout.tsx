@@ -55,7 +55,7 @@ export default async function MainLayout({
           <span className="mx-2 text-white/30">|</span>
           <span className="text-white/70">友達紹介・</span>
           <a
-            href="https://www.netkeita.com/"
+            href="https://lin.ee/8ACRAsc"
             target="_blank"
             rel="noopener noreferrer"
             className="text-yellow-400 underline underline-offset-2 hover:text-yellow-300"

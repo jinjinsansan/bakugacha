@@ -83,7 +83,7 @@ export function LotteryGuide() {
                 {[
                   { icon: '📝', title: '新規登録', desc: '登録で1口' },
                   { icon: '👥', title: '友達招待', desc: '1人で+1口' },
-                  { icon: '🏇', title: 'netkeita登録', desc: '登録で+1口', link: 'https://www.netkeita.com/' },
+                  { icon: '🏇', title: 'netkeita登録', desc: '登録で+1口', link: 'https://lin.ee/8ACRAsc' },
                 ].map(({ icon, title, desc, link }) => (
                   <div
                     key={title}
