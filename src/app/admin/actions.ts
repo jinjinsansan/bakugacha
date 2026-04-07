@@ -1,6 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+
+// datetime-local の入力値（JST）を UTC ISO 文字列に変換。空欄なら null
+function jstDatetimeToUtc(val: string | null | undefined): string | null {
+  if (!val || val.trim() === '') return null;
+  // datetime-local は "YYYY-MM-DDTHH:mm" 形式でタイムゾーン情報なし = JST として扱う
+  const jstMs = new Date(val).getTime() - 9 * 60 * 60 * 1000;
+  return new Date(jstMs).toISOString();
+}
 import { redirect } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { requireAdmin } from '@/lib/auth/admin';
@@ -75,6 +83,8 @@ export async function createProduct(formData: FormData) {
     access_code_target_id: accessCodeTargetId,
     requires_access_code:  formData.get('requires_access_code') === 'on',
     bonus_win_video_url:   formData.get('bonus_win_video_url') ? String(formData.get('bonus_win_video_url')) : null,
+    available_from:        jstDatetimeToUtc(formData.get('available_from') as string | null),
+    available_until:       jstDatetimeToUtc(formData.get('available_until') as string | null),
   });
 
   revalidatePath('/admin/products');
@@ -143,6 +153,8 @@ export async function updateProduct(id: string, formData: FormData) {
     access_code_target_id: accessCodeTargetId,
     requires_access_code:  formData.get('requires_access_code') === 'on',
     bonus_win_video_url:   formData.get('bonus_win_video_url') ? String(formData.get('bonus_win_video_url')) : null,
+    available_from:        jstDatetimeToUtc(formData.get('available_from') as string | null),
+    available_until:       jstDatetimeToUtc(formData.get('available_until') as string | null),
   }).eq('id', id);
 
   if (updateError) console.error('[updateProduct]', updateError);

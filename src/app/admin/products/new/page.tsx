@@ -4,6 +4,14 @@ import { AdminForm } from '@/components/admin/AdminForm';
 import { StockZeroWarning } from '@/components/admin/StockZeroWarning';
 import { getServiceSupabase } from '@/lib/supabase/service';
 
+// UTC の ISO 文字列を datetime-local 用の "YYYY-MM-DDTHH:mm" (JST) に変換
+function toLocalDatetimeValue(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return jst.toISOString().slice(0, 16);
+}
+
 const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト券', 'ゲーム機', 'その他'];
 
 export const GACHA_TYPES = [
@@ -213,6 +221,26 @@ export function ProductFormFields({
         <p className="text-[10px] text-red-100/50 mt-2">
           💡 R2 や外部 CDN の公開 URL を入力してください。jackpot などの演出の直後・結果画面の前に再生されます。
         </p>
+      </div>
+
+      {/* 受付時間帯 */}
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <h3 className="text-sm font-black text-white mb-1">⏰ 受付時間帯（任意）</h3>
+        <p className="text-xs text-white/50 mb-3">設定するとその時間帯のみガチャを引けます。空欄なら常時受付。管理者は時間外でもプレイ可能。</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field
+            name="available_from"
+            label="受付開始日時（日本時間）"
+            type="datetime-local"
+            defaultValue={defaults?.available_from ? toLocalDatetimeValue(defaults.available_from as string) : ''}
+          />
+          <Field
+            name="available_until"
+            label="受付終了日時（日本時間）"
+            type="datetime-local"
+            defaultValue={defaults?.available_until ? toLocalDatetimeValue(defaults.available_until as string) : ''}
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-6">

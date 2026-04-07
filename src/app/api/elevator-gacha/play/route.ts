@@ -11,6 +11,7 @@ import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import { generateScenario } from '@/lib/elevator-gacha/scenarios';
 import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
 import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
+import { checkAvailability, availabilityErrorMessage } from '@/lib/gacha/availability';
 import { generateAccessCode, validateAndUseAccessCode } from '@/lib/data/access-codes';
 
 type ElevatorQuality = 'high' | 'low';
@@ -60,6 +61,14 @@ export async function POST(request: Request) {
     const adminEmails  = (process.env.ADMIN_EMAILS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
     const isAdmin = (!!user?.line_user_id && adminLineIds.includes(user.line_user_id as string))
                  || (!!user?.email && adminEmails.includes(user.email as string));
+
+    // 受付時間チェック（管理者はスキップ）
+    if (product && !isAdmin) {
+      const avail = checkAvailability(product.available_from as string | null, product.available_until as string | null);
+      if (!avail.available) {
+        return NextResponse.json({ success: false, error: availabilityErrorMessage(avail) }, { status: 400 });
+      }
+    }
 
     // 在庫切れチェック
     if (product && product.stock_remaining != null && product.stock_remaining <= 0) {

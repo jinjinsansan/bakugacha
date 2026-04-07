@@ -5,6 +5,8 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';
 import { GachaPlayButton } from '@/components/gacha/GachaPlayButton';
+import { AvailabilityCountdown } from '@/components/gacha/AvailabilityCountdown';
+import { checkAvailability } from '@/lib/gacha/availability';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -29,6 +31,10 @@ export default async function GachaDetailPage({ params }: Props) {
   const stockRemaining: number | null = row.stock_remaining ?? null;
   const isSoldOut = row.status === 'sold-out';
   const isLoggedIn = !!user;
+  const availableFrom = (row.available_from as string | null) ?? null;
+  const availableUntil = (row.available_until as string | null) ?? null;
+  const avail = checkAvailability(availableFrom, availableUntil);
+  const isUnavailable = !avail.available;
 
   const stockPct =
     stockTotal && stockRemaining != null
@@ -106,8 +112,13 @@ export default async function GachaDetailPage({ params }: Props) {
           </div>
         )}
 
+        {/* 受付時間カウントダウン */}
+        {(availableFrom || availableUntil) && (
+          <AvailabilityCountdown availableFrom={availableFrom} availableUntil={availableUntil} />
+        )}
+
         {/* ガチャボタン */}
-        {!isSoldOut && (
+        {!isSoldOut && !isUnavailable && (
           <GachaPlayButton
             productId={id}
             productTitle={title}
