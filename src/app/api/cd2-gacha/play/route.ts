@@ -12,6 +12,7 @@ import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
 import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
 import { generateAccessCode, validateAndUseAccessCode } from '@/lib/data/access-codes';
 import { checkAvailability, availabilityErrorMessage } from '@/lib/gacha/availability';
+import { sendLineWinNotification } from '@/lib/line/notify';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 const WIN_STAR_WEIGHTS  = [5, 10, 20, 30, 35];
@@ -251,6 +252,11 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error('[cd2-gacha] access code generation failed:', err);
       }
+    }
+
+    // 当選時にLINE通知（fire-and-forget）
+    if (isWin && user?.line_user_id) {
+      sendLineWinNotification(user.line_user_id as string, product?.title ?? productId ?? '').catch(() => {});
     }
 
     const baseFolder = quality === 'low' ? 'cd2-mobile' : 'cd2';

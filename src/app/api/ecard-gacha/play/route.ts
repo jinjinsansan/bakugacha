@@ -13,6 +13,7 @@ import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
 import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
 import { generateAccessCode, validateAndUseAccessCode } from '@/lib/data/access-codes';
 import { checkAvailability, availabilityErrorMessage } from '@/lib/gacha/availability';
+import { sendLineWinNotification } from '@/lib/line/notify';
 import type { EcardAxis } from '@/lib/ecard-gacha/types';
 
 type EcardQuality = 'high' | 'low';
@@ -213,6 +214,10 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error('[ecard-gacha] access code generation failed:', err);
       }
+    }
+
+    if (scenario.isWin && user?.line_user_id) {
+      sendLineWinNotification(user.line_user_id as string, product?.title ?? productId ?? '').catch(() => {});
     }
 
     const baseFolder = quality === 'low' ? 'ecard-mobile' : 'ecard';

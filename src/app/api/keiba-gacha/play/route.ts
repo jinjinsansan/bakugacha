@@ -11,6 +11,7 @@ import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import { callPlayGacha, mapPlayGachaError } from '@/lib/data/play-gacha';
 import { checkGachaRateLimit, getClientIp } from '@/lib/ratelimit-db';
 import { checkAvailability, availabilityErrorMessage } from '@/lib/gacha/availability';
+import { sendLineWinNotification } from '@/lib/line/notify';
 import { generateAccessCode, validateAndUseAccessCode } from '@/lib/data/access-codes';
 import { KEIBA_CARD_MAP } from '@/lib/keiba-gacha/cards';
 import {
@@ -287,6 +288,10 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error('[keiba-gacha] access code generation failed:', err);
       }
+    }
+
+    if (scenario.isWin && user?.line_user_id) {
+      sendLineWinNotification(user.line_user_id as string, product?.title ?? productId ?? '').catch(() => {});
     }
 
     const baseFolder = quality === 'low' ? 'keiba-mobile' : 'keiba';
