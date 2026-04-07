@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/service';
 
+export const revalidate = 30;
+
 function maskName(name: string): string {
   if (!name || name.length === 0) return '***';
   return name[0] + '**';
@@ -22,12 +24,17 @@ export async function GET(request: Request) {
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '20'), 50);
 
   const supabase = getServiceSupabase();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('gacha_results')
     .select('id, prize_name, played_at, app_users(display_name, email), gacha_products(title)')
     .eq('result', 'win')
     .order('played_at', { ascending: false })
     .limit(limit);
+
+  if (error) {
+    console.error('[winner-feed]', error);
+    return NextResponse.json([]);
+  }
 
   type UserRow = { display_name: string | null; email: string };
   type ProductRow = { title: string };

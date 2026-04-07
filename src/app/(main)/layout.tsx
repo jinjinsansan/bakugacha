@@ -1,8 +1,7 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MaintenancePage } from '@/components/MaintenancePage';
-import { getServiceSupabase } from '@/lib/supabase/service';
-import { fetchAppSettings } from '@/lib/data/app-settings';
+import { fetchCachedAppSettings } from '@/lib/data/app-settings';
 import { isCurrentUserAdmin } from '@/lib/auth/admin';
 
 export const dynamic = 'force-dynamic';
@@ -12,9 +11,8 @@ export default async function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = getServiceSupabase();
   const [settings, isAdmin] = await Promise.all([
-    fetchAppSettings(supabase),
+    fetchCachedAppSettings(),
     isCurrentUserAdmin(),
   ]);
 

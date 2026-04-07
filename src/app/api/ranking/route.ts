@@ -1,49 +1,37 @@
 import { NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/service';
 
+export const revalidate = 60;
+
 export async function GET() {
   const supabase = getServiceSupabase();
 
-  const { data: results } = await supabase
-    .from('gacha_results')
-    .select('product_id, result')
-    .limit(5000);
+  // SQL集計で取得（JS側での5000件フルスキャンを廃止）
+  const { data: aggregated, error } = await supabase.rpc('get_ranking', { p_limit: 10 });
 
-  if (!results?.length) {
+  if (error || !aggregated?.length) {
     return NextResponse.json([]);
   }
 
-  const playCounts = new Map<string, number>();
-  const winCounts  = new Map<string, number>();
-  for (const r of results) {
-    playCounts.set(r.product_id, (playCounts.get(r.product_id) ?? 0) + 1);
-    if (r.result === 'win') winCounts.set(r.product_id, (winCounts.get(r.product_id) ?? 0) + 1);
-  }
-
-  const top10 = Array.from(playCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
-  if (!top10.length) return NextResponse.json([]);
-
+  const productIds = aggregated.map((r: { product_id: string }) => r.product_id);
   const { data: products } = await supabase
     .from('gacha_products')
     .select('id, title, image_url, thumbnail_emoji, thumbnail_gradient')
-    .in('id', top10.map(([id]) => id));
+    .in('id', productIds);
 
   const productMap = new Map((products ?? []).map((p) => [p.id, p]));
 
-  const ranking = top10.map(([productId, playCount], index) => {
-    const p = productMap.get(productId);
+  const ranking = aggregated.map((r: { product_id: string; play_count: number; win_count: number }, index: number) => {
+    const p = productMap.get(r.product_id);
     return {
       rank: index + 1,
-      productId,
+      productId: r.product_id,
       title: p?.title ?? '不明',
       imageUrl: p?.image_url ?? '',
       thumbnailEmoji: p?.thumbnail_emoji ?? '🎰',
       thumbnailGradient: p?.thumbnail_gradient ?? '',
-      playCount,
-      winCount: winCounts.get(productId) ?? 0,
+      playCount: Number(r.play_count),
+      winCount: Number(r.win_count),
     };
   });
 

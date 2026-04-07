@@ -1,4 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { unstable_cache, revalidatePath } from 'next/cache';
+import { createClient } from '@supabase/supabase-js';
+import { getServerEnv } from '@/lib/env';
 
 const APP_SETTINGS_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -50,6 +53,19 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
   };
 }
 
+// 60秒キャッシュ。upsertAppSettings 呼び出し時に revalidateTag で無効化される
+export const fetchCachedAppSettings = unstable_cache(
+  async (): Promise<AppSettings> => {
+    const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = getServerEnv();
+    const client = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    });
+    return fetchAppSettings(client);
+  },
+  ['app-settings'],
+  { revalidate: 60, tags: ['app-settings'] },
+);
+
 export async function upsertAppSettings(
   client: SupabaseClient,
   updates: Partial<Omit<AppSettings, 'id'>>,
@@ -71,4 +87,5 @@ export async function upsertAppSettings(
     console.error('[app-settings] upsertAppSettings failed:', error);
     throw new Error(`設定の保存に失敗しました: ${error.message}`);
   }
+  revalidatePath('/', 'layout');
 }
