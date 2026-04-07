@@ -26,10 +26,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
     }
 
-    // アクセストークンでLINEプロフィールを取得（トークン検証を兼ねる）
-    const profileRes = await fetch('https://api.line.me/v2/profile', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    // アクセストークンでLINEプロフィールを取得（10秒タイムアウト付き）
+    const profileController = new AbortController();
+    const profileTimeout = setTimeout(() => profileController.abort(), 10000);
+    let profileRes: Response;
+    try {
+      profileRes = await fetch('https://api.line.me/v2/profile', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        signal: profileController.signal,
+      });
+    } catch (e) {
+      clearTimeout(profileTimeout);
+      const isTimeout = e instanceof DOMException && e.name === 'AbortError';
+      console.error('[LIFF login] Profile fetch failed:', e);
+      return NextResponse.json(
+        { error: isTimeout ? 'LINEサーバーへの接続がタイムアウトしました。再試行してください。' : 'ネットワークエラーが発生しました。' },
+        { status: 503 },
+      );
+    }
+    clearTimeout(profileTimeout);
 
     if (!profileRes.ok) {
       console.error('[LIFF login] Profile fetch failed:', profileRes.status);
