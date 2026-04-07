@@ -5,6 +5,9 @@ import { findUserByLineId, createLineUser, touchLastLoginFireAndForget } from '@
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
 import { processReferral } from '@/lib/data/referral';
+import { grantCoins } from '@/lib/data/coins';
+
+const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -188,14 +191,24 @@ export async function GET(request: NextRequest) {
     const newUserId = newUser.id as string;
     const sessionToken = await getOrCreateSessionToken();
 
-    // セッション作成・state更新を並列実行
+    // セッション作成・state更新 + line_friend_bonus_at を並列実行
     await Promise.all([
       createSession(supabase, sessionToken, newUserId),
       supabase
         .from('line_link_states')
         .update({ user_id: newUser.id, line_user_id: lineUserId, rewarded_at: now })
         .eq('id', stateRow.id),
+      supabase
+        .from('app_users')
+        .update({ line_friend_bonus_at: now, updated_at: now })
+        .eq('id', newUserId)
+        .is('line_friend_bonus_at', null),
     ]);
+
+    // LINEフォローボーナス付与
+    if (LINE_REWARD_COINS > 0) {
+      await grantCoins(supabase, newUserId, LINE_REWARD_COINS, `公式LINE友だち追加ボーナス (+${LINE_REWARD_COINS}コイン)`);
+    }
 
     // 紹介コードがあれば紹介処理 (fire-and-forget でリダイレクトをブロックしない)
     const storedReferralCode = stateRow.referral_code as string | null;

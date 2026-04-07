@@ -4,6 +4,9 @@ import { findUserByLineId, createLineUser, touchLastLoginFireAndForget } from '@
 import { createSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
 import { processReferral } from '@/lib/data/referral';
+import { grantCoins } from '@/lib/data/coins';
+
+const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -102,7 +105,21 @@ export async function POST(request: NextRequest) {
 
     const newUserId = newUser.id as string;
     const sessionToken = await getOrCreateSessionToken();
-    await createSession(supabase, sessionToken, newUserId);
+
+    // セッション作成 + line_friend_bonus_at を登録時にセット（webhookより先でも後でも確実にボーナス付与）
+    await Promise.all([
+      createSession(supabase, sessionToken, newUserId),
+      supabase
+        .from('app_users')
+        .update({ line_friend_bonus_at: now, updated_at: now })
+        .eq('id', newUserId)
+        .is('line_friend_bonus_at', null),
+    ]);
+
+    // LINEフォローボーナスをここで付与（webhookが先発火した場合もIS NULLチェックで二重付与なし）
+    if (LINE_REWARD_COINS > 0) {
+      await grantCoins(supabase, newUserId, LINE_REWARD_COINS, `公式LINE友だち追加ボーナス (+${LINE_REWARD_COINS}コイン)`);
+    }
 
     // 紹介コードがあれば紹介処理 (fire-and-forget)
     if (referralCode && typeof referralCode === 'string') {
