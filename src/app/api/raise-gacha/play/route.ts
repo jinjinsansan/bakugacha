@@ -221,6 +221,9 @@ export async function POST(request: Request) {
         );
       }
       gachaResultId = rpcResult.gacha_result_id;
+      if (rpcResult.effective_result != null) {
+        scenario.isLoss = rpcResult.effective_result === 'loss';
+      }
 
       if (rpcResult.card_serial && cardDef) {
         cardData = {

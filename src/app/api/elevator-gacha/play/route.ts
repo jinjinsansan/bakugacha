@@ -159,6 +159,9 @@ export async function POST(request: Request) {
         );
       }
       gachaResultId = rpcResult.gacha_result_id;
+      if (rpcResult.effective_result != null) {
+        scenario.isWin = rpcResult.effective_result === 'win';
+      }
     }
 
     // 当選時に権利コードを生成

@@ -42,6 +42,7 @@ export interface PlayGachaResult {
   card_serial: string | null;
   card_row_id: string | null;
   card_seq: number | null;
+  effective_result: 'win' | 'loss' | null;
 }
 
 /**
