@@ -4,6 +4,8 @@ export async function sendLineWinNotification(
   lineUserId: string,
   prizeName: string,
 ): Promise<void> {
+  // 大量送信によるアカウント凍結リスクのため一時無効化
+  return;
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!token || !lineUserId) return;
 
