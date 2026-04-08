@@ -6,7 +6,7 @@ interface MaintenancePageProps {
 }
 
 export function MaintenancePage({ title, message }: MaintenancePageProps) {
-  const lineUrl = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/AYvfoP6';
+  const lineUrl = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/tk6qrdP';
 
   return (
     <div

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const LINE_URL = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/AYvfoP6';
+const LINE_URL = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/tk6qrdP';
 
 const ITEMS = [
   {
