@@ -3,6 +3,7 @@ import { ImageUploadField } from '@/components/admin/ImageUploadField';
 import { AdminForm } from '@/components/admin/AdminForm';
 import { StockZeroWarning } from '@/components/admin/StockZeroWarning';
 import { getServiceSupabase } from '@/lib/supabase/service';
+import { PRIZE_TYPES } from '@/app/admin/prize-master/page';
 
 // UTC の ISO 文字列を datetime-local 用の "YYYY-MM-DDTHH:mm" (JST) に変換
 function toLocalDatetimeValue(iso: string): string {
@@ -25,16 +26,16 @@ export const GACHA_TYPES = [
 
 export default async function AdminProductNewPage() {
   const supabase = getServiceSupabase();
-  const { data: products } = await supabase
-    .from('gacha_products')
-    .select('id, title')
-    .order('sort_order', { ascending: true });
+  const [{ data: products }, { data: prizes }] = await Promise.all([
+    supabase.from('gacha_products').select('id, title').order('sort_order', { ascending: true }),
+    supabase.from('prizes').select('id, name, type').order('created_at', { ascending: false }),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">商品追加</h1>
       <AdminForm action={createProduct}>
-        <ProductFormFields allProducts={products ?? []} />
+        <ProductFormFields allProducts={products ?? []} prizes={prizes ?? []} />
         <div className="flex gap-3 pt-2">
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             作成
@@ -51,9 +52,11 @@ export default async function AdminProductNewPage() {
 export function ProductFormFields({
   defaults,
   allProducts,
+  prizes,
 }: {
   defaults?: Record<string, unknown>;
   allProducts?: { id: string; title: string }[];
+  prizes?: { id: string; name: string; type: string }[];
 }) {
   return (
     <>
@@ -221,6 +224,37 @@ export function ProductFormFields({
         <p className="text-[10px] text-red-100/50 mt-2">
           💡 R2 や外部 CDN の公開 URL を入力してください。jackpot などの演出の直後・結果画面の前に再生されます。
         </p>
+      </div>
+
+      {/* 景品設定 */}
+      <div className="rounded-xl border border-yellow-500/30 bg-yellow-950/20 p-4">
+        <h3 className="text-sm font-black text-yellow-200 mb-1">🏆 当選景品</h3>
+        <p className="text-xs text-yellow-100/70 mb-3">
+          当選時にユーザーに渡す景品を選択してください。景品は「景品マスタ管理」から追加できます。
+        </p>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-white/60">景品を選択</label>
+          <select
+            name="prize_id"
+            defaultValue={(defaults?.prize_id as string) ?? ''}
+            className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50"
+          >
+            <option value="" className="bg-zinc-900">景品なし（未設定）</option>
+            {(prizes ?? []).map((p) => {
+              const typeInfo = PRIZE_TYPES.find((t) => t.value === p.type);
+              return (
+                <option key={p.id} value={p.id} className="bg-zinc-900">
+                  {typeInfo?.label ?? p.type} — {p.name}
+                </option>
+              );
+            })}
+          </select>
+          {(prizes ?? []).length === 0 && (
+            <p className="text-xs text-yellow-400/70 mt-1">
+              ⚠️ 景品が登録されていません。先に「景品マスタ管理」から景品を追加してください。
+            </p>
+          )}
+        </div>
       </div>
 
       {/* 受付時間帯 */}

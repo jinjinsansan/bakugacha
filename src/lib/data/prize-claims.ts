@@ -1,6 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { grantCoins } from './coins';
 
+export interface PrizeMasterInfo {
+  id: string;
+  name: string;
+  type: string;
+  value: number | null;
+  description: string | null;
+}
+
 export interface PrizeClaim {
   id: string;
   userId: string;
@@ -20,6 +28,7 @@ export interface PrizeClaim {
   /** 管理者一覧用 */
   userEmail?: string;
   userDisplayName?: string;
+  prizeInfo?: PrizeMasterInfo | null;
 }
 
 const COLUMNS = 'id, user_id, gacha_result_id, product_id, prize_name, status, recipient_name, postal_code, address, phone, tracking_number, gift_code, notes, created_at';
@@ -51,7 +60,7 @@ export async function fetchAllPrizeClaims(
 ): Promise<PrizeClaim[]> {
   let query = client
     .from('prize_claims')
-    .select(`${COLUMNS}, gacha_products(exchange_coins), app_users(email, display_name)`)
+    .select(`${COLUMNS}, gacha_products(exchange_coins, prizes(id, name, type, value, description)), app_users(email, display_name)`)
     .order('created_at', { ascending: false })
     .limit(200);
 
@@ -175,6 +184,16 @@ export async function updateClaimStatus(
 
 function mapRow(row: Record<string, unknown>): PrizeClaim {
   const product = row.gacha_products as Record<string, unknown> | null;
+  const prizeRaw = product?.prizes as Record<string, unknown> | null;
+  const prizeInfo: PrizeMasterInfo | null = prizeRaw
+    ? {
+        id: prizeRaw.id as string,
+        name: prizeRaw.name as string,
+        type: prizeRaw.type as string,
+        value: prizeRaw.value as number | null,
+        description: prizeRaw.description as string | null,
+      }
+    : null;
   return {
     id: row.id as string,
     userId: row.user_id as string,
@@ -191,5 +210,6 @@ function mapRow(row: Record<string, unknown>): PrizeClaim {
     notes: row.notes as string | null,
     exchangeCoins: (product?.exchange_coins as number) ?? 0,
     createdAt: row.created_at as string,
+    prizeInfo,
   };
 }

@@ -17,10 +17,10 @@ export default async function AdminProductEditPage({ params }: Props) {
 
   if (!product) notFound();
 
-  const { data: allProducts } = await supabase
-    .from('gacha_products')
-    .select('id, title')
-    .order('sort_order', { ascending: true });
+  const [{ data: allProducts }, { data: prizes }] = await Promise.all([
+    supabase.from('gacha_products').select('id, title').order('sort_order', { ascending: true }),
+    supabase.from('prizes').select('id, name, type').order('created_at', { ascending: false }),
+  ]);
 
   const action = updateProduct.bind(null, id);
 
@@ -28,7 +28,7 @@ export default async function AdminProductEditPage({ params }: Props) {
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">商品編集: {product.title as string}</h1>
       <AdminForm action={action}>
-        <ProductFormFields defaults={product as Record<string, unknown>} allProducts={allProducts ?? []} />
+        <ProductFormFields defaults={product as Record<string, unknown>} allProducts={allProducts ?? []} prizes={prizes ?? []} />
         <div className="flex gap-3 pt-2">
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             保存

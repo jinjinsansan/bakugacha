@@ -7,6 +7,7 @@ const NAV = [
   { href: '/admin/banners',     label: '🖼️', text: 'バナー管理' },
   { href: '/admin/settings',    label: '⚙️', text: 'ガチャ設定' },
   { href: '/admin/promo-codes', label: '🎫', text: 'プロモコード' },
+  { href: '/admin/prize-master', label: '🎁', text: '景品マスタ' },
   { href: '/admin/prizes',      label: '🏆', text: '当選品管理' },
   { href: '/admin/results',     label: '📋', text: '結果一覧' },
   { href: '/admin/users',       label: '👥', text: 'ユーザー管理' },

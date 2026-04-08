@@ -85,6 +85,7 @@ export async function createProduct(formData: FormData) {
     bonus_win_video_url:   formData.get('bonus_win_video_url') ? String(formData.get('bonus_win_video_url')) : null,
     available_from:        jstDatetimeToUtc(formData.get('available_from') as string | null),
     available_until:       jstDatetimeToUtc(formData.get('available_until') as string | null),
+    prize_id:              formData.get('prize_id') ? String(formData.get('prize_id')) : null,
   });
 
   revalidatePath('/admin/products');
@@ -155,6 +156,7 @@ export async function updateProduct(id: string, formData: FormData) {
     bonus_win_video_url:   formData.get('bonus_win_video_url') ? String(formData.get('bonus_win_video_url')) : null,
     available_from:        jstDatetimeToUtc(formData.get('available_from') as string | null),
     available_until:       jstDatetimeToUtc(formData.get('available_until') as string | null),
+    prize_id:              formData.get('prize_id') ? String(formData.get('prize_id')) : null,
   }).eq('id', id);
 
   if (updateError) console.error('[updateProduct]', updateError);

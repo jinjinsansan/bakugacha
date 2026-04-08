@@ -1,6 +1,7 @@
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchAllPrizeClaims } from '@/lib/data/prize-claims';
 import { updatePrizeClaim } from '@/app/admin/actions';
+import { PRIZE_TYPES } from '@/app/admin/prize-master/page';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: '全て' },
@@ -85,8 +86,21 @@ export default async function AdminPrizesPage({
             <div key={claim.id} className="card-premium p-4 flex flex-col gap-3">
               {/* ヘッダー */}
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-white truncate">{claim.prizeName}</p>
+                <div className="min-w-0 flex flex-col gap-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {claim.prizeInfo && (() => {
+                      const t = PRIZE_TYPES.find(t => t.value === claim.prizeInfo!.type);
+                      return (
+                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full bg-white/10 ${t?.color ?? 'text-white/50'}`}>
+                          {t?.label ?? claim.prizeInfo.type}
+                        </span>
+                      );
+                    })()}
+                    <p className="text-sm font-bold text-white truncate">{claim.prizeName}</p>
+                  </div>
+                  {claim.prizeInfo?.value && (
+                    <p className="text-xs text-yellow-400 font-bold">¥{claim.prizeInfo.value.toLocaleString()}</p>
+                  )}
                   <p className="text-[10px] text-gray-500">
                     {claim.userEmail || claim.userDisplayName || claim.userId.slice(0, 8)}
                     {' / '}
