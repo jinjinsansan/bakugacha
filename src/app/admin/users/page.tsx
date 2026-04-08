@@ -6,7 +6,8 @@ export default async function AdminUsersPage() {
   const { data: users } = await supabase
     .from('app_users')
     .select('id, email, display_name, line_display_name, line_picture_url, coins, referral_code, is_blocked, created_at, last_login_at')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(5000);
 
   return (
     <div className="flex flex-col gap-6">

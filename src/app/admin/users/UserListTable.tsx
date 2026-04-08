@@ -14,8 +14,11 @@ function formatDate(dateStr: string | null) {
   });
 }
 
+const PAGE_SIZE = 50;
+
 export function UserListTable({ users }: { users: User[] }) {
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(0);
 
   const filtered = users.filter((u) => {
     if (!query) return true;
@@ -26,13 +29,17 @@ export function UserListTable({ users }: { users: User[] }) {
     return name.includes(q) || email.includes(q) || code.includes(q);
   });
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
+  const paginated = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
   return (
     <>
       <input
         type="text"
         placeholder="名前・メール・紹介コードで検索..."
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => { setQuery(e.target.value); setPage(0); }}
         className="w-full md:w-80 px-3 py-2 rounded-lg bg-white/10 text-white text-sm placeholder-white/30 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
       />
 
@@ -52,7 +59,7 @@ export function UserListTable({ users }: { users: User[] }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => (
+              {paginated.map((u) => (
                 <tr key={u.id} className="border-b border-white/5 hover:bg-white/5">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -88,7 +95,7 @@ export function UserListTable({ users }: { users: User[] }) {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {paginated.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-white/30">
                     {query ? '該当するユーザーが見つかりません' : 'ユーザーがいません'}
@@ -98,8 +105,29 @@ export function UserListTable({ users }: { users: User[] }) {
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-2 text-xs text-white/30 border-t border-white/5">
-          {filtered.length} / {users.length} 件表示
+        <div className="px-4 py-3 flex items-center justify-between border-t border-white/5">
+          <span className="text-xs text-white/30">
+            {filtered.length} 件中 {currentPage * PAGE_SIZE + 1}〜{Math.min((currentPage + 1) * PAGE_SIZE, filtered.length)} 件表示
+          </span>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
+                className="px-3 py-1 rounded text-xs bg-white/10 hover:bg-white/20 text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← 前へ
+              </button>
+              <span className="text-xs text-white/50">{currentPage + 1} / {totalPages}</span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={currentPage >= totalPages - 1}
+                className="px-3 py-1 rounded text-xs bg-white/10 hover:bg-white/20 text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                次へ →
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>
