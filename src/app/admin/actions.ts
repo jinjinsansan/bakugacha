@@ -585,6 +585,29 @@ export async function updatePrizeClaim(formData: FormData) {
   redirect(`/admin/prizes?saved=1${filterParam}`);
 }
 
+/** クライアントコンポーネント用: redirectなしで更新 */
+export async function updatePrizeClaimInline(formData: FormData) {
+  'use server';
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  const claimId = String(formData.get('claim_id') ?? '');
+  const status = String(formData.get('status') ?? '');
+  const trackingNumber = formData.get('tracking_number') ? String(formData.get('tracking_number')) : undefined;
+  const giftCode = formData.get('gift_code') ? String(formData.get('gift_code')) : undefined;
+  const notes = formData.get('notes') ? String(formData.get('notes')) : undefined;
+
+  if (!claimId || !status) return;
+
+  try {
+    await updateClaimStatus(supabase, claimId, status, { trackingNumber, giftCode, notes });
+  } catch (err) {
+    console.error('[admin] updatePrizeClaimInline failed:', err);
+  }
+
+  revalidatePath('/admin/prizes');
+}
+
 // ── ユーザーブロック ─────────────────────────────────────────────
 export async function blockUser(userId: string) {
   await requireAdmin();
