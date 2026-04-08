@@ -153,7 +153,6 @@ export default async function AdminPrizeMasterPage({
                         <button
                           type="submit"
                           className="px-2 py-1 rounded bg-red-900/40 hover:bg-red-900/60 text-red-400 text-xs transition-colors"
-                          onClick={(e) => { if (!confirm('削除しますか？')) e.preventDefault(); }}
                         >
                           削除
                         </button>
