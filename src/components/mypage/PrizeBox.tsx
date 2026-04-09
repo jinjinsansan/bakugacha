@@ -146,27 +146,49 @@ export function PrizeBox() {
                 )}
 
                 {/* アクションボタン（pending時のみ） */}
-                {claim.status === 'pending' && (
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      className="flex-1 py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.02]"
-                      style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#052e16' }}
-                      onClick={() => setDeliveryTarget(claim)}
-                    >
-                      📦 配送を希望
-                    </button>
-                    <button
-                      className="flex-1 py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.02]"
-                      style={{ background: 'linear-gradient(135deg, #c9a84c, #8a6e1e)', color: '#0a0800' }}
-                      onClick={() => {
-                        if (claim.exchangeCoins <= 0) { alert('この商品はコイン交換が設定されていません。'); return; }
-                        setConfirmExchange(claim);
-                      }}
-                    >
-                      🪙 コイン交換 {claim.exchangeCoins > 0 ? `(${claim.exchangeCoins})` : ''}
-                    </button>
-                  </div>
-                )}
+                {claim.status === 'pending' && (() => {
+                  const isDigital = claim.prizeInfo?.type === 'amazon_gift' || claim.prizeInfo?.type === 'digital';
+                  if (isDigital) {
+                    return (
+                      <div className="mt-3 flex flex-col gap-2">
+                        <div className="rounded-xl px-4 py-3" style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)' }}>
+                          <p className="text-xs font-bold" style={{ color: '#fbbf24' }}>📩 本日より１週間以内にAmazonギフト券コードが送られます</p>
+                          <p className="text-[10px] text-white/40 mt-1">コードはこの画面に表示されます。しばらくお待ちください。</p>
+                        </div>
+                        {claim.exchangeCoins > 0 && (
+                          <button
+                            className="w-full py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.02]"
+                            style={{ background: 'linear-gradient(135deg, #c9a84c, #8a6e1e)', color: '#0a0800' }}
+                            onClick={() => setConfirmExchange(claim)}
+                          >
+                            🪙 コイン交換 ({claim.exchangeCoins})
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        className="flex-1 py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.02]"
+                        style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#052e16' }}
+                        onClick={() => setDeliveryTarget(claim)}
+                      >
+                        📦 配送を希望
+                      </button>
+                      <button
+                        className="flex-1 py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.02]"
+                        style={{ background: 'linear-gradient(135deg, #c9a84c, #8a6e1e)', color: '#0a0800' }}
+                        onClick={() => {
+                          if (claim.exchangeCoins <= 0) { alert('この商品はコイン交換が設定されていません。'); return; }
+                          setConfirmExchange(claim);
+                        }}
+                      >
+                        🪙 コイン交換 {claim.exchangeCoins > 0 ? `(${claim.exchangeCoins})` : ''}
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}

@@ -237,7 +237,7 @@ export async function POST(request: Request) {
         price,
         isAdmin,
         result: scenario.isWin ? 'win' : 'loss',
-        prizeName: product?.title ?? productId,
+        prizeName: product?.prize_display_name ?? product?.title ?? productId,
         cardInfo: cardDef
           ? {
               type: 'keiba',

@@ -226,6 +226,14 @@ export function ProductFormFields({
         </p>
       </div>
 
+      <Field
+        name="prize_display_name"
+        label="当選品表示名（任意）"
+        placeholder="例: 【第二会場】Amazonギフト券10,000円分"
+        defaultValue={(defaults?.prize_display_name as string) ?? ''}
+      />
+      <p className="text-xs text-white/40 -mt-2">当選品ボックスやガチャ結果に表示する名前。空欄なら商品タイトルが使われます。</p>
+
       {/* 景品設定 */}
       <div className="rounded-xl border border-yellow-500/30 bg-yellow-950/20 p-4">
         <h3 className="text-sm font-black text-yellow-200 mb-1">🏆 当選景品</h3>

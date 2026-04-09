@@ -40,7 +40,7 @@ export async function fetchUserPrizeClaims(
 ): Promise<PrizeClaim[]> {
   const { data, error } = await client
     .from('prize_claims')
-    .select(`${COLUMNS}, gacha_products(exchange_coins)`)
+    .select(`${COLUMNS}, gacha_products(exchange_coins, prizes(id, name, type, value, description))`)
     .eq('user_id', userId)
     .neq('status', 'converted')
     .order('created_at', { ascending: false });

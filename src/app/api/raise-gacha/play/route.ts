@@ -199,7 +199,7 @@ export async function POST(request: Request) {
         price,
         isAdmin,
         result: isLoss ? 'loss' : 'win',
-        prizeName: product?.title ?? productId,
+        prizeName: product?.prize_display_name ?? product?.title ?? productId,
         cardInfo: cardDef
           ? {
               type: 'raise',
