@@ -222,7 +222,14 @@ export async function POST(request: Request) {
       }
       gachaResultId = rpcResult.gacha_result_id;
       if (rpcResult.effective_result != null) {
-        scenario.isLoss = rpcResult.effective_result === 'loss';
+        const newLoss = rpcResult.effective_result === 'loss';
+        // max_winners上限等で当たり→ハズレに変わった場合、シナリオを再生成
+        if (!scenario.isLoss && newLoss) {
+          const rebuilt = buildScenario(characterId, 'hazure', true, false);
+          scenario.isLoss = rebuilt.isLoss;
+          scenario.steps = rebuilt.steps;
+        }
+        scenario.isLoss = newLoss;
       }
 
       if (rpcResult.card_serial && cardDef) {
@@ -239,7 +246,7 @@ export async function POST(request: Request) {
 
     // 当選時に権利コードを生成
     let accessCode: string | null = null;
-    if (!isLoss && product?.access_code_target_id && user && productId) {
+    if (!scenario.isLoss && product?.access_code_target_id && user && productId) {
       try {
         accessCode = await generateAccessCode(supabase, {
           sourceProductId: productId,

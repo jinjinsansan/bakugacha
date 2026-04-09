@@ -238,9 +238,21 @@ export async function POST(request: Request) {
       }
       gachaResultId = rpcResult.gacha_result_id;
       if (rpcResult.effective_result != null) {
-        isWin = rpcResult.effective_result === 'win';
+        const newWin = rpcResult.effective_result === 'win';
+        // max_winners上限等で当たり→ハズレに変わった場合、演出を再構築
+        if (isWin && !newWin) {
+          isWin = false;
+          isDonden = false;
+          isPatlite = false;
+          isFreeze = false;
+        }
+        isWin = newWin;
       }
     }
+
+    // effective_result反映後に演出を確定（RPC結果が最終的な正）
+    const finalSequence = buildSequence(isWin, isDonden, isPatlite, isFreeze);
+    const finalExpectationStars = computeExpectationStars(isWin, isDonden);
 
     // 当選時に権利コードを生成
     let accessCode: string | null = null;
@@ -266,9 +278,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      isWin, isDonden, isPatlite, isFreeze, sequence,
+      isWin, isDonden, isPatlite, isFreeze,
+      sequence: finalSequence,
       videoBasePath: buildGachaAssetPath(baseFolder),
-      expectationStars,
+      expectationStars: finalExpectationStars,
       ...(accessCode ? { accessCode } : {}),
     });
   } catch (error) {

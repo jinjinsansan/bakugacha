@@ -200,7 +200,23 @@ export async function POST(request: Request) {
       }
       gachaResultId = rpcResult.gacha_result_id;
       if (rpcResult.effective_result != null) {
-        scenario.isWin = rpcResult.effective_result === 'win';
+        const newWin = rpcResult.effective_result === 'win';
+        // max_winners上限等で当たり→ハズレに変わった場合、シナリオを再生成
+        if (scenario.isWin && !newWin) {
+          const lossAxis = pickWeightedAxis([
+            { axis: 'A', rate: settings.axisARate },
+            { axis: 'B', rate: settings.axisBRate },
+            { axis: 'D', rate: settings.axisDRate },
+            { axis: 'E', rate: settings.axisERate },
+          ]);
+          const rebuilt = generateScenario(lossAxis, false, false, drawRounds);
+          scenario.isWin = rebuilt.isWin;
+          scenario.isDonten = rebuilt.isDonten;
+          scenario.queue = rebuilt.queue;
+          scenario.axis = rebuilt.axis;
+          scenario.scenarioCode = rebuilt.scenarioCode;
+        }
+        scenario.isWin = newWin;
       }
     }
 

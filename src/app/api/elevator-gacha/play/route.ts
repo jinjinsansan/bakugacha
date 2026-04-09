@@ -160,13 +160,20 @@ export async function POST(request: Request) {
       }
       gachaResultId = rpcResult.gacha_result_id;
       if (rpcResult.effective_result != null) {
-        scenario.isWin = rpcResult.effective_result === 'win';
+        const newWin = rpcResult.effective_result === 'win';
+        // max_winners上限等で当たり→ハズレに変わった場合、シナリオを再生成
+        if (scenario.isWin && !newWin) {
+          const rebuilt = generateScenario(false);
+          scenario.isWin = rebuilt.isWin;
+          scenario.steps = rebuilt.steps;
+        }
+        scenario.isWin = newWin;
       }
     }
 
     // 当選時に権利コードを生成
     let accessCode: string | null = null;
-    if (isWin && product?.access_code_target_id && user && productId) {
+    if (scenario.isWin && product?.access_code_target_id && user && productId) {
       try {
         accessCode = await generateAccessCode(supabase, {
           sourceProductId: productId,

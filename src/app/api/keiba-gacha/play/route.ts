@@ -257,7 +257,15 @@ export async function POST(request: Request) {
       }
       gachaResultId = rpcResult.gacha_result_id;
       if (rpcResult.effective_result != null) {
-        scenario.isWin = rpcResult.effective_result === 'win';
+        const newWin = rpcResult.effective_result === 'win';
+        // max_winners上限等で当たり→ハズレに変わった場合、シナリオを再生成
+        if (scenario.isWin && !newWin) {
+          const rebuilt = generateScenario(false, scenario.charaId, scenario.courseId);
+          scenario.isWin = rebuilt.isWin;
+          scenario.steps = rebuilt.steps;
+          scenario.resultCharaId = rebuilt.resultCharaId;
+        }
+        scenario.isWin = newWin;
       }
 
       if (rpcResult.card_serial && cardDef) {
