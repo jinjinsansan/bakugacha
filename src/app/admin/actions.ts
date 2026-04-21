@@ -195,35 +195,32 @@ export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: 
 
   if (resultIds.length > 0) {
     // 2) deliveries を先に削除 (gacha_results を参照)
-    //    deliveries はレガシーテーブル。存在しない/空の環境でも削除フローを止めないため、
-    //    エラーはログに残すだけで続行する (後続の prize_claims / gacha_results 削除で FK 整合は取れる)
-    const { error: delivError } = await supabase
-      .from('deliveries')
-      .delete()
-      .in('gacha_result_id', resultIds);
-    if (delivError) {
-      console.warn('[deleteProduct] deliveries 削除をスキップ (レガシー/未定義の可能性):', delivError.message);
-    }
-
-    // 3) prize_claims を gacha_result_id 経由で削除
-    const { error: claimByResultError } = await supabase
-      .from('prize_claims')
-      .delete()
-      .in('gacha_result_id', resultIds);
-    if (claimByResultError) {
-      console.error('[deleteProduct] prize_claims (by result) 削除失敗:', claimByResultError);
-      return { ok: false, error: `当選品データの削除に失敗: ${claimByResultError.message}` };
+    //    deliveries はレガシーテーブル。存在しない環境もあり得るため、エラーは警告ログのみで続行する。
+    //    また .in() は URL 長制限があるため 500 件ずつバッチ削除する (例: 8,000 件なら URL が ~300KB になり 400 Bad Request)
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < resultIds.length; i += BATCH_SIZE) {
+      const chunk = resultIds.slice(i, i + BATCH_SIZE);
+      const { error: delivError } = await supabase
+        .from('deliveries')
+        .delete()
+        .in('gacha_result_id', chunk);
+      if (delivError) {
+        console.warn('[deleteProduct] deliveries 削除をスキップ (レガシー/未定義の可能性):', delivError.message);
+        break;
+      }
     }
   }
 
-  // 4) prize_claims を product_id 経由でも念のため削除 (孤立レコード対策)
-  const { error: claimByProductError } = await supabase
+  // 3) prize_claims を product_id 経由で削除
+  //    prize_claims.product_id と gacha_result_id.product_id は同じなので product_id 単発クエリで全件カバー可能。
+  //    gacha_result_id での IN 削除は URL 長制限に引っかかるため使わない。
+  const { error: claimError } = await supabase
     .from('prize_claims')
     .delete()
     .eq('product_id', id);
-  if (claimByProductError) {
-    console.error('[deleteProduct] prize_claims (by product) 削除失敗:', claimByProductError);
-    return { ok: false, error: `当選品データの削除に失敗: ${claimByProductError.message}` };
+  if (claimError) {
+    console.error('[deleteProduct] prize_claims 削除失敗:', claimError);
+    return { ok: false, error: `当選品データの削除に失敗: ${claimError.message}` };
   }
 
   // 5) gacha_results を削除
