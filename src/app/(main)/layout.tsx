@@ -40,30 +40,7 @@ export default async function MainLayout({
           ⚠️ 現在メンテナンスモードが有効です (管理者のみ閲覧可能)
         </div>
       )}
-      {/* 告知バー + ヘッダーを一つの sticky コンテナに統合して重なりを防ぐ */}
       <div className="sticky top-0 z-50">
-        <div
-          className="text-center text-xs font-bold py-2 px-4 overflow-hidden"
-          style={{
-            background: 'linear-gradient(90deg, #1a0533, #2d0a5e, #1a0533)',
-            borderBottom: '1px solid rgba(139,92,246,0.4)',
-          }}
-        >
-          <span className="text-white/90">🎯 1次抽選開催中</span>
-          <span className="mx-2 text-white/30">|</span>
-          <span className="text-violet-300">当選者のみ 2次抽選（賞金1万円）へ進めます</span>
-          <span className="mx-2 text-white/30">|</span>
-          <span className="text-white/70">友達紹介・</span>
-          <a
-            href="https://lin.ee/8ACRAsc"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-yellow-400 underline underline-offset-2 hover:text-yellow-300"
-          >
-            netkeita
-          </a>
-          <span className="text-white/70">登録でチャンス増加</span>
-        </div>
         <Header />
       </div>
       <main>{children}</main>
