@@ -195,13 +195,14 @@ export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: 
 
   if (resultIds.length > 0) {
     // 2) deliveries を先に削除 (gacha_results を参照)
+    //    deliveries はレガシーテーブル。存在しない/空の環境でも削除フローを止めないため、
+    //    エラーはログに残すだけで続行する (後続の prize_claims / gacha_results 削除で FK 整合は取れる)
     const { error: delivError } = await supabase
       .from('deliveries')
       .delete()
       .in('gacha_result_id', resultIds);
     if (delivError) {
-      console.error('[deleteProduct] deliveries 削除失敗:', delivError);
-      return { ok: false, error: `配送データの削除に失敗: ${delivError.message}` };
+      console.warn('[deleteProduct] deliveries 削除をスキップ (レガシー/未定義の可能性):', delivError.message);
     }
 
     // 3) prize_claims を gacha_result_id 経由で削除
