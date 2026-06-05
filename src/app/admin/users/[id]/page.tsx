@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { adjustUserCoins } from '@/app/admin/actions';
+import { fetchUserPrizeClaims } from '@/lib/data/prize-claims';
 import { BlockButton } from './BlockButton';
 import { UserDetailTabs } from './UserDetailTabs';
 
@@ -43,8 +44,8 @@ export default async function AdminUserDetailPage({
     referrerName = referrer?.line_display_name ?? referrer?.display_name ?? referrer?.email ?? null;
   }
 
-  // タブ用データを取得
-  const [loginHistoryRes, coinTxRes, gachaResultsRes, winsRes] = await Promise.all([
+  // タブ用データを取得（当選・配達は prize_claims を正本として表示）
+  const [loginHistoryRes, coinTxRes, gachaResultsRes, claims] = await Promise.all([
     supabase
       .from('login_history')
       .select('id, logged_in_at')
@@ -63,13 +64,7 @@ export default async function AdminUserDetailPage({
       .eq('user_id', id)
       .order('played_at', { ascending: false })
       .limit(100),
-    supabase
-      .from('gacha_results')
-      .select('id, prize_name, played_at, gacha_products(title), deliveries(id, status, tracking_number, notes, shipped_at, delivered_at)')
-      .eq('user_id', id)
-      .eq('result', 'win')
-      .order('played_at', { ascending: false })
-      .limit(100),
+    fetchUserPrizeClaims(supabase, id),
   ]);
 
   return (
@@ -188,11 +183,10 @@ export default async function AdminUserDetailPage({
 
       {/* タブセクション */}
       <UserDetailTabs
-        userId={id}
         loginHistory={loginHistoryRes.data ?? []}
         coinTransactions={coinTxRes.data ?? []}
         gachaResults={gachaResultsRes.data ?? []}
-        wins={winsRes.data ?? []}
+        claims={claims ?? []}
       />
     </div>
   );

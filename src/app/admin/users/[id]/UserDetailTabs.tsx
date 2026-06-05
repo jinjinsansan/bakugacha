@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CreateDeliveryButton, DeliveryStatusForm } from './DeliveryForm';
+import Link from 'next/link';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
@@ -24,17 +24,15 @@ const TABS = [
 type TabKey = (typeof TABS)[number]['key'];
 
 export function UserDetailTabs({
-  userId,
   loginHistory,
   coinTransactions,
   gachaResults,
-  wins,
+  claims,
 }: {
-  userId: string;
   loginHistory: Row[];
   coinTransactions: Row[];
   gachaResults: Row[];
-  wins: Row[];
+  claims: Row[];
 }) {
   const [tab, setTab] = useState<TabKey>('login');
 
@@ -62,7 +60,7 @@ export function UserDetailTabs({
         {tab === 'login' && <LoginHistoryTab data={loginHistory} />}
         {tab === 'coins' && <CoinHistoryTab data={coinTransactions} />}
         {tab === 'gacha' && <GachaHistoryTab data={gachaResults} />}
-        {tab === 'wins' && <WinsDeliveryTab data={wins} userId={userId} />}
+        {tab === 'wins' && <WinsClaimsTab data={claims} />}
       </div>
     </div>
   );
@@ -177,65 +175,47 @@ function GachaHistoryTab({ data }: { data: Row[] }) {
   );
 }
 
-function WinsDeliveryTab({ data, userId }: { data: Row[]; userId: string }) {
-  if (data.length === 0) return <EmptyState text="当選履歴がありません" />;
+const CLAIM_STATUS: Record<string, { label: string; color: string }> = {
+  pending:            { label: '未対応',         color: 'bg-orange-900/50 text-orange-400' },
+  delivery_requested: { label: '配送申請中',     color: 'bg-amber-900/50 text-amber-300' },
+  shipped:            { label: '発送済み',       color: 'bg-blue-900/50 text-blue-400' },
+  delivered:          { label: '配達完了',       color: 'bg-green-900/50 text-green-400' },
+  code_sent:          { label: 'コード送付済み', color: 'bg-purple-900/50 text-purple-300' },
+  converted:          { label: 'コイン交換済み', color: 'bg-white/10 text-white/50' },
+};
 
-  const statusLabel: Record<string, string> = {
-    pending: '未発送',
-    shipped: '発送済み',
-    delivered: '配達完了',
-  };
-
-  const statusColor: Record<string, string> = {
-    pending: 'bg-orange-900/50 text-orange-400',
-    shipped: 'bg-blue-900/50 text-blue-400',
-    delivered: 'bg-green-900/50 text-green-400',
-  };
+function WinsClaimsTab({ data }: { data: Row[] }) {
+  if (data.length === 0) return <EmptyState text="当選品がありません" />;
 
   return (
-    <div className="divide-y divide-white/5">
-      {data.map((row) => {
-        const pRaw = row.gacha_products as unknown;
-        const p = (Array.isArray(pRaw) ? pRaw[0] : pRaw) as { title: string } | null;
-        const deliveriesRaw = row.deliveries as unknown;
-        const deliveries = (Array.isArray(deliveriesRaw) ? deliveriesRaw : deliveriesRaw ? [deliveriesRaw] : []) as Row[];
-        const delivery = deliveries[0] ?? null;
-
-        return (
-          <div key={row.id} className="px-4 py-4 hover:bg-white/5">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <div className="text-sm text-white font-medium">
-                  🏆 {p?.title ?? row.prize_name ?? '—'}
+    <div className="flex flex-col">
+      <div className="px-4 py-3 border-b border-white/5">
+        <Link href="/admin/prizes?status=pending" className="text-xs text-yellow-300/80 hover:text-yellow-300">
+          配送・コード送付などの対応は「当選品管理」で行えます →
+        </Link>
+      </div>
+      <div className="divide-y divide-white/5">
+        {data.map((c) => {
+          const st = CLAIM_STATUS[c.status as string] ?? { label: c.status as string, color: 'bg-white/10 text-white/50' };
+          const prizeLabel = c.prizeInfo?.name ?? c.prizeName ?? '—';
+          return (
+            <div key={c.id as string} className="px-4 py-4 hover:bg-white/5">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <div className="text-sm text-white font-medium">🏆 {prizeLabel}</div>
+                  <div className="text-xs text-white/40 mt-1">当選日: {formatDate(c.createdAt as string)}</div>
                 </div>
-                <div className="text-xs text-white/40 mt-1">
-                  当選日: {formatDate(row.played_at)}
-                </div>
+                <span className={`px-2 py-0.5 rounded text-xs shrink-0 ${st.color}`}>{st.label}</span>
               </div>
-              <div className="flex items-center gap-2">
-                {delivery ? (
-                  <span className={`px-2 py-0.5 rounded text-xs ${statusColor[delivery.status as string] ?? ''}`}>
-                    {statusLabel[delivery.status as string] ?? delivery.status}
-                  </span>
-                ) : (
-                  <CreateDeliveryButton gachaResultId={row.id as string} userId={userId} />
-                )}
+              <div className="mt-2 flex flex-col gap-0.5 text-xs text-white/50">
+                {c.recipientName && <div>宛先: {c.recipientName as string}{c.address ? ` / ${c.address as string}` : ''}</div>}
+                {c.trackingNumber && <div>追跡番号: <span className="font-mono">{c.trackingNumber as string}</span></div>}
+                {c.giftCode && <div>ギフトコード: <span className="font-mono">{c.giftCode as string}</span></div>}
               </div>
             </div>
-
-            {delivery && (
-              <div className="mt-2">
-                {delivery.tracking_number && (
-                  <div className="text-xs text-white/50 mb-1">
-                    追跡番号: <span className="font-mono">{delivery.tracking_number as string}</span>
-                  </div>
-                )}
-                <DeliveryStatusForm delivery={delivery} />
-              </div>
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
