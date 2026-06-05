@@ -40,9 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# tooling state (Supabase CLI / Serena)
+# tooling state (Supabase CLI / Serena / Claude Code)
 /supabase/.temp/
 /.serena/
+/.claude/
 
 # 大容量メディア（R2/CDN 配信のため git では管理しない）
 # 動画は NEXT_PUBLIC_GACHA_ASSET_BASE_URL 経由で配信される。
