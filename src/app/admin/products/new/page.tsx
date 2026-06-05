@@ -266,7 +266,11 @@ export function ProductFormFields({
       <div className="rounded-xl border border-yellow-500/30 bg-yellow-950/20 p-4">
         <h3 className="text-sm font-black text-yellow-200 mb-1">🏆 当選景品</h3>
         <p className="text-xs text-yellow-100/70 mb-3">
-          当選時にユーザーに渡す景品を選択してください。景品は「景品マスタ管理」から追加できます。
+          当選時にユーザーに渡す景品を選択してください。景品は{' '}
+          <a href="/admin/prize-master" target="_blank" rel="noreferrer" className="underline text-yellow-300 hover:text-yellow-200">
+            景品マスタ管理（別タブ）
+          </a>{' '}
+          から追加できます。
         </p>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-white/60">景品を選択</label>
@@ -287,7 +291,11 @@ export function ProductFormFields({
           </select>
           {(prizes ?? []).length === 0 && (
             <p className="text-xs text-yellow-400/70 mt-1">
-              ⚠️ 景品が登録されていません。先に「景品マスタ管理」から景品を追加してください。
+              ⚠️ 景品が登録されていません。先に{' '}
+              <a href="/admin/prize-master" target="_blank" rel="noreferrer" className="underline hover:text-yellow-300">
+                景品マスタ管理（別タブ）
+              </a>{' '}
+              から景品を追加してください。
             </p>
           )}
         </div>

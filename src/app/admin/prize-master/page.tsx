@@ -48,6 +48,10 @@ export default async function AdminPrizeMasterPage({
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">景品マスタ管理</h1>
+      <p className="text-xs text-white/40 -mt-3 leading-relaxed">
+        景品の「雛形」を登録します。ここで作った景品を <strong className="text-white/60">商品(ガチャ)</strong> の編集画面で紐付けると、
+        当選時に <strong className="text-white/60">当選品</strong> として発行され、<strong className="text-white/60">当選品</strong> 画面で配送・コード送付などを処理します。
+      </p>
 
       {params?.saved && (
         <div className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3">

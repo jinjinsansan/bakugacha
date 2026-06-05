@@ -1,17 +1,6 @@
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth/admin';
-
-const NAV = [
-  { href: '/admin',             label: '📊', text: 'ダッシュボード' },
-  { href: '/admin/products',    label: '🎁', text: '商品管理' },
-  { href: '/admin/banners',     label: '🖼️', text: 'バナー管理' },
-  { href: '/admin/settings',    label: '⚙️', text: 'ガチャ設定' },
-  { href: '/admin/promo-codes', label: '🎫', text: 'プロモコード' },
-  { href: '/admin/prize-master', label: '🎁', text: '景品マスタ' },
-  { href: '/admin/prizes',      label: '🏆', text: '当選品管理' },
-  { href: '/admin/results',     label: '📋', text: '結果一覧' },
-  { href: '/admin/users',       label: '👥', text: 'ユーザー管理' },
-];
+import { AdminNav } from './AdminNav';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
@@ -37,41 +26,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      {/* ── モバイルナビ（グリッド）── */}
-      <nav className="md:hidden border-b border-white/10 bg-black/60 px-3 py-3">
-        <div className="grid grid-cols-3 gap-2">
-          {NAV.map(({ href, label, text }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-col items-center gap-1 py-3 rounded-xl text-center transition-colors bg-white/5 active:bg-white/15"
-              style={{ minHeight: 64 }}
-            >
-              <span className="text-xl leading-none">{label}</span>
-              <span className="text-[11px] font-bold text-white/70 leading-tight">{text}</span>
-            </Link>
-          ))}
-        </div>
-      </nav>
+      {/* ── モバイルナビ（セクション分け＋現在地ハイライト）── */}
+      <AdminNav variant="mobile" />
 
       <div className="max-w-6xl mx-auto px-3 md:px-4 flex gap-6 py-4 md:py-6">
 
         {/* ── デスクトップ サイドナビ ── */}
-        <nav className="w-48 shrink-0 hidden md:block">
-          <ul className="flex flex-col gap-1">
-            {NAV.map(({ href, label, text }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  <span>{label}</span>
-                  <span>{text}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <AdminNav variant="desktop" />
 
         {/* ── メインコンテンツ ── */}
         <main className="flex-1 min-w-0">{children}</main>
