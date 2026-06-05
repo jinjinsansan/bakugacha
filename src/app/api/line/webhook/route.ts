@@ -30,12 +30,13 @@ async function handleFollowEvent(lineUserId: string) {
 
   const user = await findUserByLineId(supabase, lineUserId);
   if (!user) {
-    console.log('Follow event: no matching user for', lineUserId);
+    // LINE user ID（外部PII）はログに残さない
+    console.log('Follow event: no matching user');
     return;
   }
 
   if (user.line_friend_bonus_at) {
-    console.log('Follow event: bonus already granted for', lineUserId);
+    console.log('Follow event: bonus already granted');
     return;
   }
 

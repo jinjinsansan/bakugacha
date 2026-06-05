@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { updateProduct } from '@/app/admin/actions';
@@ -33,9 +34,9 @@ export default async function AdminProductEditPage({ params }: Props) {
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             保存
           </button>
-          <a href="/admin/products" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
+          <Link href="/admin/products" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
             キャンセル
-          </a>
+          </Link>
         </div>
       </AdminForm>
     </div>

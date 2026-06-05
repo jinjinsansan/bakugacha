@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { Cd2GachaPlayer } from '@/components/gacha/Cd2GachaPlayer';
-import { EcardGachaPlayer } from '@/components/gacha/EcardGachaPlayer';
-import { ElevatorGachaPlayer } from '@/components/gacha/ElevatorGachaPlayer';
-import { KeibaGachaPlayer } from '@/components/gacha/KeibaGachaPlayer';
-import { RaiseGachaPlayer } from '@/components/gacha/RaiseGachaPlayer';
+// ── お蔵入りガチャ（2026-06 時点で本番非公開）──────────────────
+// 復活させる場合はこの import と、下部の gachaType 分岐、および
+// 管理画面 GACHA_TYPES（src/app/admin/products/new/page.tsx）を合わせて復活させること。
+// import { EcardGachaPlayer } from '@/components/gacha/EcardGachaPlayer';
+// import { ElevatorGachaPlayer } from '@/components/gacha/ElevatorGachaPlayer';
+// import { KeibaGachaPlayer } from '@/components/gacha/KeibaGachaPlayer';
+// import { RaiseGachaPlayer } from '@/components/gacha/RaiseGachaPlayer';
 
 type Props = {
   productId: string;
@@ -132,6 +135,9 @@ export function GachaPlayButton({
           bonusWinVideoUrl={bonusWinVideoUrl}
         />
       )}
+      {/* ── お蔵入りガチャの分岐（2026-06 時点で本番非公開）──────────
+          復活させる場合は下のコメントを解除し、ファイル冒頭の import と
+          管理画面 GACHA_TYPES も合わせて復活させること。
       {gachaType === 'ecard' && (
         <EcardGachaPlayer
           open={open}
@@ -201,6 +207,7 @@ export function GachaPlayButton({
           accessCode={accessCode}
         />
       )}
+      ──────────────────────────────────────────────────────────── */}
     </>
   );
 }

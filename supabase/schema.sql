@@ -94,6 +94,62 @@ CREATE TABLE IF NOT EXISTS announcements (
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── アプリ全体設定テーブル（シングルトン） ──────────────────
+-- 紹介ボーナス・当選者ダミー表示などのグローバル設定。
+-- maintenance_* / daily_login_bonus_amount カラムは migration 021 / 026 でも
+-- ADD COLUMN IF NOT EXISTS される（ここに含めることで新規 DB でも完全な形になる）。
+CREATE TABLE IF NOT EXISTS app_settings (
+  id                       UUID PRIMARY KEY,
+  referral_bonus_referrer  INTEGER NOT NULL DEFAULT 200,
+  referral_bonus_referee   INTEGER NOT NULL DEFAULT 100,
+  winner_dummy_enabled     BOOLEAN NOT NULL DEFAULT FALSE,
+  maintenance_mode         BOOLEAN NOT NULL DEFAULT FALSE,
+  maintenance_title        TEXT,
+  maintenance_message      TEXT,
+  daily_login_bonus_amount INTEGER NOT NULL DEFAULT 0,
+  updated_at               TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT daily_login_bonus_amount_non_negative CHECK (daily_login_bonus_amount >= 0)
+);
+
+-- シングルトン行を作成（fetchAppSettings の APP_SETTINGS_ID と一致）
+INSERT INTO app_settings (id, maintenance_title, maintenance_message)
+VALUES (
+  '00000000-0000-0000-0000-000000000001',
+  'ただいまメンテナンス中です',
+  'より良いサービスをご提供するため、ただいまメンテナンスを実施しております。ご不便をおかけして申し訳ございません。'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- ── ログイン履歴テーブル ──────────────────────────────────────
+-- touchLastLogin / touchLastLoginFireAndForget でログイン毎に記録。
+CREATE TABLE IF NOT EXISTS login_history (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+  logged_in_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ── Eカードガチャ設定テーブル（シングルトン） ───────────────
+-- fetchEcardSettings の ECARD_SETTINGS_ID と一致。
+CREATE TABLE IF NOT EXISTS ecard_settings (
+  id            UUID PRIMARY KEY,
+  win_rate      NUMERIC NOT NULL DEFAULT 40,
+  axis_a_rate   NUMERIC NOT NULL DEFAULT 20,
+  axis_b_rate   NUMERIC NOT NULL DEFAULT 30,
+  axis_c_rate   NUMERIC NOT NULL DEFAULT 15,
+  axis_d_rate   NUMERIC NOT NULL DEFAULT 20,
+  axis_e_rate   NUMERIC NOT NULL DEFAULT 15,
+  donten_rate   NUMERIC NOT NULL DEFAULT 15,
+  star5_rate    NUMERIC NOT NULL DEFAULT 70,
+  star4_rate    NUMERIC NOT NULL DEFAULT 60,
+  is_active     BOOLEAN NOT NULL DEFAULT TRUE,
+  updated_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Eカード初期設定
+INSERT INTO ecard_settings (id)
+VALUES ('00000000-0000-0000-0000-000000000006')
+ON CONFLICT (id) DO NOTHING;
+
 -- ── インデックス ──────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
@@ -112,3 +168,6 @@ ALTER TABLE gacha_results DISABLE ROW LEVEL SECURITY;
 ALTER TABLE coin_transactions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE cd2_gacha_settings DISABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements DISABLE ROW LEVEL SECURITY;
+ALTER TABLE app_settings DISABLE ROW LEVEL SECURITY;
+ALTER TABLE login_history DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ecard_settings DISABLE ROW LEVEL SECURITY;

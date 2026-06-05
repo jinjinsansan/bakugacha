@@ -40,6 +40,8 @@ export default async function MyPage() {
 
   // JST基準で本日のログインボーナス受取状況を判定
   const lastBonusAt = user.last_login_bonus_at as string | null;
+  // サーバーコンポーネントのリクエスト時刻評価のため Date.now() は意図的に使用
+  // eslint-disable-next-line react-hooks/purity
   const todayJst = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const lastBonusJst = lastBonusAt
     ? new Date(new Date(lastBonusAt).getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)

@@ -22,7 +22,6 @@ export function openLineAppWithFallback(
   }
 
   let appOpened = false;
-  let timer: number | undefined;
 
   const markOpened = () => {
     appOpened = true;
@@ -45,7 +44,7 @@ export function openLineAppWithFallback(
 
   window.location.href = `line://app/${liffId}`;
 
-  timer = window.setTimeout(() => {
+  const timer = window.setTimeout(() => {
     cleanup();
     if (!appOpened) onFallback();
   }, delayMs);

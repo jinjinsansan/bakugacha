@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createProduct } from '@/app/admin/actions';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
 import { AdminForm } from '@/components/admin/AdminForm';
@@ -17,11 +18,14 @@ const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト�
 
 export const GACHA_TYPES = [
   { value: 'cd2', label: 'カウントダウンチャレンジ2' },
-  { value: 'ecard', label: 'ROYALカードガチャ' },
-  { value: 'elevator', label: 'エレベーターガチャ' },
-  { value: 'keiba', label: '競馬ガチャ' },
-  { value: 'raise_kenta', label: '来世ガチャ（健太編）' },
-  { value: 'raise_shoichi', label: '来世ガチャ（正一編）' },
+  // ── お蔵入りガチャ（2026-06 時点で本番非公開）──────────────────
+  // 復活させる場合はコメントを解除し、GachaPlayButton 側の分岐・import も
+  // 合わせて復活させること（src/components/gacha/GachaPlayButton.tsx）。
+  // { value: 'ecard', label: 'ROYALカードガチャ' },
+  // { value: 'elevator', label: 'エレベーターガチャ' },
+  // { value: 'keiba', label: '競馬ガチャ' },
+  // { value: 'raise_kenta', label: '来世ガチャ（健太編）' },
+  // { value: 'raise_shoichi', label: '来世ガチャ（正一編）' },
 ] as const;
 
 export default async function AdminProductNewPage() {
@@ -40,9 +44,9 @@ export default async function AdminProductNewPage() {
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             作成
           </button>
-          <a href="/admin/products" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
+          <Link href="/admin/products" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
             キャンセル
-          </a>
+          </Link>
         </div>
       </AdminForm>
     </div>

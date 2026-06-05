@@ -66,6 +66,22 @@ interface CampaignBannerProps {
   banners?: BannerData[];
 }
 
+// バナーの外枠（リンク有無で <a>/<div> を切り替え）。
+// render 中にコンポーネントを生成しないようモジュールスコープで定義する。
+function BannerShell({ href, children }: { href: string | null; children: React.ReactNode }) {
+  const className = 'relative overflow-hidden rounded-xl block';
+  const style: React.CSSProperties = { aspectRatio: '4 / 1', maxHeight: '220px' };
+  return href ? (
+    <a href={href} target="_blank" rel="noreferrer" className={className} style={style}>
+      {children}
+    </a>
+  ) : (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  );
+}
+
 export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
   const banners = propBanners && propBanners.length > 0 ? propBanners : FALLBACK_BANNERS;
   const [current, setCurrent] = useState(0);
@@ -77,20 +93,9 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
 
   const b = banners[current];
 
-  const Wrapper = b.link_url
-    ? ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
-        <a href={b.link_url!} target="_blank" rel="noreferrer" className={className} style={style}>{children}</a>
-      )
-    : ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
-        <div className={className} style={style}>{children}</div>
-      );
-
   return (
     <section className="relative max-w-[860px] w-full mx-auto my-3 px-1 sm:px-3">
-      <Wrapper
-        className="relative overflow-hidden rounded-xl block"
-        style={{ aspectRatio: '4 / 1', maxHeight: '220px' }}
-      >
+      <BannerShell href={b.link_url}>
 
         {/* 背景写真 */}
         {b.image_url && (
@@ -149,7 +154,7 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
           )}
         </div>
 
-      </Wrapper>
+      </BannerShell>
 
       {/* 前後ボタン */}
       <button

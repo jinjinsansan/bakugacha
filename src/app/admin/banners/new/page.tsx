@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createBanner } from '@/app/admin/actions';
 import { BannerFormFields } from './BannerFormFields';
 import { AdminForm } from '@/components/admin/AdminForm';
@@ -12,9 +13,9 @@ export default function AdminBannerNewPage() {
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             作成
           </button>
-          <a href="/admin/banners" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
+          <Link href="/admin/banners" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
             キャンセル
-          </a>
+          </Link>
         </div>
       </AdminForm>
     </div>

@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# tooling state (Supabase CLI / Serena)
+/supabase/.temp/
+/.serena/
+
+# 大容量メディア（R2/CDN 配信のため git では管理しない）
+# 動画は NEXT_PUBLIC_GACHA_ASSET_BASE_URL 経由で配信される。
+# public/ 配下のみ意図的に追跡する例外とする。
+*.mp4
+*.mov
+*.zip
+!/public/**
+
+# リポジトリルートに散在するガチャ映像ソースフォルダ（R2 アップロード元）
+/競馬ガチャ映像/
+/競馬ガチャカード/
+/ROYALカード映像やり直し版/
+/エレベーターガチャ映像/
+/修正フォルダ/
