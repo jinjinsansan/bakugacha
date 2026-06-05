@@ -5,10 +5,14 @@ import { updateProduct } from '@/app/admin/actions';
 import { ProductFormFields } from '@/app/admin/products/new/page';
 import { AdminForm } from '@/components/admin/AdminForm';
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ error?: string }>;
+};
 
-export default async function AdminProductEditPage({ params }: Props) {
+export default async function AdminProductEditPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const sp = (await searchParams) ?? {};
   const supabase = getServiceSupabase();
   const { data: product } = await supabase
     .from('gacha_products')
@@ -28,6 +32,12 @@ export default async function AdminProductEditPage({ params }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">商品編集: {product.title as string}</h1>
+      {sp.error && (
+        <div className="rounded-xl px-4 py-3 text-sm text-red-300"
+          style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)' }}>
+          {decodeURIComponent(sp.error)}
+        </div>
+      )}
       <AdminForm action={action}>
         <ProductFormFields defaults={product as Record<string, unknown>} allProducts={allProducts ?? []} prizes={prizes ?? []} />
         <div className="flex gap-3 pt-2">

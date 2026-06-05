@@ -161,7 +161,10 @@ export async function updateProduct(id: string, formData: FormData) {
     prize_id:              formData.get('prize_id') ? String(formData.get('prize_id')) : null,
   }).eq('id', id);
 
-  if (updateError) console.error('[updateProduct]', updateError);
+  if (updateError) {
+    console.error('[updateProduct]', updateError);
+    redirect(`/admin/products/${id}?error=` + encodeURIComponent('保存に失敗しました: ' + updateError.message));
+  }
 
   revalidatePath('/admin/products');
   revalidatePath(`/admin/products/${id}`);

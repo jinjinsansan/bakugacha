@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchAllBanners } from '@/lib/data/banners';
-import { deleteBanner } from '@/app/admin/actions';
+import { BannerDeleteButton } from './BannerDeleteButton';
 
 export default async function AdminBannersPage() {
   const supabase = getServiceSupabase();
@@ -79,19 +79,7 @@ export default async function AdminBannersPage() {
                 >
                   編集
                 </Link>
-                <form
-                  action={async () => {
-                    'use server';
-                    await deleteBanner(b.id);
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                  >
-                    削除
-                  </button>
-                </form>
+                <BannerDeleteButton id={b.id} title={b.title} />
               </div>
             </div>
           ))}

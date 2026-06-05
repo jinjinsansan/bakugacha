@@ -28,7 +28,12 @@ export const GACHA_TYPES = [
   // { value: 'raise_shoichi', label: '来世ガチャ（正一編）' },
 ] as const;
 
-export default async function AdminProductNewPage() {
+export default async function AdminProductNewPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string }>;
+}) {
+  const params = (await searchParams) ?? {};
   const supabase = getServiceSupabase();
   const [{ data: products }, { data: prizes }] = await Promise.all([
     supabase.from('gacha_products').select('id, title').order('sort_order', { ascending: true }),
@@ -38,6 +43,12 @@ export default async function AdminProductNewPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">商品追加</h1>
+      {params.error && (
+        <div className="rounded-xl px-4 py-3 text-sm text-red-300"
+          style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)' }}>
+          {decodeURIComponent(params.error)}
+        </div>
+      )}
       <AdminForm action={createProduct}>
         <ProductFormFields allProducts={products ?? []} prizes={prizes ?? []} />
         <div className="flex gap-3 pt-2">
@@ -76,10 +87,23 @@ export function ProductFormFields({
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-white/60">ガチャタイプ</label>
-          <select name="gacha_type" defaultValue={(defaults?.gacha_type as string) ?? 'cd2'}
-            className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50">
-            {GACHA_TYPES.map((t) => <option key={t.value} value={t.value} className="bg-zinc-900">{t.label}</option>)}
-          </select>
+          {/* 稼働中は cd2 のみ。選択肢が1つの間は静的表示にする
+              （GACHA_TYPES のコメントを戻せば自動でセレクトに復活）。 */}
+          {GACHA_TYPES.length === 1 ? (
+            <>
+              <input type="hidden" name="gacha_type" value={(defaults?.gacha_type as string) ?? GACHA_TYPES[0].value} />
+              <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/70">
+                {GACHA_TYPES.find((t) => t.value === defaults?.gacha_type)?.label
+                  ?? (defaults?.gacha_type as string)
+                  ?? GACHA_TYPES[0].label}
+              </div>
+            </>
+          ) : (
+            <select name="gacha_type" defaultValue={(defaults?.gacha_type as string) ?? 'cd2'}
+              className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50">
+              {GACHA_TYPES.map((t) => <option key={t.value} value={t.value} className="bg-zinc-900">{t.label}</option>)}
+            </select>
+          )}
         </div>
         <Field name="price" label="価格（コイン）" type="number" defaultValue={(defaults?.price as string) ?? '0'} />
       </div>

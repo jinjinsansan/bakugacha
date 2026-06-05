@@ -147,6 +147,15 @@ export default async function AdminSettingsPage({
         </button>
       </form>
 
+      {/* ── お蔵入りガチャ設定（2026-06 時点で本番非公開）──────────────
+          稼働中は cd2 のみ。下記は折りたたみ（既定で閉）にして通常運用の視界から外す。
+          復活時はこの details を展開して設定する。 */}
+      <details className="card-premium p-4">
+        <summary className="cursor-pointer select-none text-sm font-bold text-white/70">
+          🗄️ お蔵入りガチャ設定（停止中） — クリックで展開
+        </summary>
+        <div className="flex flex-col gap-6 mt-4">
+
       {/* ROYALカードガチャ設定 */}
       <h2 className="text-lg font-black text-white mt-4">ROYALカードガチャ設定</h2>
       <form action={updateEcardSettings} className="card-premium p-6 flex flex-col gap-6">
@@ -657,6 +666,10 @@ export default async function AdminSettingsPage({
           保存
         </button>
       </form>
+
+        </div>
+      </details>
+      {/* ── お蔵入りガチャ設定ここまで ────────────────────────────── */}
 
       {/* 紹介ボーナス設定 */}
       <h2 className="text-lg font-black text-white mt-4">紹介ボーナス / ログインボーナス設定</h2>
