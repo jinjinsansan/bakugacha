@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
+import { adjustUserCoins } from '@/app/admin/actions';
 import { BlockButton } from './BlockButton';
 import { UserDetailTabs } from './UserDetailTabs';
 
@@ -12,8 +13,15 @@ function formatDate(dateStr: string | null) {
   });
 }
 
-export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminUserDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ coin_ok?: string; coin_error?: string }>;
+}) {
   const { id } = await params;
+  const sp = (await searchParams) ?? {};
   const supabase = getServiceSupabase();
 
   const { data: user } = await supabase
@@ -135,6 +143,47 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             <BlockButton userId={id} isBlocked={user.is_blocked as boolean} />
           </div>
         </div>
+      </div>
+
+      {/* コイン手動調整 */}
+      <div className="card-premium p-6 flex flex-col gap-3">
+        <h2 className="text-sm font-bold text-white/70">🪙 コイン手動調整</h2>
+        {sp.coin_ok && (
+          <div className="rounded-lg px-3 py-2 text-xs text-green-300"
+            style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
+            {decodeURIComponent(sp.coin_ok)}
+          </div>
+        )}
+        {sp.coin_error && (
+          <div className="rounded-lg px-3 py-2 text-xs text-red-300"
+            style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)' }}>
+            {decodeURIComponent(sp.coin_error)}
+          </div>
+        )}
+        <form action={adjustUserCoins.bind(null, id)} className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/50">操作</label>
+            <select name="direction"
+              className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50">
+              <option value="grant" className="bg-zinc-900">付与 (+)</option>
+              <option value="deduct" className="bg-zinc-900">減算 (−)</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-white/50">枚数</label>
+            <input name="amount" type="number" min={1} step={1} required
+              className="w-28 rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50" />
+          </div>
+          <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <label className="text-xs text-white/50">理由（履歴に記録）</label>
+            <input name="reason" type="text" required maxLength={100} placeholder="例: 不具合のお詫び補填"
+              className="w-full rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-yellow-400/50" />
+          </div>
+          <button type="submit" className="btn-gold px-5 py-2 rounded-xl text-sm font-bold">実行</button>
+        </form>
+        <p className="text-[10px] text-white/30">
+          調整は coin_transactions に「管理者調整」として記録されます（migration 042 の適用が必要）。
+        </p>
       </div>
 
       {/* タブセクション */}

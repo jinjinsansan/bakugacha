@@ -89,7 +89,7 @@ export default async function AdminDashboard() {
 
       {/* 未発送アラート(運用で最重要) */}
       <Link
-        href="/admin/prizes"
+        href="/admin/prizes?status=pending"
         className="card-premium p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
         style={stats.pending_claims > 0 ? { border: '1px solid rgba(248,113,113,0.4)' } : undefined}
       >
