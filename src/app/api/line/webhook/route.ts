@@ -8,7 +8,9 @@ import { grantCoins } from '@/lib/data/coins';
 const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
 function verifyLineSignature(body: string, signature: string | null, channelSecret?: string) {
-  if (!channelSecret) return true;
+  // secret 未設定時は署名を検証できない → fail-closed で拒否する
+  // (以前は true を返しており、無署名リクエストでコイン付与され得る穴があった)
+  if (!channelSecret) return false;
   if (!signature) return false;
   const hmac = crypto.createHmac('sha256', channelSecret);
   hmac.update(body);

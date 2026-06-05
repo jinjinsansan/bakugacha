@@ -58,5 +58,9 @@ export async function getUserFromSession(
     .eq('id', session.user_id)
     .maybeSingle();
 
+  // ブロック済みユーザーは未ログイン扱いにする。
+  // これにより全 API/ページ(getUserFromSession 経由)でブロックが強制される。
+  if (user?.is_blocked === true) return null;
+
   return user ?? null;
 }

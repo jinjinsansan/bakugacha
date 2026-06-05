@@ -3,6 +3,7 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { requestBuyback, cancelBuyback } from '@/lib/data/keiba-cards';
 import { requestRaiseBuyback, cancelRaiseBuyback } from '@/lib/data/raise-cards';
+import { checkRateLimit } from '@/lib/ratelimit-db';
 
 /** 買取申請 */
 export async function POST(request: Request) {
@@ -11,6 +12,12 @@ export async function POST(request: Request) {
     const user = await getUserFromSession(supabase);
     if (!user) {
       return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
+    }
+
+    // レート制限: ユーザー単位 60秒に30回
+    const rl = await checkRateLimit(supabase, { key: `buyback:${user.id}`, maxRequests: 30, windowSeconds: 60 });
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'リクエストが多すぎます。' }, { status: 429 });
     }
 
     const body = await request.json();
