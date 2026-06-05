@@ -25,6 +25,7 @@ const PAGE_SIZE = 50;
 type Props = {
   claims: PrizeClaim[];
   updateAction: (formData: FormData) => Promise<void>;
+  initialStatus?: string;
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -165,9 +166,9 @@ function ExpandedRow({ claim, updateAction, onClose }: {
   );
 }
 
-export function PrizeClaimsTable({ claims, updateAction }: Props) {
+export function PrizeClaimsTable({ claims, updateAction, initialStatus = 'all' }: Props) {
   const [query, setQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [page, setPage] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 

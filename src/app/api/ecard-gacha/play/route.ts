@@ -47,6 +47,16 @@ function normalizeQuality(raw: unknown): EcardQuality {
 }
 
 export async function POST(request: Request) {
+  // ── お蔵入りガチャ（2026-06 時点で本番非公開）──────────────────
+  // UI からは到達しないが、エンドポイント保護のため 503 を返す。
+  // 復活させる場合は環境変数 ENABLE_SHELVED_GACHA=1 を設定するか、この if を削除する。
+  if (process.env.ENABLE_SHELVED_GACHA !== '1') {
+    return NextResponse.json(
+      { success: false, error: 'このガチャは現在ご利用いただけません。' },
+      { status: 503 },
+    );
+  }
+
   try {
     const body = await request.json().catch(() => ({}));
     const productId = typeof body?.productId === 'string' ? body.productId : null;

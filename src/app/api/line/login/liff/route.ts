@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerEnv } from '@/lib/env';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { findUserByLineId, createLineUser, touchLastLoginFireAndForget } from '@/lib/data/users';
 import { createSession } from '@/lib/data/session';
@@ -27,6 +28,30 @@ export async function POST(request: NextRequest) {
     const { accessToken, referralCode } = await request.json();
     if (!accessToken || typeof accessToken !== 'string') {
       return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
+    }
+
+    // ── アクセストークンの発行先チャネル(audience)検証 ──────────────
+    // これがないと、別チャネル向けに発行された LINE アクセストークンでも
+    // ログインできてしまう(認証バイパス)。LINE の verify API で client_id を確認する。
+    const { LINE_LOGIN_CHANNEL_ID } = getServerEnv();
+    if (!LINE_LOGIN_CHANNEL_ID) {
+      return NextResponse.json({ error: 'LINE連携は現在準備中です。' }, { status: 503 });
+    }
+    try {
+      const verifyRes = await fetch(
+        `https://api.line.me/oauth2/v2.1/verify?access_token=${encodeURIComponent(accessToken)}`,
+      );
+      if (!verifyRes.ok) {
+        return NextResponse.json({ error: 'Invalid access token' }, { status: 401 });
+      }
+      const verifyData = (await verifyRes.json()) as { client_id?: string };
+      if (verifyData.client_id !== LINE_LOGIN_CHANNEL_ID) {
+        console.error('[LIFF login] access token channel mismatch');
+        return NextResponse.json({ error: 'Invalid access token' }, { status: 401 });
+      }
+    } catch (e) {
+      console.error('[LIFF login] token verify failed:', e);
+      return NextResponse.json({ error: 'LINEサーバーへの接続に失敗しました。' }, { status: 503 });
     }
 
     // アクセストークンでLINEプロフィールを取得（10秒タイムアウト付き）
@@ -106,18 +131,18 @@ export async function POST(request: NextRequest) {
     const newUserId = newUser.id as string;
     const sessionToken = await getOrCreateSessionToken();
 
-    // セッション作成 + line_friend_bonus_at を登録時にセット（webhookより先でも後でも確実にボーナス付与）
-    await Promise.all([
-      createSession(supabase, sessionToken, newUserId),
-      supabase
-        .from('app_users')
-        .update({ line_friend_bonus_at: now, updated_at: now })
-        .eq('id', newUserId)
-        .is('line_friend_bonus_at', null),
-    ]);
+    await createSession(supabase, sessionToken, newUserId);
 
-    // LINEフォローボーナスをここで付与（webhookが先発火した場合もIS NULLチェックで二重付与なし）
-    if (LINE_REWARD_COINS > 0) {
+    // LINEフォローボーナス: line_friend_bonus_at を原子的にセットできた時のみ付与する。
+    // webhook 等が先に付与済みの場合は 0 件となり、二重付与を防ぐ。
+    const { data: bonusRows } = await supabase
+      .from('app_users')
+      .update({ line_friend_bonus_at: now, updated_at: now })
+      .eq('id', newUserId)
+      .is('line_friend_bonus_at', null)
+      .select('id');
+
+    if (LINE_REWARD_COINS > 0 && bonusRows && bonusRows.length > 0) {
       await grantCoins(supabase, newUserId, LINE_REWARD_COINS, `公式LINE友だち追加ボーナス (+${LINE_REWARD_COINS}コイン)`);
     }
 

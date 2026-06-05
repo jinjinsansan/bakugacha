@@ -31,6 +31,7 @@ export default async function GachaDetailPage({ params }: Props) {
   const stockRemaining: number | null = row.stock_remaining ?? null;
   const isSoldOut = row.status === 'sold-out';
   const isLoggedIn = !!user;
+  const userCoins = (user?.coins as number) ?? 0;
   const availableFrom = (row.available_from as string | null) ?? null;
   const availableUntil = (row.available_until as string | null) ?? null;
   const avail = checkAvailability(availableFrom, availableUntil);
@@ -78,6 +79,9 @@ export default async function GachaDetailPage({ params }: Props) {
           <p className="mt-2 text-2xl font-black" style={{ color: 'var(--gold)' }}>
             {price === 0 ? '無料' : `🪙 ${price.toLocaleString()} コイン`}
           </p>
+          {isLoggedIn && (
+            <p className="mt-1 text-xs text-white/50">所持コイン: 🪙 {userCoins.toLocaleString()}</p>
+          )}
         </div>
 
         {/* 在庫バー */}
@@ -124,6 +128,7 @@ export default async function GachaDetailPage({ params }: Props) {
             productTitle={title}
             price={price}
             isLoggedIn={isLoggedIn}
+            userCoins={userCoins}
             gachaType={(row.gacha_type as string) ?? 'cd2'}
             prizeImageUrl={imageUrl || undefined}
             prizeEmoji={row.thumbnail_emoji ?? undefined}

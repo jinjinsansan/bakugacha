@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { convertPrizeToCoins } from '@/lib/data/prize-claims';
+import { checkRateLimit } from '@/lib/ratelimit-db';
 
 export async function POST(request: Request) {
   try {
@@ -9,6 +10,12 @@ export async function POST(request: Request) {
     const user = await getUserFromSession(supabase);
     if (!user) {
       return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
+    }
+
+    // レート制限: ユーザー単位 60秒に30回
+    const rl = await checkRateLimit(supabase, { key: `prize-exchange:${user.id}`, maxRequests: 30, windowSeconds: 60 });
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'リクエストが多すぎます。' }, { status: 429 });
     }
 
     const body = await request.json();

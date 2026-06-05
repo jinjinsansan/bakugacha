@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { fetchAppSettings } from '@/lib/data/app-settings';
+import { checkRateLimit } from '@/lib/ratelimit-db';
 
 // JSTで日付 (YYYY-MM-DD) を取得
 function getJstDateString(date: Date): string {
@@ -98,6 +99,12 @@ export async function redeemPromoCode(code: string): Promise<PromoRedeemResult> 
   const user = await getUserFromSession(supabase);
   if (!user) {
     return { ok: false, error: 'ログインが必要です。' };
+  }
+
+  // コード総当たり対策: ユーザー単位 60秒に10回まで
+  const rl = await checkRateLimit(supabase, { key: `promo:${user.id}`, maxRequests: 10, windowSeconds: 60 });
+  if (!rl.allowed) {
+    return { ok: false, error: '試行回数が多すぎます。しばらくしてからお試しください。' };
   }
 
   const trimmed = code.trim();

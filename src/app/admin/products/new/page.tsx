@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createProduct } from '@/app/admin/actions';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
 import { AdminForm } from '@/components/admin/AdminForm';
@@ -17,14 +18,22 @@ const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト�
 
 export const GACHA_TYPES = [
   { value: 'cd2', label: 'カウントダウンチャレンジ2' },
-  { value: 'ecard', label: 'ROYALカードガチャ' },
-  { value: 'elevator', label: 'エレベーターガチャ' },
-  { value: 'keiba', label: '競馬ガチャ' },
-  { value: 'raise_kenta', label: '来世ガチャ（健太編）' },
-  { value: 'raise_shoichi', label: '来世ガチャ（正一編）' },
+  // ── お蔵入りガチャ（2026-06 時点で本番非公開）──────────────────
+  // 復活させる場合はコメントを解除し、GachaPlayButton 側の分岐・import も
+  // 合わせて復活させること（src/components/gacha/GachaPlayButton.tsx）。
+  // { value: 'ecard', label: 'ROYALカードガチャ' },
+  // { value: 'elevator', label: 'エレベーターガチャ' },
+  // { value: 'keiba', label: '競馬ガチャ' },
+  // { value: 'raise_kenta', label: '来世ガチャ（健太編）' },
+  // { value: 'raise_shoichi', label: '来世ガチャ（正一編）' },
 ] as const;
 
-export default async function AdminProductNewPage() {
+export default async function AdminProductNewPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string }>;
+}) {
+  const params = (await searchParams) ?? {};
   const supabase = getServiceSupabase();
   const [{ data: products }, { data: prizes }] = await Promise.all([
     supabase.from('gacha_products').select('id, title').order('sort_order', { ascending: true }),
@@ -34,15 +43,21 @@ export default async function AdminProductNewPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-black text-white">商品追加</h1>
+      {params.error && (
+        <div className="rounded-xl px-4 py-3 text-sm text-red-300"
+          style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)' }}>
+          {decodeURIComponent(params.error)}
+        </div>
+      )}
       <AdminForm action={createProduct}>
         <ProductFormFields allProducts={products ?? []} prizes={prizes ?? []} />
         <div className="flex gap-3 pt-2">
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             作成
           </button>
-          <a href="/admin/products" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
+          <Link href="/admin/products" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
             キャンセル
-          </a>
+          </Link>
         </div>
       </AdminForm>
     </div>
@@ -72,10 +87,23 @@ export function ProductFormFields({
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-white/60">ガチャタイプ</label>
-          <select name="gacha_type" defaultValue={(defaults?.gacha_type as string) ?? 'cd2'}
-            className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50">
-            {GACHA_TYPES.map((t) => <option key={t.value} value={t.value} className="bg-zinc-900">{t.label}</option>)}
-          </select>
+          {/* 稼働中は cd2 のみ。選択肢が1つの間は静的表示にする
+              （GACHA_TYPES のコメントを戻せば自動でセレクトに復活）。 */}
+          {GACHA_TYPES.length === 1 ? (
+            <>
+              <input type="hidden" name="gacha_type" value={(defaults?.gacha_type as string) ?? GACHA_TYPES[0].value} />
+              <div className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/70">
+                {GACHA_TYPES.find((t) => t.value === defaults?.gacha_type)?.label
+                  ?? (defaults?.gacha_type as string)
+                  ?? GACHA_TYPES[0].label}
+              </div>
+            </>
+          ) : (
+            <select name="gacha_type" defaultValue={(defaults?.gacha_type as string) ?? 'cd2'}
+              className="rounded-lg bg-white/10 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400/50">
+              {GACHA_TYPES.map((t) => <option key={t.value} value={t.value} className="bg-zinc-900">{t.label}</option>)}
+            </select>
+          )}
         </div>
         <Field name="price" label="価格（コイン）" type="number" defaultValue={(defaults?.price as string) ?? '0'} />
       </div>
@@ -238,7 +266,11 @@ export function ProductFormFields({
       <div className="rounded-xl border border-yellow-500/30 bg-yellow-950/20 p-4">
         <h3 className="text-sm font-black text-yellow-200 mb-1">🏆 当選景品</h3>
         <p className="text-xs text-yellow-100/70 mb-3">
-          当選時にユーザーに渡す景品を選択してください。景品は「景品マスタ管理」から追加できます。
+          当選時にユーザーに渡す景品を選択してください。景品は{' '}
+          <a href="/admin/prize-master" target="_blank" rel="noreferrer" className="underline text-yellow-300 hover:text-yellow-200">
+            景品マスタ管理（別タブ）
+          </a>{' '}
+          から追加できます。
         </p>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-white/60">景品を選択</label>
@@ -259,7 +291,11 @@ export function ProductFormFields({
           </select>
           {(prizes ?? []).length === 0 && (
             <p className="text-xs text-yellow-400/70 mt-1">
-              ⚠️ 景品が登録されていません。先に「景品マスタ管理」から景品を追加してください。
+              ⚠️ 景品が登録されていません。先に{' '}
+              <a href="/admin/prize-master" target="_blank" rel="noreferrer" className="underline hover:text-yellow-300">
+                景品マスタ管理（別タブ）
+              </a>{' '}
+              から景品を追加してください。
             </p>
           )}
         </div>

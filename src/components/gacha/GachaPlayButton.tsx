@@ -2,16 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { Cd2GachaPlayer } from '@/components/gacha/Cd2GachaPlayer';
-import { EcardGachaPlayer } from '@/components/gacha/EcardGachaPlayer';
-import { ElevatorGachaPlayer } from '@/components/gacha/ElevatorGachaPlayer';
-import { KeibaGachaPlayer } from '@/components/gacha/KeibaGachaPlayer';
-import { RaiseGachaPlayer } from '@/components/gacha/RaiseGachaPlayer';
+// ── お蔵入りガチャ（2026-06 時点で本番非公開）──────────────────
+// 復活させる場合はこの import と、下部の gachaType 分岐、および
+// 管理画面 GACHA_TYPES（src/app/admin/products/new/page.tsx）を合わせて復活させること。
+// import { EcardGachaPlayer } from '@/components/gacha/EcardGachaPlayer';
+// import { ElevatorGachaPlayer } from '@/components/gacha/ElevatorGachaPlayer';
+// import { KeibaGachaPlayer } from '@/components/gacha/KeibaGachaPlayer';
+// import { RaiseGachaPlayer } from '@/components/gacha/RaiseGachaPlayer';
 
 type Props = {
   productId: string;
   productTitle: string;
   price: number;
   isLoggedIn: boolean;
+  userCoins?: number;
   gachaType?: string;
   prizeImageUrl?: string;
   prizeEmoji?: string;
@@ -21,7 +25,7 @@ type Props = {
 };
 
 export function GachaPlayButton({
-  productId, productTitle, price, isLoggedIn, gachaType = 'cd2',
+  productId, productTitle, price, isLoggedIn, userCoins = 0, gachaType = 'cd2',
   prizeImageUrl, prizeEmoji, prizeGradient, requiresAccessCode = false,
   bonusWinVideoUrl,
 }: Props) {
@@ -37,13 +41,16 @@ export function GachaPlayButton({
 
   if (!isLoggedIn) {
     return (
-      <a href="/register" className="block">
+      <a href="/login" className="block">
         <button className="btn-gold w-full py-4 rounded-2xl font-black text-base tracking-wider">
-          🎰 登録して無料でガチャを引く
+          🎰 ログインしてガチャを引く
         </button>
       </a>
     );
   }
+
+  // コイン不足判定（権利コード商品・無料商品は対象外）
+  const insufficient = !requiresAccessCode && price > 0 && userCoins < price;
 
   return (
     <>
@@ -63,6 +70,9 @@ export function GachaPlayButton({
                 value={accessCode}
                 onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                 placeholder="権利コードを入力"
+                aria-label="権利コード"
+                autoComplete="off"
+                autoCapitalize="characters"
                 maxLength={20}
                 className="flex-1 min-w-0 rounded-lg bg-white/10 border border-white/15 px-3 py-2.5 text-sm font-bold text-white placeholder-white/30 focus:outline-none focus:border-purple-400/70 uppercase tracking-wider"
               />
@@ -80,6 +90,20 @@ export function GachaPlayButton({
               </button>
             </div>
           </div>
+        </div>
+      ) : insufficient ? (
+        <div className="flex flex-col gap-2">
+          <div
+            className="rounded-2xl py-3 px-4 text-center text-sm font-bold"
+            style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.35)', color: '#fca5a5' }}
+          >
+            コインが不足しています（必要 🪙{price.toLocaleString()} / 所持 🪙{userCoins.toLocaleString()}）
+          </div>
+          <a href="/purchase" className="block">
+            <button className="btn-gold w-full py-4 rounded-2xl font-black text-base tracking-wider">
+              🪙 コインをチャージする
+            </button>
+          </a>
         </div>
       ) : (
         <button
@@ -132,6 +156,9 @@ export function GachaPlayButton({
           bonusWinVideoUrl={bonusWinVideoUrl}
         />
       )}
+      {/* ── お蔵入りガチャの分岐（2026-06 時点で本番非公開）──────────
+          復活させる場合は下のコメントを解除し、ファイル冒頭の import と
+          管理画面 GACHA_TYPES も合わせて復活させること。
       {gachaType === 'ecard' && (
         <EcardGachaPlayer
           open={open}
@@ -201,6 +228,7 @@ export function GachaPlayButton({
           accessCode={accessCode}
         />
       )}
+      ──────────────────────────────────────────────────────────── */}
     </>
   );
 }

@@ -8,7 +8,9 @@ import { grantCoins } from '@/lib/data/coins';
 const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
 function verifyLineSignature(body: string, signature: string | null, channelSecret?: string) {
-  if (!channelSecret) return true;
+  // secret 未設定時は署名を検証できない → fail-closed で拒否する
+  // (以前は true を返しており、無署名リクエストでコイン付与され得る穴があった)
+  if (!channelSecret) return false;
   if (!signature) return false;
   const hmac = crypto.createHmac('sha256', channelSecret);
   hmac.update(body);
@@ -30,12 +32,13 @@ async function handleFollowEvent(lineUserId: string) {
 
   const user = await findUserByLineId(supabase, lineUserId);
   if (!user) {
-    console.log('Follow event: no matching user for', lineUserId);
+    // LINE user ID（外部PII）はログに残さない
+    console.log('Follow event: no matching user');
     return;
   }
 
   if (user.line_friend_bonus_at) {
-    console.log('Follow event: bonus already granted for', lineUserId);
+    console.log('Follow event: bonus already granted');
     return;
   }
 

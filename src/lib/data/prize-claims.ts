@@ -137,15 +137,22 @@ export async function convertPrizeToCoins(
   const coins = (product?.exchange_coins as number) ?? 0;
   if (coins <= 0) return { ok: false };
 
-  const { error } = await client
+  // 原子的ステータス遷移: status='pending' のときだけ converted に更新する。
+  // 並行リクエストでは 1 件だけが更新に成功し、二重換金(コイン無限増殖)を防ぐ。
+  const { data: updated, error } = await client
     .from('prize_claims')
     .update({ status: 'converted', converted_at: new Date().toISOString() })
-    .eq('id', claimId);
+    .eq('id', claimId)
+    .eq('user_id', userId)
+    .eq('status', 'pending')
+    .select('id');
 
   if (error) {
     console.error('[prize-claims] convert failed:', error);
     return { ok: false };
   }
+  // 0 件 = 既に交換済み/別リクエストが先に処理 → コインは付与しない
+  if (!updated || updated.length === 0) return { ok: false };
 
   await grantCoins(client, userId, coins, `賞品交換: ${claim.prize_name}`);
   return { ok: true, coins };

@@ -40,6 +40,8 @@ export default async function MyPage() {
 
   // JST基準で本日のログインボーナス受取状況を判定
   const lastBonusAt = user.last_login_bonus_at as string | null;
+  // サーバーコンポーネントのリクエスト時刻評価のため Date.now() は意図的に使用
+  // eslint-disable-next-line react-hooks/purity
   const todayJst = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const lastBonusJst = lastBonusAt
     ? new Date(new Date(lastBonusAt).getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -200,7 +202,7 @@ export default async function MyPage() {
               <li key={t.id}
                 className={`flex items-center justify-between px-5 py-3 ${i !== 0 ? 'border-t border-white/5' : ''}`}>
                 <div>
-                  <p className="text-xs font-bold text-gray-300">{t.description as string}</p>
+                  <p className="text-xs font-bold text-gray-300">{(t.description as string).replace(/\s*\[kreward:[^\]]*\]/g, '')}</p>
                   <p className="text-[10px] text-gray-600 mt-0.5">
                     {new Date(t.created_at as string).toLocaleString('ja-JP')}
                   </p>

@@ -161,7 +161,10 @@ export async function updateProduct(id: string, formData: FormData) {
     prize_id:              formData.get('prize_id') ? String(formData.get('prize_id')) : null,
   }).eq('id', id);
 
-  if (updateError) console.error('[updateProduct]', updateError);
+  if (updateError) {
+    console.error('[updateProduct]', updateError);
+    redirect(`/admin/products/${id}?error=` + encodeURIComponent('保存に失敗しました: ' + updateError.message));
+  }
 
   revalidatePath('/admin/products');
   revalidatePath(`/admin/products/${id}`);
@@ -630,6 +633,47 @@ export async function unblockUser(userId: string) {
     .eq('id', userId);
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath('/admin/users');
+}
+
+// ── 手動コイン調整（付与/減算）─────────────────────────────────────
+export async function adjustUserCoins(userId: string, formData: FormData) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+
+  const amountRaw = Number(formData.get('amount'));
+  const direction = String(formData.get('direction') ?? 'grant'); // grant | deduct
+  const reason = String(formData.get('reason') ?? '').trim();
+
+  if (!Number.isInteger(amountRaw) || amountRaw <= 0) {
+    redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent('1以上の整数を入力してください。'));
+  }
+  if (!reason) {
+    redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent('調整理由を入力してください。'));
+  }
+
+  const signed = direction === 'deduct' ? -amountRaw : amountRaw;
+  const description = `管理者調整: ${reason}`;
+
+  const { error } = await supabase.rpc('admin_adjust_coins', {
+    p_user_id: userId,
+    p_amount: signed,
+    p_description: description,
+  });
+
+  if (error) {
+    const map: Record<string, string> = {
+      INSUFFICIENT_COINS: '残高が不足しているため減算できません。',
+      USER_NOT_FOUND: 'ユーザーが見つかりません。',
+      INVALID_AMOUNT: '金額が不正です。',
+      AMOUNT_TOO_LARGE: '金額が大きすぎます。',
+    };
+    const msg = map[error.message] ?? 'コイン調整に失敗しました。migration 042 が未適用の可能性があります。';
+    console.error('[adjustUserCoins]', error);
+    redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent(msg));
+  }
+
+  revalidatePath(`/admin/users/${userId}`);
+  redirect(`/admin/users/${userId}?coin_ok=` + encodeURIComponent(`${signed > 0 ? '+' : ''}${signed} コインを調整しました。`));
 }
 
 // ── 配達レコード作成 ─────────────────────────────────────────────

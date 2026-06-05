@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchBannerById } from '@/lib/data/banners';
@@ -27,9 +28,9 @@ export default async function AdminBannerEditPage({
           <button type="submit" className="btn-gold px-6 py-2 rounded-xl text-sm font-bold">
             更新
           </button>
-          <a href="/admin/banners" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
+          <Link href="/admin/banners" className="btn-outline px-6 py-2 rounded-xl text-sm font-bold">
             キャンセル
-          </a>
+          </Link>
         </div>
       </AdminForm>
     </div>

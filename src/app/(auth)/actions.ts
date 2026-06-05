@@ -1,15 +1,25 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { z } from 'zod';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { hashPassword, verifyPassword } from '@/lib/auth/password';
 import { findUserByEmail, createUser, touchLastLogin } from '@/lib/data/users';
 import { createSession, deleteSession } from '@/lib/data/session';
 import { grantCoins } from '@/lib/data/coins';
+import { checkRateLimit } from '@/lib/ratelimit-db';
 import { getOrCreateSessionToken, getSessionToken, clearSessionToken } from '@/lib/session/cookie';
 
 const REGISTER_BONUS_COINS = 300; // 新規登録ボーナス
+
+/** server action 用: リクエストヘッダーからクライアント IP を取得 */
+async function clientIp(): Promise<string> {
+  const h = await headers();
+  const xff = h.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0].trim();
+  return h.get('x-real-ip') ?? 'unknown';
+}
 
 const registerSchema = z
   .object({
@@ -46,6 +56,13 @@ export async function registerAction(formData: FormData) {
 
   const { email, password } = parsed.data;
   const supabase = getServiceSupabase();
+
+  // Sybil(大量アカウント作成)対策: 同一IPからの登録を1時間に5回までに制限
+  const ip = await clientIp();
+  const rl = await checkRateLimit(supabase, { key: `register:${ip}`, maxRequests: 5, windowSeconds: 3600 });
+  if (!rl.allowed) {
+    errorRedirect('/register', '登録の試行が多すぎます。しばらくしてからお試しください。');
+  }
 
   // 重複チェック
   const existing = await findUserByEmail(supabase, email);
@@ -91,6 +108,13 @@ export async function loginAction(formData: FormData) {
   const { email, password } = parsed.data;
   const supabase = getServiceSupabase();
 
+  // ブルートフォース対策: 同一IPからのログイン試行を1分に10回までに制限
+  const ip = await clientIp();
+  const rl = await checkRateLimit(supabase, { key: `login:${ip}`, maxRequests: 10, windowSeconds: 60 });
+  if (!rl.allowed) {
+    errorRedirect('/login', 'ログインの試行が多すぎます。しばらくしてからお試しください。');
+  }
+
   const user = await findUserByEmail(supabase, email);
   if (!user) {
     errorRedirect('/login', 'メールアドレスまたはパスワードが正しくありません。');
@@ -104,6 +128,11 @@ export async function loginAction(formData: FormData) {
   const ok = await verifyPassword(password, user.password_hash as string);
   if (!ok) {
     errorRedirect('/login', 'メールアドレスまたはパスワードが正しくありません。');
+  }
+
+  // ブロック済みユーザーはログイン不可
+  if (user.is_blocked === true) {
+    errorRedirect('/login', 'このアカウントはブロックされています。');
   }
 
   // セッション作成

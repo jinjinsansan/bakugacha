@@ -1,9 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import type { PrizeClaim } from '@/lib/data/prize-claims';
 
 export function PrizeBox() {
+  const router = useRouter();
   const [claims, setClaims] = useState<PrizeClaim[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -22,7 +25,7 @@ export function PrizeBox() {
   const handleDelivery = useCallback(async () => {
     if (!deliveryTarget || actionLoading) return;
     if (!form.recipientName || !form.postalCode || !form.address || !form.phone) {
-      alert('全ての項目を入力してください。');
+      toast.error('全ての項目を入力してください。');
       return;
     }
     setActionLoading(true);
@@ -39,10 +42,14 @@ export function PrizeBox() {
         ));
         setDeliveryTarget(null);
         setForm({ recipientName: '', postalCode: '', address: '', phone: '' });
+        toast.success('配送を申請しました。');
       } else {
-        alert(data.error || '配送申請に失敗しました。');
+        toast.error(data.error || '配送申請に失敗しました。');
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      toast.error('通信エラーが発生しました。時間をおいて再度お試しください。');
+    }
     finally { setActionLoading(false); }
   }, [deliveryTarget, form, actionLoading]);
 
@@ -59,13 +66,17 @@ export function PrizeBox() {
       if (data.success) {
         setClaims((prev) => prev.filter((c) => c.id !== claim.id));
         setConfirmExchange(null);
-        alert(`${data.coins}コインを獲得しました！`);
+        toast.success(`${data.coins}コインを獲得しました！`);
+        router.refresh(); // 残高表示を更新
       } else {
-        alert(data.error || '交換に失敗しました。');
+        toast.error(data.error || '交換に失敗しました。');
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      toast.error('通信エラーが発生しました。時間をおいて再度お試しください。');
+    }
     finally { setActionLoading(false); }
-  }, [actionLoading]);
+  }, [actionLoading, router]);
 
   if (loading) {
     return (

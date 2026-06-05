@@ -139,19 +139,25 @@ export async function requestRaiseBuyback(
 
   const buybackCode = `BG-${generateCode(8)}`;
 
-  const { error } = await client
+  // 原子的遷移: status='held' のときだけ buyback_pending に更新する。
+  // 連打/並行リクエストでの多重申請・コード再発行を防ぐ。
+  const { data: updated, error } = await client
     .from('raise_cards')
     .update({
       status: 'buyback_pending',
       buyback_code: buybackCode,
       buyback_requested_at: new Date().toISOString(),
     })
-    .eq('id', cardId);
+    .eq('id', cardId)
+    .eq('user_id', userId)
+    .eq('status', 'held')
+    .select('id');
 
   if (error) {
     console.error('[raise-cards] requestBuyback failed:', error);
     return null;
   }
+  if (!updated || updated.length === 0) return null;
 
   return { buybackCode };
 }
@@ -195,18 +201,25 @@ export async function convertRaiseToCoins(
   const def = getCardDef(card.character_id as RaiseCharacterId, card.card_id as string);
   const cardName = def?.name ?? card.card_id;
 
-  const { error } = await client
+  // 原子的ステータス遷移: status='held' のときだけ converted に更新する。
+  // 並行リクエストでは 1 件だけが更新に成功し、二重換金(コイン無限増殖)を防ぐ。
+  const { data: updated, error } = await client
     .from('raise_cards')
     .update({
       status: 'converted',
       converted_at: new Date().toISOString(),
     })
-    .eq('id', cardId);
+    .eq('id', cardId)
+    .eq('user_id', userId)
+    .eq('status', 'held')
+    .select('id');
 
   if (error) {
     console.error('[raise-cards] convertToCoins failed:', error);
     return false;
   }
+  // 0 件 = 既に変換済み/別リクエストが先に処理 → コインは付与しない
+  if (!updated || updated.length === 0) return false;
 
   await grantCoins(client, userId, coins, `カード交換: ${cardName}`);
   return true;
@@ -233,6 +246,9 @@ export async function verifyRaiseCard(
 
   if (!data) return { valid: false };
   if (data.buyback_code !== buybackCode) return { valid: false };
+  // 買取申請中(buyback_pending)のカードのみ有効。
+  // キャンセル済(held)・交換済(converted)・支払済のカードは無効にする。
+  if (data.status !== 'buyback_pending') return { valid: false, status: data.status };
 
   return {
     valid: true,

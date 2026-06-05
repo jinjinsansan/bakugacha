@@ -4,7 +4,14 @@ import { getUserFromSession } from '@/lib/data/session';
 import { uploadToR2 } from '@/lib/r2/upload';
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+// 許可する MIME と、保存時に使う拡張子の対応（クライアント由来の拡張子は信頼しない）
+const EXT_BY_TYPE: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+const ALLOWED_TYPES = Object.keys(EXT_BY_TYPE);
 const ALLOWED_PREFIXES = ['thumbnails', 'banners'];
 
 export async function POST(req: NextRequest) {
@@ -42,7 +49,8 @@ export async function POST(req: NextRequest) {
   }
 
   // ── アップロード ──
-  const ext = file.name.split('.').pop() ?? 'bin';
+  // 拡張子は検証済み MIME から決定する（.php/.html 等の混入を防ぐ）
+  const ext = EXT_BY_TYPE[file.type] ?? 'bin';
   const key = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   const url = await uploadToR2(buffer, key, file.type);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerEnv } from '@/lib/env';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { findUserByLineId, createLineUser, touchLastLoginFireAndForget } from '@/lib/data/users';
-import { createSession } from '@/lib/data/session';
+import { createSession, getUserFromSession } from '@/lib/data/session';
 import { getOrCreateSessionToken } from '@/lib/session/cookie';
 import { processReferral } from '@/lib/data/referral';
 import { grantCoins } from '@/lib/data/coins';
@@ -83,16 +83,23 @@ export async function GET(request: NextRequest) {
 
   const supabase = getServiceSupabase();
 
-  // state 検証 (必要カラムのみ取得)
+  // state 検証 (必要カラムのみ取得)。rewarded_at IS NULL = 未使用のみ受理(単回使用)。
   const { data: stateRow, error: stateError } = await supabase
     .from('line_link_states')
-    .select('id, user_id, referral_code')
+    .select('id, user_id, referral_code, created_at')
     .eq('state', state)
+    .is('rewarded_at', null)
     .maybeSingle();
 
   if (stateError || !stateRow) {
-    console.error('LINE state not found', stateError);
+    console.error('LINE state not found / already used', stateError);
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINE認証エラーが発生しました。')}`);
+  }
+
+  // state 失効チェック: 発行から1時間を超えた state は無効(リプレイ窓の縮小)
+  const stateAgeMs = Date.now() - new Date(stateRow.created_at as string).getTime();
+  if (stateAgeMs > 60 * 60 * 1000) {
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('LINE認証の有効期限が切れました。もう一度お試しください。')}`);
   }
 
   const { LINE_LOGIN_CHANNEL_ID, LINE_LOGIN_CHANNEL_SECRET } = getServerEnv();
@@ -116,6 +123,13 @@ export async function GET(request: NextRequest) {
 
     // ─── パターン3: ログイン済みユーザーが LINE 連携 ───
     if (existingUserId) {
+      // 連携フローを開始した本人のセッションであることを確認（強制連携CSRF対策）。
+      // 攻撃者が被害者の state を使って連携を完了させることを防ぐ。
+      const sessionUser = await getUserFromSession(supabase);
+      if (!sessionUser || sessionUser.id !== existingUserId) {
+        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('セッションが一致しません。もう一度お試しください。')}`);
+      }
+
       // 重複チェック（他ユーザーが同じLINEアカウントで連携済み）
       const { data: duplicate } = await supabase
         .from('line_link_states')
@@ -191,22 +205,25 @@ export async function GET(request: NextRequest) {
     const newUserId = newUser.id as string;
     const sessionToken = await getOrCreateSessionToken();
 
-    // セッション作成・state更新 + line_friend_bonus_at を並列実行
+    // セッション作成・state更新を並列実行
     await Promise.all([
       createSession(supabase, sessionToken, newUserId),
       supabase
         .from('line_link_states')
         .update({ user_id: newUser.id, line_user_id: lineUserId, rewarded_at: now })
         .eq('id', stateRow.id),
-      supabase
-        .from('app_users')
-        .update({ line_friend_bonus_at: now, updated_at: now })
-        .eq('id', newUserId)
-        .is('line_friend_bonus_at', null),
     ]);
 
-    // LINEフォローボーナス付与
-    if (LINE_REWARD_COINS > 0) {
+    // LINEフォローボーナス: line_friend_bonus_at を原子的にセットできた時のみ付与する。
+    // webhook 等が先に付与済みの場合は 0 件となり、二重付与を防ぐ。
+    const { data: bonusRows } = await supabase
+      .from('app_users')
+      .update({ line_friend_bonus_at: now, updated_at: now })
+      .eq('id', newUserId)
+      .is('line_friend_bonus_at', null)
+      .select('id');
+
+    if (LINE_REWARD_COINS > 0 && bonusRows && bonusRows.length > 0) {
       await grantCoins(supabase, newUserId, LINE_REWARD_COINS, `公式LINE友だち追加ボーナス (+${LINE_REWARD_COINS}コイン)`);
     }
 

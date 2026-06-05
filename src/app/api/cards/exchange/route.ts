@@ -3,6 +3,9 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { convertToCoins } from '@/lib/data/keiba-cards';
 import { convertRaiseToCoins, fetchExchangeRates } from '@/lib/data/raise-cards';
+import { checkRateLimit } from '@/lib/ratelimit-db';
+
+const VALID_CARD_TYPES = ['keiba', 'raise_kenta', 'raise_shoichi'] as const;
 
 export async function POST(request: Request) {
   try {
@@ -12,23 +15,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'ログインが必要です。' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { cardId, cardType } = body as { cardId: string; cardType: 'keiba' | 'raise_kenta' | 'raise_shoichi' };
+    // レート制限: ユーザー単位 60秒に30回
+    const rl = await checkRateLimit(supabase, { key: `card-exchange:${user.id}`, maxRequests: 30, windowSeconds: 60 });
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'リクエストが多すぎます。' }, { status: 429 });
+    }
 
-    if (!cardId || !cardType) {
+    const body = await request.json().catch(() => ({}));
+    const cardId = typeof body?.cardId === 'string' ? body.cardId : null;
+    const cardType = body?.cardType as 'keiba' | 'raise_kenta' | 'raise_shoichi';
+
+    if (!cardId || !cardType || !VALID_CARD_TYPES.includes(cardType)) {
       return NextResponse.json({ success: false, error: 'パラメータが不足しています。' }, { status: 400 });
     }
 
     // 交換レート取得
     const rates = await fetchExchangeRates(supabase, cardType);
 
-    // カードのcard_id/charaIdを取得してレートを確認
+    // カードのcard_id/charaIdを取得してレートを確認（自分のカードのみ: IDOR/列挙対策）
     let cardKey: string | null = null;
     if (cardType === 'keiba') {
-      const { data } = await supabase.from('keiba_cards').select('chara_id').eq('id', cardId).single();
+      const { data } = await supabase.from('keiba_cards').select('chara_id').eq('id', cardId).eq('user_id', user.id as string).single();
       cardKey = data?.chara_id as string | null;
     } else {
-      const { data } = await supabase.from('raise_cards').select('card_id').eq('id', cardId).single();
+      const { data } = await supabase.from('raise_cards').select('card_id').eq('id', cardId).eq('user_id', user.id as string).single();
       cardKey = data?.card_id as string | null;
     }
 
