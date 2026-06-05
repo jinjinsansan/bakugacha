@@ -9,8 +9,19 @@ export async function ProductGrid() {
     fetchRegularProducts(supabase),
   ]);
 
+  const isEmpty = featuredProducts.length === 0 && regularProducts.length === 0;
+
   return (
     <div className="max-w-[860px] w-full mx-auto px-2 sm:px-4">
+      {/* 空状態 */}
+      {isEmpty && (
+        <div className="py-16 text-center text-white/40 text-sm leading-relaxed">
+          現在販売中のガチャはありません。
+          <br />
+          新しいガチャの登場をお楽しみに！
+        </div>
+      )}
+
       {/* 登録後限定セクション */}
       {featuredProducts.length > 0 && (
         <div

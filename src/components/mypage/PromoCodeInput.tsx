@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { redeemPromoCode } from '@/app/(main)/mypage/actions';
 
 export function PromoCodeInput() {
   const [code, setCode] = useState('');
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +21,7 @@ export function PromoCodeInput() {
       if (result.ok) {
         toast.success(`+${result.amount} コインを受け取りました！`);
         setCode('');
+        router.refresh(); // 残高表示を更新
       } else {
         toast.error(result.error);
       }

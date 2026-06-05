@@ -14,54 +14,6 @@ export interface BannerData {
   link_url: string | null;
 }
 
-const FALLBACK_BANNERS: BannerData[] = [
-  {
-    id: 'b1',
-    image_url: 'https://picsum.photos/seed/banner-reg/800/200',
-    overlay: 'linear-gradient(90deg, rgba(5,5,20,0.92) 0%, rgba(5,5,20,0.7) 50%, rgba(5,5,20,0.3) 100%)',
-    tag: '🎉 新規登録キャンペーン',
-    title: '新規登録で無料ガチャGET！',
-    subtitle: '今だけ登録するだけで1回無料',
-    badge: 'TODAY ONLY', badge_color: '#c9a84c', link_url: null,
-  },
-  {
-    id: 'b2',
-    image_url: 'https://picsum.photos/seed/banner-poke/800/200',
-    overlay: 'linear-gradient(90deg, rgba(10,20,60,0.92) 0%, rgba(10,20,60,0.7) 50%, rgba(10,20,60,0.2) 100%)',
-    tag: '🎴 ポケモンカード',
-    title: '新弾入荷！SAR・SR大量封入',
-    subtitle: '引くなら今がチャンス',
-    badge: 'NEW', badge_color: '#4ade80', link_url: null,
-  },
-  {
-    id: 'b3',
-    image_url: 'https://picsum.photos/seed/banner-switch/800/200',
-    overlay: 'linear-gradient(90deg, rgba(60,5,5,0.92) 0%, rgba(60,5,5,0.7) 50%, rgba(60,5,5,0.2) 100%)',
-    tag: '🕹️ 任天堂スイッチ',
-    title: '任天堂スイッチが当たる！',
-    subtitle: '¥500から挑戦できる超お得ガチャ',
-    badge: '大人気', badge_color: '#f97316', link_url: null,
-  },
-  {
-    id: 'b4',
-    image_url: 'https://picsum.photos/seed/banner-amazon/800/200',
-    overlay: 'linear-gradient(90deg, rgba(5,15,50,0.92) 0%, rgba(5,15,50,0.7) 50%, rgba(5,15,50,0.2) 100%)',
-    tag: '🎁 Amazonギフト券',
-    title: '最大¥50,000分が当たる！',
-    subtitle: '毎日引けるチャンス',
-    badge: '毎日更新', badge_color: '#60a5fa', link_url: null,
-  },
-  {
-    id: 'b5',
-    image_url: 'https://picsum.photos/seed/banner-yugi/800/200',
-    overlay: 'linear-gradient(90deg, rgba(30,5,60,0.92) 0%, rgba(30,5,60,0.7) 50%, rgba(30,5,60,0.2) 100%)',
-    tag: '⚔️ 遊戯王',
-    title: '激レアカード確定パック登場！',
-    subtitle: 'ブラックマジシャン・青眼が確定入り',
-    badge: '限定', badge_color: '#e879f9', link_url: null,
-  },
-];
-
 interface CampaignBannerProps {
   banners?: BannerData[];
 }
@@ -83,13 +35,17 @@ function BannerShell({ href, children }: { href: string | null; children: React.
 }
 
 export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
-  const banners = propBanners && propBanners.length > 0 ? propBanners : FALLBACK_BANNERS;
+  const banners = propBanners ?? [];
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
+    if (banners.length === 0) return;
     const timer = setInterval(() => setCurrent((c) => (c + 1) % banners.length), 5000);
     return () => clearInterval(timer);
   }, [banners.length]);
+
+  // 表示するバナーが無い場合は何も描画しない（誤解を招くダミーは出さない）
+  if (banners.length === 0) return null;
 
   const b = banners[current];
 

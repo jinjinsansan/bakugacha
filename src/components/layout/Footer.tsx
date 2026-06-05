@@ -84,7 +84,7 @@ export async function Footer() {
         <div className="divider-gold mb-6" />
 
         <p className="text-[10px] text-center tracking-widest text-gray-600 uppercase">
-          © 2024 爆ガチャ — All Rights Reserved.
+          © {new Date().getFullYear()} 爆ガチャ — All Rights Reserved.
         </p>
       </div>
     </footer>

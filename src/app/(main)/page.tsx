@@ -2,8 +2,6 @@ export const dynamic = 'force-dynamic';
 
 import { HeroSection } from '@/components/home/HeroSection';
 import { CampaignBanner } from '@/components/home/CampaignBanner';
-import { CategoryTabs } from '@/components/home/CategoryTabs';
-import { FilterTags } from '@/components/home/FilterTags';
 import { ProductGrid } from '@/components/home/ProductGrid';
 import { NewsSection } from '@/components/home/NewsSection';
 import { WinnerFeed } from '@/components/home/WinnerFeed';
@@ -31,11 +29,9 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection />
-      <CampaignBanner banners={banners.length > 0 ? banners : undefined} />
-      <CategoryTabs />
+      <CampaignBanner banners={banners} />
       <div className="py-4 px-0">
         <section id="products" aria-label="ガチャ商品一覧">
-          <FilterTags />
           <ProductGrid />
         </section>
         <div className="divider-gold mx-4 my-2" />

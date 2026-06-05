@@ -531,10 +531,16 @@ function ActivePlayer({
               )}
             </div>
 
-            {/* NEXT/SKIPボタン（常時表示・枠外・固定） */}
+            {/* NEXT/SKIPボタン（常時表示・枠外・固定）。エラー時は閉じるボタンに切替（詰み防止） */}
             <div className="flex items-center justify-center gap-4 mt-6" style={{ flexShrink: 0 }}>
-              <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
-              <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+              {playState.status === 'error' ? (
+                <RoundMetalButton label="閉じる" subLabel="CLOSE" onClick={onClose} />
+              ) : (
+                <>
+                  <RoundMetalButton label="NEXT" subLabel="進む" onClick={goNext} disabled={nextDisabled} />
+                  <RoundMetalButton label="SKIP" subLabel="スキップ" onClick={() => setShowResult(true)} />
+                </>
+              )}
             </div>
           </>
         )}

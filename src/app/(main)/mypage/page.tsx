@@ -202,7 +202,7 @@ export default async function MyPage() {
               <li key={t.id}
                 className={`flex items-center justify-between px-5 py-3 ${i !== 0 ? 'border-t border-white/5' : ''}`}>
                 <div>
-                  <p className="text-xs font-bold text-gray-300">{t.description as string}</p>
+                  <p className="text-xs font-bold text-gray-300">{(t.description as string).replace(/\s*\[kreward:[^\]]*\]/g, '')}</p>
                   <p className="text-[10px] text-gray-600 mt-0.5">
                     {new Date(t.created_at as string).toLocaleString('ja-JP')}
                   </p>

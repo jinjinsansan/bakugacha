@@ -1,5 +1,6 @@
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { MaintenancePage } from '@/components/MaintenancePage';
 import { fetchCachedAppSettings } from '@/lib/data/app-settings';
 import { isCurrentUserAdmin } from '@/lib/auth/admin';
@@ -45,6 +46,7 @@ export default async function MainLayout({
       </div>
       <main>{children}</main>
       <Footer />
+      <BottomNav />
     </div>
   );
 }

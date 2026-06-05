@@ -15,6 +15,7 @@ type Props = {
   productTitle: string;
   price: number;
   isLoggedIn: boolean;
+  userCoins?: number;
   gachaType?: string;
   prizeImageUrl?: string;
   prizeEmoji?: string;
@@ -24,7 +25,7 @@ type Props = {
 };
 
 export function GachaPlayButton({
-  productId, productTitle, price, isLoggedIn, gachaType = 'cd2',
+  productId, productTitle, price, isLoggedIn, userCoins = 0, gachaType = 'cd2',
   prizeImageUrl, prizeEmoji, prizeGradient, requiresAccessCode = false,
   bonusWinVideoUrl,
 }: Props) {
@@ -40,13 +41,16 @@ export function GachaPlayButton({
 
   if (!isLoggedIn) {
     return (
-      <a href="/register" className="block">
+      <a href="/login" className="block">
         <button className="btn-gold w-full py-4 rounded-2xl font-black text-base tracking-wider">
-          🎰 登録して無料でガチャを引く
+          🎰 ログインしてガチャを引く
         </button>
       </a>
     );
   }
+
+  // コイン不足判定（権利コード商品・無料商品は対象外）
+  const insufficient = !requiresAccessCode && price > 0 && userCoins < price;
 
   return (
     <>
@@ -66,6 +70,9 @@ export function GachaPlayButton({
                 value={accessCode}
                 onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                 placeholder="権利コードを入力"
+                aria-label="権利コード"
+                autoComplete="off"
+                autoCapitalize="characters"
                 maxLength={20}
                 className="flex-1 min-w-0 rounded-lg bg-white/10 border border-white/15 px-3 py-2.5 text-sm font-bold text-white placeholder-white/30 focus:outline-none focus:border-purple-400/70 uppercase tracking-wider"
               />
@@ -83,6 +90,20 @@ export function GachaPlayButton({
               </button>
             </div>
           </div>
+        </div>
+      ) : insufficient ? (
+        <div className="flex flex-col gap-2">
+          <div
+            className="rounded-2xl py-3 px-4 text-center text-sm font-bold"
+            style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.35)', color: '#fca5a5' }}
+          >
+            コインが不足しています（必要 🪙{price.toLocaleString()} / 所持 🪙{userCoins.toLocaleString()}）
+          </div>
+          <a href="/purchase" className="block">
+            <button className="btn-gold w-full py-4 rounded-2xl font-black text-base tracking-wider">
+              🪙 コインをチャージする
+            </button>
+          </a>
         </div>
       ) : (
         <button

@@ -125,18 +125,9 @@ export function RaiseCardCollection() {
     finally { setActionLoading(false); }
   }, [actionLoading]);
 
-  if (loading) {
-    return (
-      <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#0a0a1c', border: '1px solid rgba(123,104,238,0.25)' }}>
-        <div className="px-5 py-4 border-b border-white/5">
-          <h2 className="text-sm font-black text-white tracking-wider">🔮 来世ガチャ カードコレクション</h2>
-        </div>
-        <div className="px-5 py-8 text-center text-gray-600 text-sm">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white mx-auto" />
-        </div>
-      </div>
-    );
-  }
+  // 休眠ガチャの空セクションを出さない: 読み込み中・カード0枚のときは何も表示しない。
+  if (loading) return null;
+  if (cards.length === 0) return null;
 
   const kentaCards = cards.filter((c) => c.characterId === 'kenta');
   const shoichiCards = cards.filter((c) => c.characterId === 'shoichi');
