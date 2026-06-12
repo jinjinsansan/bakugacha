@@ -20,6 +20,7 @@ import { upsertRaiseSettings } from '@/lib/data/raise-gacha';
 import { upsertAppSettings } from '@/lib/data/app-settings';
 import { upsertExchangeRates } from '@/lib/data/raise-cards';
 import { updateClaimStatus } from '@/lib/data/prize-claims';
+import { logAdminAction } from '@/lib/data/audit-log';
 
 // ── 商品作成 ──────────────────────────────────────────────────
 export async function createProduct(formData: FormData) {
@@ -38,6 +39,10 @@ export async function createProduct(formData: FormData) {
   const stockRemaining = stockRemainingRaw != null && String(stockRemainingRaw).trim() !== ''
     ? Number(stockRemainingRaw)
     : stockTotal;
+
+  if (stockRemaining > stockTotal) {
+    redirect('/admin/products/new?error=' + encodeURIComponent('在庫残数が在庫総数を超えています'));
+  }
 
   // 在庫が 0 以下なら自動的に sold-out (終了ガチャ) 扱いにする
   const requestedStatus = String(formData.get('status') ?? 'active');
@@ -109,6 +114,10 @@ export async function updateProduct(id: string, formData: FormData) {
   const stockRemaining = stockRemainingRaw != null && String(stockRemainingRaw).trim() !== ''
     ? Number(stockRemainingRaw)
     : stockTotal;
+
+  if (stockRemaining > stockTotal) {
+    redirect(`/admin/products/${id}?error=` + encodeURIComponent('在庫残数が在庫総数を超えています'));
+  }
 
   // 在庫が 0 以下なら自動的に sold-out (終了ガチャ) 扱いにする
   const requestedStatus = String(formData.get('status') ?? 'active');
@@ -182,7 +191,7 @@ export async function updateProduct(id: string, formData: FormData) {
 //   gacha_results.product_id       → gacha_products(id)
 //   keiba_cards / raise_cards      → gacha_results(id)  ※ ON DELETE SET NULL (015)
 export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: string }> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
 
   // 1) この商品に紐づく gacha_results の id を取得
@@ -243,6 +252,13 @@ export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: 
     return { ok: false, error: `削除に失敗: ${error.message}` };
   }
 
+  await logAdminAction(supabase, admin, {
+    action: 'delete_product',
+    targetType: 'product',
+    targetId: id,
+    details: { deletedResults: resultIds.length },
+  });
+
   revalidatePath('/admin/products');
   return { ok: true };
 }
@@ -295,9 +311,10 @@ export async function updateBanner(id: string, formData: FormData) {
 
 // ── バナー削除 ──────────────────────────────────────────────────
 export async function deleteBanner(id: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
   await supabase.from('campaign_banners').delete().eq('id', id);
+  await logAdminAction(supabase, admin, { action: 'delete_banner', targetType: 'banner', targetId: id });
   revalidatePath('/admin/banners');
 }
 
@@ -562,7 +579,7 @@ export async function updateWinnerSettings(formData: FormData) {
 
 // ── 当選品ステータス更新 ────────────────────────────────────────
 export async function updatePrizeClaim(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
 
   const claimId = String(formData.get('claim_id') ?? '');
@@ -583,6 +600,14 @@ export async function updatePrizeClaim(formData: FormData) {
     redirect('/admin/prizes?error=1');
   }
 
+  await logAdminAction(supabase, admin, {
+    action: 'update_prize_claim',
+    targetType: 'prize_claim',
+    targetId: claimId,
+    // ギフトコードそのものは監査ログに残さない (設定有無のみ記録)
+    details: { status, trackingNumber, giftCodeSet: !!giftCode },
+  });
+
   revalidatePath('/admin/prizes');
   const filterParam = currentFilter && currentFilter !== 'all' ? `&status=${currentFilter}` : '';
   redirect(`/admin/prizes?saved=1${filterParam}`);
@@ -591,7 +616,7 @@ export async function updatePrizeClaim(formData: FormData) {
 /** クライアントコンポーネント用: redirectなしで更新 */
 export async function updatePrizeClaimInline(formData: FormData) {
   'use server';
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
 
   const claimId = String(formData.get('claim_id') ?? '');
@@ -606,49 +631,62 @@ export async function updatePrizeClaimInline(formData: FormData) {
     await updateClaimStatus(supabase, claimId, status, { trackingNumber, giftCode, notes });
   } catch (err) {
     console.error('[admin] updatePrizeClaimInline failed:', err);
+    return;
   }
+
+  await logAdminAction(supabase, admin, {
+    action: 'update_prize_claim',
+    targetType: 'prize_claim',
+    targetId: claimId,
+    details: { status, trackingNumber, giftCodeSet: !!giftCode },
+  });
 
   revalidatePath('/admin/prizes');
 }
 
 // ── ユーザーブロック ─────────────────────────────────────────────
 export async function blockUser(userId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
   await supabase
     .from('app_users')
     .update({ is_blocked: true, blocked_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq('id', userId);
+  await logAdminAction(supabase, admin, { action: 'block_user', targetType: 'user', targetId: userId });
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath('/admin/users');
 }
 
 // ── ユーザーブロック解除 ─────────────────────────────────────────
 export async function unblockUser(userId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
   await supabase
     .from('app_users')
     .update({ is_blocked: false, blocked_at: null, updated_at: new Date().toISOString() })
     .eq('id', userId);
+  await logAdminAction(supabase, admin, { action: 'unblock_user', targetType: 'user', targetId: userId });
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath('/admin/users');
 }
 
 // ── 手動コイン調整（付与/減算）─────────────────────────────────────
+// admin_adjust_coins RPC (migration 042) 側の上限と一致させる
+const MAX_COIN_ADJUST = 1_000_000;
+
 export async function adjustUserCoins(userId: string, formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
 
   const amountRaw = Number(formData.get('amount'));
   const direction = String(formData.get('direction') ?? 'grant'); // grant | deduct
   const reason = String(formData.get('reason') ?? '').trim();
 
-  if (!Number.isInteger(amountRaw) || amountRaw <= 0) {
-    redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent('1以上の整数を入力してください。'));
+  if (!Number.isInteger(amountRaw) || amountRaw <= 0 || amountRaw > MAX_COIN_ADJUST) {
+    redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent(`1〜${MAX_COIN_ADJUST.toLocaleString()}の整数を入力してください。`));
   }
-  if (!reason) {
-    redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent('調整理由を入力してください。'));
+  if (!reason || reason.length > 100) {
+    redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent('調整理由は1〜100文字で入力してください。'));
   }
 
   const signed = direction === 'deduct' ? -amountRaw : amountRaw;
@@ -671,6 +709,13 @@ export async function adjustUserCoins(userId: string, formData: FormData) {
     console.error('[adjustUserCoins]', error);
     redirect(`/admin/users/${userId}?coin_error=` + encodeURIComponent(msg));
   }
+
+  await logAdminAction(supabase, admin, {
+    action: 'adjust_coins',
+    targetType: 'user',
+    targetId: userId,
+    details: { amount: signed, reason },
+  });
 
   revalidatePath(`/admin/users/${userId}`);
   redirect(`/admin/users/${userId}?coin_ok=` + encodeURIComponent(`${signed > 0 ? '+' : ''}${signed} コインを調整しました。`));
@@ -733,12 +778,13 @@ export async function updateAppSettings(formData: FormData) {
 
 // ── メンテナンスモード設定更新 ───────────────────────────────────
 export async function updateMaintenanceSettings(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
+  const maintenanceMode = formData.get('maintenance_mode') === 'on';
 
   try {
     await upsertAppSettings(supabase, {
-      maintenanceMode:    formData.get('maintenance_mode') === 'on',
+      maintenanceMode,
       maintenanceTitle:   String(formData.get('maintenance_title') ?? '').trim() || 'ただいまメンテナンス中です',
       maintenanceMessage: String(formData.get('maintenance_message') ?? '').trim()
         || 'より良いサービスをご提供するため、ただいまメンテナンスを実施しております。ご不便をおかけして申し訳ございません。',
@@ -747,6 +793,12 @@ export async function updateMaintenanceSettings(formData: FormData) {
     console.error('[admin] updateMaintenanceSettings failed:', err);
     redirect('/admin/settings?error=1');
   }
+
+  await logAdminAction(supabase, admin, {
+    action: 'update_maintenance_mode',
+    targetType: 'settings',
+    details: { maintenanceMode },
+  });
 
   revalidatePath('/admin/settings');
   revalidatePath('/', 'layout');
@@ -809,8 +861,9 @@ export async function togglePromoCode(id: string, isActive: boolean) {
 
 // ── プロモコード削除 ────────────────────────────────────────────
 export async function deletePromoCode(id: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
   await supabase.from('promo_codes').delete().eq('id', id);
+  await logAdminAction(supabase, admin, { action: 'delete_promo_code', targetType: 'promo_code', targetId: id });
   revalidatePath('/admin/promo-codes');
 }

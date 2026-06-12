@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { KeibaDigitalCard } from '@/components/gacha/keiba/KeibaDigitalCard';
-import { KeibaCardReveal } from '@/components/gacha/keiba/KeibaCardReveal';
 import { ALL_KEIBA_CARDS } from '@/lib/keiba-gacha/cards';
 import type { KeibaCardIssued } from '@/lib/keiba-gacha/types';
 

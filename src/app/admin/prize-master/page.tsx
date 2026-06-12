@@ -1,4 +1,6 @@
 import { getServiceSupabase } from '@/lib/supabase/service';
+import { requireAdmin } from '@/lib/auth/admin';
+import { logAdminAction } from '@/lib/data/audit-log';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -12,23 +14,40 @@ export const PRIZE_TYPES = [
 
 async function createPrize(formData: FormData) {
   'use server';
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
-  const name        = formData.get('name') as string;
-  const type        = formData.get('type') as string;
+  const name        = String(formData.get('name') ?? '').trim();
+  const type        = String(formData.get('type') ?? '');
   const value       = formData.get('value') ? Number(formData.get('value')) : null;
   const description = formData.get('description') as string || null;
   const image_url   = formData.get('image_url') as string || null;
 
-  await supabase.from('prizes').insert({ name, type, value, description, image_url });
+  if (!name || !PRIZE_TYPES.some((t) => t.value === type)) {
+    redirect('/admin/prize-master?error=1');
+  }
+
+  const { data } = await supabase
+    .from('prizes')
+    .insert({ name, type, value, description, image_url })
+    .select('id')
+    .single();
+  await logAdminAction(supabase, admin, {
+    action: 'create_prize',
+    targetType: 'prize',
+    targetId: data?.id ? String(data.id) : undefined,
+    details: { name, type, value },
+  });
   revalidatePath('/admin/prize-master');
   redirect('/admin/prize-master?saved=1');
 }
 
 async function deletePrize(formData: FormData) {
   'use server';
+  const admin = await requireAdmin();
   const supabase = getServiceSupabase();
   const id = formData.get('id') as string;
   await supabase.from('prizes').delete().eq('id', id);
+  await logAdminAction(supabase, admin, { action: 'delete_prize', targetType: 'prize', targetId: id });
   revalidatePath('/admin/prize-master');
   redirect('/admin/prize-master');
 }

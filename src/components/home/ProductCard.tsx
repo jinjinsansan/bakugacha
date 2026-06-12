@@ -25,7 +25,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const availStat = product.availabilityStatus ?? 'open';
   const isBeforeOpen = availStat === 'before_open';
   const isAfterClose = availStat === 'after_close';
-  const isUnavailable = isBeforeOpen || isAfterClose;
   const cat = product.category ? categoryStyle[product.category] : null;
 
   return (
