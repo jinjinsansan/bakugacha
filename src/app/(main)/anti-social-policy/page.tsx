@@ -3,7 +3,7 @@ import { BRAND } from '@/lib/brand';
 export default function AntiSocialPolicyPage() {
   return (
     <main className="max-w-[860px] mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-white mb-8">反社会的勢力に対する基本方針</h1>
+      <h1 className="headline-serif text-2xl mb-8">反社会的勢力に対する基本方針</h1>
       <div className="card-premium p-6 text-sm text-white/70 leading-relaxed space-y-4">
         <p>{BRAND.name}（以下「当社」）は、反社会的勢力との関係を一切遮断し、健全な事業運営を行うため、以下の基本方針を定めます。</p>
         <ul className="list-disc list-inside space-y-2 pl-2">

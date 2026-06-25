@@ -66,7 +66,7 @@ export default async function LoginPage({ searchParams }: Props) {
         <p className="text-[10px] font-bold tracking-[0.4em] text-gold uppercase mb-2">
           Welcome
         </p>
-        <h1 className="text-2xl font-black text-white">ログイン / 新規登録</h1>
+        <h1 className="headline-serif text-2xl">ログイン / 新規登録</h1>
         <p className="text-xs text-gray-500 mt-2">
           LINEアカウントで <span className="text-gold font-bold">300コイン</span> プレゼント！
         </p>

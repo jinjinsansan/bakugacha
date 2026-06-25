@@ -20,7 +20,7 @@ export default function Error({
       style={{ background: 'var(--bg-base)' }}
     >
       <p className="text-6xl mb-4 select-none">⚠️</p>
-      <h1 className="text-2xl font-black text-white mb-2">エラーが発生しました</h1>
+      <h1 className="headline-serif text-2xl mb-2">エラーが発生しました</h1>
       <p className="text-sm text-white/60 mb-8">
         申し訳ございません。問題が発生しました。しばらくしてからもう一度お試しください。
       </p>

@@ -1,7 +1,7 @@
 export default function TradelawPage() {
   return (
     <main className="max-w-[860px] mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-white mb-8">特定商取引法に基づく表記</h1>
+      <h1 className="headline-serif text-2xl mb-8">特定商取引法に基づく表記</h1>
       <div className="card-premium p-6 text-sm text-white/70 leading-relaxed">
         <table className="w-full">
           <tbody className="divide-y divide-white/10">

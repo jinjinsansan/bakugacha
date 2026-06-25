@@ -54,7 +54,7 @@ export default async function MyPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <p className="text-[10px] font-bold tracking-[0.4em] text-gold uppercase mb-1">My Page</p>
-          <h1 className="text-2xl font-black text-white">マイページ</h1>
+          <h1 className="headline-serif text-2xl">マイページ</h1>
         </div>
         <form action={logoutAction}>
           <button type="submit" className="btn-outline text-xs px-4 py-2 rounded-full">

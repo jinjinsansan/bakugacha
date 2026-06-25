@@ -51,7 +51,7 @@ export default async function PurchasePage() {
       {/* ヘッダー */}
       <div className="mb-8 text-center">
         <p className="text-[10px] font-bold tracking-[0.4em] text-gold uppercase mb-2">Coin Shop</p>
-        <h1 className="text-2xl font-black text-white">コインを購入</h1>
+        <h1 className="headline-serif text-2xl">コインを購入</h1>
         <p className="text-sm text-gray-500 mt-2">
           現在の残高：
           <span className="text-gold font-black ml-1">
