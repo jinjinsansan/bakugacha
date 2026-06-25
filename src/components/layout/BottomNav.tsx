@@ -26,7 +26,7 @@ export function BottomNav() {
       className="md:hidden fixed bottom-0 inset-x-0 z-50 backdrop-blur-sm"
       style={{
         background: 'rgba(12,7,24,0.96)',
-        borderTop: '1px solid rgba(255,61,166,0.22)',
+        borderTop: '1px solid rgba(255,46,154,0.22)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
       aria-label="メインナビゲーション"
@@ -39,7 +39,7 @@ export function BottomNav() {
               key={href}
               href={href}
               className="flex flex-col items-center justify-center gap-1 py-2.5"
-              style={{ color: active ? 'var(--magenta-light, #ff6ec0)' : '#8a80a4' }}
+              style={{ color: active ? 'var(--magenta-light, #ff72bf)' : '#7c84a3' }}
               aria-current={active ? 'page' : undefined}
             >
               <Icon size={20} strokeWidth={active ? 2.4 : 1.8} />

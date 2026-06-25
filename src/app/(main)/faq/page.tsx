@@ -10,7 +10,7 @@ export default function FaqPage() {
 
   return (
     <main className="max-w-[860px] mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-white mb-8">よくある質問</h1>
+      <h1 className="headline-serif text-2xl mb-8">よくある質問</h1>
       <div className="flex flex-col gap-3">
         {faqs.map((faq, i) => (
           <div key={i} className="card-premium p-5">

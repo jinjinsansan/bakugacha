@@ -54,7 +54,7 @@ export default async function MyPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <p className="text-[10px] font-bold tracking-[0.4em] text-gold uppercase mb-1">My Page</p>
-          <h1 className="text-2xl font-black text-white">マイページ</h1>
+          <h1 className="headline-serif text-2xl">マイページ</h1>
         </div>
         <form action={logoutAction}>
           <button type="submit" className="btn-outline text-xs px-4 py-2 rounded-full">
@@ -67,7 +67,7 @@ export default async function MyPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {/* コイン残高 */}
         <div className="rounded-2xl p-5"
-          style={{ background: '#160e26', border: '1px solid rgba(255,61,166,0.18)' }}>
+          style={{ background: '#0d1020', border: '1px solid rgba(255,46,154,0.18)' }}>
           <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-2">コイン残高</p>
           <div className="flex items-center gap-2">
             <span className="text-2xl">🪙</span>
@@ -84,7 +84,7 @@ export default async function MyPage() {
 
         {/* メールアドレス */}
         <div className="rounded-2xl p-5"
-          style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.07)' }}>
+          style={{ background: '#0d1020', border: '1px solid rgba(255,255,255,0.07)' }}>
           <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-2">アカウント</p>
           <p className="text-sm font-bold text-white truncate">{user.email as string}</p>
           <p className="text-xs text-gray-600 mt-1">
@@ -99,7 +99,7 @@ export default async function MyPage() {
 
         {/* ガチャ統計 */}
         <div className="rounded-2xl p-5"
-          style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.07)' }}>
+          style={{ background: '#0d1020', border: '1px solid rgba(255,255,255,0.07)' }}>
           <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-2">ガチャ統計</p>
           <p className="text-3xl font-black text-white">{(history ?? []).length}</p>
           <p className="text-xs text-gray-500">総プレイ数</p>
@@ -119,7 +119,7 @@ export default async function MyPage() {
       {/* 友達紹介 */}
       {user.referral_code && (
         <div className="rounded-2xl p-5 mb-6"
-          style={{ background: '#160e26', border: '1px solid rgba(255,61,166,0.18)' }}>
+          style={{ background: '#0d1020', border: '1px solid rgba(255,46,154,0.18)' }}>
           <CopyReferralLink
             referralCode={user.referral_code as string}
             bonusAmount={appSettings.referralBonusReferrer}
@@ -129,7 +129,7 @@ export default async function MyPage() {
 
       {/* LINE連携ボーナス */}
       <div className="rounded-2xl p-5 mb-6"
-        style={{ background: '#160e26', border: '1px solid rgba(6,199,85,0.25)' }}>
+        style={{ background: '#0d1020', border: '1px solid rgba(6,199,85,0.25)' }}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-1">LINE特典</p>
@@ -156,7 +156,7 @@ export default async function MyPage() {
 
       {/* ガチャ履歴 */}
       <div className="rounded-2xl overflow-hidden mb-6"
-        style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.07)' }}>
+        style={{ background: '#0d1020', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">🎰 ガチャ履歴</h2>
         </div>
@@ -190,7 +190,7 @@ export default async function MyPage() {
 
       {/* コイン取引履歴 */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.07)' }}>
+        style={{ background: '#0d1020', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">🪙 コイン履歴</h2>
         </div>

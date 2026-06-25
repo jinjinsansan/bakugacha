@@ -28,13 +28,13 @@ export default async function MainLayout({
   }
 
   return (
-    <div style={{ background: '#0a0613', minHeight: '100vh' }}>
+    <div style={{ background: '#06070f', minHeight: '100vh' }}>
       {settings.maintenanceMode && isAdmin && (
         <div
           className="sticky top-0 z-[60] text-center text-xs font-bold py-2 px-4"
           style={{
-            background: 'linear-gradient(90deg, #ffcb45, #ffe08a, #ffcb45)',
-            color: '#3a2a06',
+            background: 'linear-gradient(90deg, #d8b15a, #f0d68a, #d8b15a)',
+            color: '#2a1e06',
             borderBottom: '1px solid rgba(0,0,0,0.25)',
           }}
         >

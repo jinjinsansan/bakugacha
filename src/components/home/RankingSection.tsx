@@ -48,9 +48,9 @@ export async function RankingSection() {
                 style={
                   i === 0
                     ? {
-                        background: 'linear-gradient(135deg, rgba(255,203,69,0.14), rgba(255,203,69,0.04))',
-                        border: '1px solid rgba(255,203,69,0.45)',
-                        boxShadow: '0 0 18px rgba(255,203,69,0.18)',
+                        background: 'linear-gradient(135deg, rgba(216,177,90,0.14), rgba(216,177,90,0.04))',
+                        border: '1px solid rgba(216,177,90,0.45)',
+                        boxShadow: '0 0 18px rgba(216,177,90,0.18)',
                       }
                     : { background: 'rgba(255,255,255,0.05)' }
                 }

@@ -100,10 +100,10 @@ export default async function GachaDetailPage({ params }: Props) {
                   width: `${stockPct}%`,
                   // 残量で色分け（少=マゼンタ警告 / 中=ゴールド / 多=シアン）
                   background: (stockPct ?? 0) > 80
-                    ? 'linear-gradient(90deg, #c026d3, #ff3da6)'
+                    ? 'linear-gradient(90deg, #c01e6e, #ff2e9a)'
                     : (stockPct ?? 0) > 50
-                    ? 'linear-gradient(90deg, #d9a520, #ffcb45)'
-                    : 'linear-gradient(90deg, #22d3ee, #7df0ff)',
+                    ? 'linear-gradient(90deg, #a8801f, #d8b15a)'
+                    : 'linear-gradient(90deg, #38d2ff, #8fe8ff)',
                 }}
               />
             </div>

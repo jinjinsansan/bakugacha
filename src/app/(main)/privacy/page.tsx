@@ -1,7 +1,7 @@
 export default function PrivacyPage() {
   return (
     <main className="max-w-[860px] mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-white mb-8">プライバシーポリシー</h1>
+      <h1 className="headline-serif text-2xl mb-8">プライバシーポリシー</h1>
       <div className="card-premium p-6 text-sm text-white/70 leading-relaxed space-y-6">
         <section>
           <h2 className="text-base font-bold text-white mb-2">1. 収集する情報</h2>

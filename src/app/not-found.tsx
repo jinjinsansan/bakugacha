@@ -7,7 +7,7 @@ export default function NotFound() {
       style={{ background: 'var(--bg-base)' }}
     >
       <p className="text-6xl mb-4 select-none">🎰</p>
-      <h1 className="text-2xl font-black text-white mb-2">ページが見つかりません</h1>
+      <h1 className="headline-serif text-2xl mb-2">ページが見つかりません</h1>
       <p className="text-sm text-white/60 mb-8">
         お探しのページは移動または削除された可能性があります。
       </p>

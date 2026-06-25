@@ -3,7 +3,7 @@ import { BRAND } from '@/lib/brand';
 export default function ContactPage() {
   return (
     <main className="max-w-[860px] mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-white mb-8">お問い合わせ</h1>
+      <h1 className="headline-serif text-2xl mb-8">お問い合わせ</h1>
       <div className="card-premium p-6 text-sm text-white/70 leading-relaxed space-y-6">
         <p>{BRAND.name}に関するご質問・ご要望・不具合のご報告は、以下の方法でお問い合わせください。</p>
 

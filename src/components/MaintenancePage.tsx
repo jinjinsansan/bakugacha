@@ -32,9 +32,9 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
           <div
             className="relative w-20 h-20 flex items-center justify-center rounded-full"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,61,166,0.25), rgba(255,61,166,0.05))',
-              border: '1px solid rgba(255,61,166,0.4)',
-              boxShadow: '0 0 24px rgba(255,61,166,0.2), inset 0 0 12px rgba(255,61,166,0.15)',
+              background: 'linear-gradient(135deg, rgba(255,46,154,0.25), rgba(255,46,154,0.05))',
+              border: '1px solid rgba(255,46,154,0.4)',
+              boxShadow: '0 0 24px rgba(255,46,154,0.2), inset 0 0 12px rgba(255,46,154,0.15)',
             }}
           >
             <svg
@@ -52,9 +52,9 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
           <span
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase"
             style={{
-              background: 'rgba(255,61,166,0.12)',
+              background: 'rgba(255,46,154,0.12)',
               color: 'var(--gold-light)',
-              border: '1px solid rgba(255,61,166,0.35)',
+              border: '1px solid rgba(255,46,154,0.35)',
             }}
           >
             <span
@@ -73,7 +73,7 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
           <div
             className="w-24 h-[1px]"
             style={{
-              background: 'linear-gradient(90deg, transparent, rgba(255,61,166,0.6), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(255,46,154,0.6), transparent)',
             }}
           />
 

@@ -137,11 +137,11 @@ export function RaiseCardCollection() {
 
   return (
     <>
-      <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#160e26', border: '1px solid rgba(168,85,247,0.25)' }}>
+      <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#0d1020', border: '1px solid rgba(154,123,255,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">
             🔮 来世ガチャ カードコレクション
-            {cards.length > 0 && <span className="ml-2 text-xs font-bold" style={{ color: '#c084fc' }}>{cards.length}枚</span>}
+            {cards.length > 0 && <span className="ml-2 text-xs font-bold" style={{ color: '#c0a8ff' }}>{cards.length}枚</span>}
           </h2>
         </div>
 
@@ -154,11 +154,11 @@ export function RaiseCardCollection() {
             <button
               key={tab.id}
               className={`flex-1 py-3 text-xs font-bold tracking-wider transition-colors ${activeTab === tab.id ? 'text-white border-b-2' : 'text-white/40 hover:text-white/60'}`}
-              style={activeTab === tab.id ? { borderColor: '#c084fc' } : undefined}
+              style={activeTab === tab.id ? { borderColor: '#c0a8ff' } : undefined}
               onClick={() => { setActiveTab(tab.id); setExpandedCardId(null); }}
             >
               {tab.label}
-              {tab.count > 0 && <span className="ml-1.5 text-[10px]" style={{ color: '#c084fc' }}>{tab.count}</span>}
+              {tab.count > 0 && <span className="ml-1.5 text-[10px]" style={{ color: '#c0a8ff' }}>{tab.count}</span>}
             </button>
           ))}
         </div>
@@ -182,7 +182,7 @@ export function RaiseCardCollection() {
                         }} />
                     </div>
                     <div className="absolute -top-2 -right-2 z-10 flex items-center justify-center rounded-full text-xs font-black min-w-[28px] h-7 px-1.5"
-                      style={{ background: isHazure ? 'linear-gradient(135deg, #555, #333)' : 'linear-gradient(135deg, #7b68ee, #5a4fcf)', color: isHazure ? '#aaa' : '#fff', boxShadow: isHazure ? '0 2px 8px rgba(0,0,0,0.5)' : '0 2px 8px rgba(168,85,247,0.4)' }}>
+                      style={{ background: isHazure ? 'linear-gradient(135deg, #555, #333)' : 'linear-gradient(135deg, #7b68ee, #5a4fcf)', color: isHazure ? '#aaa' : '#fff', boxShadow: isHazure ? '0 2px 8px rgba(0,0,0,0.5)' : '0 2px 8px rgba(154,123,255,0.4)' }}>
                       ×{group.cards.length}
                     </div>
                     {hasPending && (
@@ -191,7 +191,7 @@ export function RaiseCardCollection() {
                   </div>
                   <p className={`text-[10px] font-bold tracking-wider ${isHazure ? 'text-white/30' : 'text-white/60'}`}>
                     {def?.name ?? group.cardId}
-                    {def && !isHazure && <span className="ml-1" style={{ color: '#c084fc' }}>{def.rarity}</span>}
+                    {def && !isHazure && <span className="ml-1" style={{ color: '#c0a8ff' }}>{def.rarity}</span>}
                   </p>
                 </div>
               );
@@ -204,11 +204,11 @@ export function RaiseCardCollection() {
       {expandedCardId && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80" onClick={() => setExpandedCardId(null)}>
           <div className="relative max-w-md w-[90vw] max-h-[80vh] rounded-2xl overflow-hidden"
-            style={{ background: '#160e26', border: '1px solid rgba(168,85,247,0.3)' }} onClick={(e) => e.stopPropagation()}>
+            style={{ background: '#0d1020', border: '1px solid rgba(154,123,255,0.3)' }} onClick={(e) => e.stopPropagation()}>
             <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
               <h3 className="text-sm font-black text-white tracking-wider">
                 {tabDefs.find((d) => d.cardId === expandedCardId)?.name}
-                <span className="ml-2 text-xs font-bold" style={{ color: '#c084fc' }}>{groups.find((g) => g.cardId === expandedCardId)?.cards.length}枚</span>
+                <span className="ml-2 text-xs font-bold" style={{ color: '#c0a8ff' }}>{groups.find((g) => g.cardId === expandedCardId)?.cards.length}枚</span>
               </h3>
               <button className="text-white/40 hover:text-white text-lg" onClick={() => setExpandedCardId(null)}>✕</button>
             </div>
@@ -246,18 +246,18 @@ export function RaiseCardCollection() {
             )}
 
             <RaiseDigitalCard characterId={selected.characterId as RaiseCharacterId} cardId={selected.cardId} serialNumber={selected.serialNumber} size="full" cardRef={cardRef} />
-            <p className="text-xs font-bold tracking-widest" style={{ color: '#c084fc' }}>{selected.serialNumber}</p>
+            <p className="text-xs font-bold tracking-widest" style={{ color: '#c0a8ff' }}>{selected.serialNumber}</p>
 
             <div className="flex flex-wrap gap-2 justify-center w-full">
               {selected.status === 'held' && (
                 <>
                   <button className="px-4 py-2 rounded-xl text-xs font-bold transition hover:scale-105"
-                    style={{ background: 'linear-gradient(135deg, #7b68ee, #c084fc)', color: '#fff' }}
+                    style={{ background: 'linear-gradient(135deg, #7b68ee, #c0a8ff)', color: '#fff' }}
                     onClick={handleDownload} disabled={downloading}>
                     {downloading ? '保存中...' : 'PNG保存'}
                   </button>
                   <button className="px-4 py-2 rounded-xl text-xs font-bold transition hover:scale-105"
-                    style={{ background: 'linear-gradient(135deg, #ffe08a, #ffcb45)', color: '#3a2a06' }}
+                    style={{ background: 'linear-gradient(135deg, #f0d68a, #d8b15a)', color: '#2a1e06' }}
                     onClick={() => {
                       const rate = currentRates[selected.cardId] ?? 0;
                       if (rate <= 0) { alert('このカードは交換できません。'); return; }
@@ -290,17 +290,17 @@ export function RaiseCardCollection() {
       {confirmExchange && (
         <div className="fixed inset-0 z-[350] flex items-center justify-center bg-black/90" onClick={() => setConfirmExchange(null)}>
           <div className="rounded-2xl p-6 max-w-sm w-[90vw] text-center"
-            style={{ background: '#160e26', border: '1px solid rgba(168,85,247,0.4)' }} onClick={(e) => e.stopPropagation()}>
+            style={{ background: '#0d1020', border: '1px solid rgba(154,123,255,0.4)' }} onClick={(e) => e.stopPropagation()}>
             <p className="text-lg font-black text-white mb-2">ポイント交換</p>
             <p className="text-sm text-white/70 mb-4">
               「{tabDefs.find((d) => d.cardId === confirmExchange.cardId)?.name}」を<br />
-              <span className="font-black text-xl" style={{ color: '#c084fc' }}>{currentRates[confirmExchange.cardId] ?? 0}コイン</span><br />
+              <span className="font-black text-xl" style={{ color: '#c0a8ff' }}>{currentRates[confirmExchange.cardId] ?? 0}コイン</span><br />
               に交換しますか？
             </p>
             <p className="text-xs text-red-400 mb-4">※ この操作は元に戻せません</p>
             <div className="flex gap-3 justify-center">
               <button className="px-6 py-2 rounded-xl text-sm font-bold"
-                style={{ background: 'linear-gradient(135deg, #7b68ee, #c084fc)', color: '#fff' }}
+                style={{ background: 'linear-gradient(135deg, #7b68ee, #c0a8ff)', color: '#fff' }}
                 onClick={() => handleExchange(confirmExchange)} disabled={actionLoading}>
                 {actionLoading ? '処理中...' : '交換する'}
               </button>

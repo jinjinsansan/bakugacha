@@ -134,7 +134,7 @@ export function KeibaCardCollection() {
   return (
     <>
       <div className="rounded-2xl overflow-hidden mb-6"
-        style={{ background: '#160e26', border: '1px solid rgba(255,203,69,0.25)' }}>
+        style={{ background: '#0d1020', border: '1px solid rgba(216,177,90,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">
             🃏 競馬ガチャ カードコレクション
@@ -179,7 +179,7 @@ export function KeibaCardCollection() {
                     <div
                       className="absolute -top-2 -right-2 z-10 flex items-center justify-center rounded-full text-xs font-black min-w-[28px] h-7 px-1.5"
                       style={{
-                        background: isHazure ? 'linear-gradient(135deg, #555, #333)' : 'linear-gradient(135deg, #ffe08a, #ffcb45)',
+                        background: isHazure ? 'linear-gradient(135deg, #555, #333)' : 'linear-gradient(135deg, #f0d68a, #d8b15a)',
                         color: isHazure ? '#aaa' : '#0a0800',
                         boxShadow: isHazure ? '0 2px 8px rgba(0,0,0,0.5)' : '0 2px 8px rgba(180,140,40,0.5)',
                       }}
@@ -208,7 +208,7 @@ export function KeibaCardCollection() {
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80" onClick={() => setExpandedCharaId(null)}>
           <div
             className="relative max-w-md w-[90vw] max-h-[80vh] rounded-2xl overflow-hidden"
-            style={{ background: '#160e26', border: '1px solid rgba(255,203,69,0.3)' }}
+            style={{ background: '#0d1020', border: '1px solid rgba(216,177,90,0.3)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
@@ -273,7 +273,7 @@ export function KeibaCardCollection() {
                 <>
                   <button
                     className="px-4 py-2 rounded-xl text-xs font-bold transition hover:scale-105"
-                    style={{ background: 'linear-gradient(135deg, #ffe08a, #ffcb45)', color: '#3a2a06' }}
+                    style={{ background: 'linear-gradient(135deg, #f0d68a, #d8b15a)', color: '#2a1e06' }}
                     onClick={() => {
                       const rate = exchangeRates[selected.charaId] ?? 0;
                       if (rate <= 0) { alert('このカードは交換できません。'); return; }
@@ -316,7 +316,7 @@ export function KeibaCardCollection() {
         <div className="fixed inset-0 z-[350] flex items-center justify-center bg-black/90" onClick={() => setConfirmExchange(null)}>
           <div
             className="rounded-2xl p-6 max-w-sm w-[90vw] text-center"
-            style={{ background: '#160e26', border: '1px solid rgba(255,203,69,0.4)' }}
+            style={{ background: '#0d1020', border: '1px solid rgba(216,177,90,0.4)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-lg font-black text-white mb-2">ポイント交換</p>
@@ -329,7 +329,7 @@ export function KeibaCardCollection() {
             <div className="flex gap-3 justify-center">
               <button
                 className="px-6 py-2 rounded-xl text-sm font-bold"
-                style={{ background: 'linear-gradient(135deg, #ffe08a, #ffcb45)', color: '#3a2a06' }}
+                style={{ background: 'linear-gradient(135deg, #f0d68a, #d8b15a)', color: '#2a1e06' }}
                 onClick={() => handleExchange(confirmExchange)}
                 disabled={actionLoading}
               >

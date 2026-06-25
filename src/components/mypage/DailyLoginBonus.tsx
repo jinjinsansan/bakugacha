@@ -19,7 +19,7 @@ export function DailyLoginBonus({ amount, alreadyClaimed }: DailyLoginBonusProps
       <div
         className="rounded-2xl p-5 mb-6 overflow-hidden"
         style={{
-          background: '#160e26',
+          background: '#0d1020',
           border: '1px solid rgba(255,255,255,0.07)',
         }}
       >
@@ -54,11 +54,11 @@ export function DailyLoginBonus({ amount, alreadyClaimed }: DailyLoginBonusProps
       className="rounded-2xl p-5 mb-6 overflow-hidden"
       style={{
         background: claimed
-          ? '#160e26'
-          : 'linear-gradient(135deg, rgba(255,203,69,0.18), rgba(255,203,69,0.06))',
+          ? '#0d1020'
+          : 'linear-gradient(135deg, rgba(216,177,90,0.18), rgba(216,177,90,0.06))',
         border: claimed
           ? '1px solid rgba(255,255,255,0.07)'
-          : '1px solid rgba(255,203,69,0.45)',
+          : '1px solid rgba(216,177,90,0.45)',
       }}
     >
       <div className="flex items-center justify-between gap-3">

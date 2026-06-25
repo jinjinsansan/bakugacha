@@ -9,7 +9,7 @@ export default function HowToPlayPage() {
 
   return (
     <main className="max-w-[860px] mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-white mb-8">遊び方</h1>
+      <h1 className="headline-serif text-2xl mb-8">遊び方</h1>
       <div className="flex flex-col gap-4">
         {steps.map((step) => (
           <div key={step.num} className="card-premium p-5 flex gap-4 items-start">

@@ -51,7 +51,7 @@ export default async function PurchasePage() {
       {/* ヘッダー */}
       <div className="mb-8 text-center">
         <p className="text-[10px] font-bold tracking-[0.4em] text-gold uppercase mb-2">Coin Shop</p>
-        <h1 className="text-2xl font-black text-white">コインを購入</h1>
+        <h1 className="headline-serif text-2xl">コインを購入</h1>
         <p className="text-sm text-gray-500 mt-2">
           現在の残高：
           <span className="text-gold font-black ml-1">
@@ -68,12 +68,12 @@ export default async function PurchasePage() {
             className="relative rounded-2xl p-6"
             style={{
               background: plan.badge === 'おすすめ'
-                ? 'linear-gradient(135deg, #1d1334, #160e26)'
-                : '#160e26',
+                ? 'linear-gradient(135deg, #141a2e, #0d1020)'
+                : '#0d1020',
               border: plan.badge === 'おすすめ'
-                ? '1px solid rgba(255,61,166,0.4)'
+                ? '1px solid rgba(255,46,154,0.4)'
                 : '1px solid rgba(255,255,255,0.07)',
-              boxShadow: plan.badge === 'おすすめ' ? '0 0 24px rgba(255,61,166,0.12)' : undefined,
+              boxShadow: plan.badge === 'おすすめ' ? '0 0 24px rgba(255,46,154,0.12)' : undefined,
             }}
           >
             {/* バッジ */}
@@ -82,9 +82,9 @@ export default async function PurchasePage() {
                 className="absolute top-4 right-4 text-[10px] font-black px-2.5 py-1 rounded-full"
                 style={{
                   background: plan.badge === 'おすすめ'
-                    ? 'linear-gradient(135deg, #ff3da6, #c026d3)'
-                    : 'rgba(34,211,238,0.18)',
-                  color: plan.badge === 'おすすめ' ? '#fff' : '#7df0ff',
+                    ? 'linear-gradient(135deg, #ff2e9a, #c01e6e)'
+                    : 'rgba(56,210,255,0.18)',
+                  color: plan.badge === 'おすすめ' ? '#fff' : '#8fe8ff',
                 }}
               >
                 {plan.badge}
@@ -99,7 +99,7 @@ export default async function PurchasePage() {
                 🪙 {plan.coins.toLocaleString()}
               </span>
               {plan.bonus > 0 && (
-                <span className="text-sm font-bold" style={{ color: '#7df0ff' }}>
+                <span className="text-sm font-bold" style={{ color: '#8fe8ff' }}>
                   +{plan.bonus}
                 </span>
               )}
@@ -125,7 +125,7 @@ export default async function PurchasePage() {
       {/* 注意事項 */}
       <div
         className="rounded-xl p-5 text-xs text-gray-500 leading-relaxed"
-        style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.05)' }}
+        style={{ background: '#0d1020', border: '1px solid rgba(255,255,255,0.05)' }}
       >
         <p className="font-bold text-gray-400 mb-2">ご注意</p>
         <ul className="space-y-1 list-disc list-inside">
