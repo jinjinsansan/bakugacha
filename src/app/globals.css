@@ -1,19 +1,56 @@
 @import "tailwindcss";
 
-/* CSS custom properties — layer-agnostic */
+/* =====================================================================
+   GACHAPA — Design Direction C "NEO ARCADE"
+   Drop-in replacement for src/app/globals.css (Tailwind v4)
+   - 見た目のみの刷新。クラス名は現行を維持（.btn-gold / .btn-silver /
+     .btn-bronze / .btn-outline / .card-premium / .text-gold / .divider-gold）
+     ので、コンポーネント側の className 変更は基本不要。
+   - 既存トークン名（--gold* / --blue*）も互換のため残し、値を案C化。
+   ===================================================================== */
+
+/* ── CSS custom properties（トークン集約） ── */
 :root {
-  --bg-base:    #05050f;
-  --bg-card:    #0a0a1c;
-  --bg-elevated:#0f0f28;
-  --gold:       #c9a84c;
-  --gold-light: #e8cc7a;
-  --gold-dark:  #9a7a2e;
-  --blue:       #2060f0;
-  --blue-light: #4a8aff;
-  --blue-glow:  rgba(32,96,240,0.5);
+  /* 背景 */
+  --bg-base:     #0a0613;
+  --bg-card:     #160e26;
+  --bg-elevated: #1d1334;
+
+  /* マゼンタ（プライマリ / 主CTA） */
+  --magenta:        #ff3da6;
+  --magenta-light:  #ff6ec0;
+  --magenta-dark:   #c026d3;
+  --magenta-glow:   rgba(255,61,166,0.45);
+
+  /* シアン（セカンダリ） */
+  --cyan:        #22d3ee;
+  --cyan-light:  #7df0ff;
+
+  /* バイオレット（レア/アクセント） */
+  --violet:       #a855f7;
+  --violet-light: #c084fc;
+
+  /* ゴールド（当たり/価格・互換名を維持） */
+  --gold:       #ffcb45;
+  --gold-light: #ffe08a;
+  --gold-dark:  #d9a520;
+
+  /* 互換: 旧 --blue 参照を壊さないようシアン系へ寄せる */
+  --blue:       #22d3ee;
+  --blue-light: #7df0ff;
+  --blue-glow:  rgba(34,211,238,0.45);
+
+  /* テキスト */
+  --text:        #ece9f5;
+  --text-muted:  #b6abd0;
+  --text-dim:    #8a80a4;
+
+  /* 罫線 */
+  --hairline:        rgba(255,255,255,0.06);
+  --hairline-magenta:rgba(255,61,166,0.18);
 }
 
-/* ── Base reset (must be in @layer base so Tailwind utilities can override) ── */
+/* ── Base reset（utilities が上書きできるよう @layer base） ── */
 @layer base {
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -25,150 +62,152 @@
   body {
     font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
     background-color: var(--bg-base);
-    color: #e8e8f0;
+    color: var(--text);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
 
+  /* アクセシビリティ: フォーカス可視化（キーボード操作時のみ） */
+  :focus-visible {
+    outline: 2px solid var(--magenta-light);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg-base); }
-  ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,61,166,0.35); border-radius: 3px; }
+
+  /* モーション低減設定の尊重 */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
-/* ── Utility classes ── */
+/* ── Utilities ── */
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ネオン系テキスト */
+  .text-magenta { color: var(--magenta-light); }
+  .text-cyan    { color: var(--cyan-light); }
 }
 
-/* ── Component classes (in @layer components so utilities can override) ── */
+/* ── Component classes（utilities が上書きできるよう @layer components） ── */
 @layer components {
 
-  /* ── シルバーボタン ── */
-  .btn-silver {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-    border: 1px solid #94a3b8;
-    color: #0f172a;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-  .btn-silver:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 1);
-    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
-  }
-  .btn-silver:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  /* ── ブロンズボタン ── */
-  .btn-bronze {
-    background: linear-gradient(135deg, #fed7aa 0%, #ea580c 50%, #9a3412 100%);
-    box-shadow: 0 4px 10px rgba(154, 52, 18, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.6);
-    border: 1px solid #c2410c;
-    color: #fff;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    transition: all 0.2s ease;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-    cursor: pointer;
-  }
-  .btn-bronze:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(154, 52, 18, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.8);
-    background: linear-gradient(135deg, #ffedd5 0%, #f97316 50%, #c2410c 100%);
-  }
-  .btn-bronze:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(154, 52, 18, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  /* ── ゴールドアクセントボタン ── */
+  /* ── プライマリ neon ボタン（主CTA・「1回」） ──
+     ※ クラス名は .btn-gold を維持。役割＝最優先アクション。 */
   .btn-gold {
-    background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-    box-shadow: 0 4px 10px rgba(180, 83, 9, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.8);
-    border: 1px solid #d97706;
-    color: #451a03;
+    background: linear-gradient(135deg, var(--magenta) 0%, var(--magenta-dark) 55%, var(--gold) 100%);
+    box-shadow: 0 0 26px var(--magenta-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+    border: none;
+    color: #ffffff;
     font-weight: 800;
-    letter-spacing: 0.05em;
-    transition: all 0.2s ease;
+    letter-spacing: 0.03em;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
     cursor: pointer;
   }
   .btn-gold:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(180, 83, 9, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-    background: linear-gradient(135deg, #fef9c3 0%, #fbbf24 50%, #d97706 100%);
+    box-shadow: 0 0 34px var(--magenta-glow), inset 0 1px 0 rgba(255,255,255,0.4);
+    filter: saturate(1.08);
   }
-  .btn-gold:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(180, 83, 9, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+  .btn-gold:active { transform: translateY(1px); box-shadow: 0 0 14px var(--magenta-glow); }
 
-  /* ── アウトライン（シルバー調） ── */
+  /* ── セカンダリ cyan ボタン（「10回」・補助CTA） ── */
+  .btn-silver {
+    background: linear-gradient(135deg, var(--cyan-light) 0%, var(--cyan) 100%);
+    box-shadow: 0 0 18px rgba(34,211,238,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
+    border: none;
+    color: #06222a;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    cursor: pointer;
+  }
+  .btn-silver:hover { transform: translateY(-1px); box-shadow: 0 0 26px rgba(34,211,238,0.4); filter: saturate(1.08); }
+  .btn-silver:active { transform: translateY(1px); box-shadow: 0 0 12px rgba(34,211,238,0.3); }
+
+  /* ── ターシャリ gold ボタン（「100回」・高額枠） ── */
+  .btn-bronze {
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+    box-shadow: 0 0 18px rgba(255,203,69,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
+    border: none;
+    color: #3a2a06;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    cursor: pointer;
+  }
+  .btn-bronze:hover { transform: translateY(-1px); box-shadow: 0 0 26px rgba(255,203,69,0.4); filter: saturate(1.08); }
+  .btn-bronze:active { transform: translateY(1px); box-shadow: 0 0 12px rgba(255,203,69,0.3); }
+
+  /* ── ゴースト/アウトライン ── */
   .btn-outline {
     background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(168,184,200,0.4);
+    border: 1px solid rgba(255,61,166,0.4);
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    letter-spacing: 0.05em;
-    font-weight: 600;
-    color: #e2e8f0;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.18s ease;
   }
   .btn-outline:hover {
-    border-color: #f8fafc;
-    color: #fff;
-    background: rgba(255,255,255,0.08);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 12px rgba(255,255,255,0.1);
+    border-color: var(--magenta-light);
+    color: #ffffff;
+    background: rgba(255,61,166,0.08);
+    box-shadow: 0 0 16px rgba(255,61,166,0.25);
     transform: translateY(-1px);
   }
-  .btn-outline:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  }
+  .btn-outline:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 
-  /* ── プレミアムカードボーダー ── */
+  /* ── プレミアムカード ── */
   .card-premium {
     background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid var(--hairline);
     box-shadow:
-      0 4px 24px rgba(0,0,0,0.5),
-      inset 0 1px 0 rgba(255,255,255,0.05);
+      0 4px 24px rgba(10,0,30,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.04);
     transition: all 0.2s ease;
   }
   .card-premium:hover {
-    border-color: rgba(74,138,255,0.3);
+    border-color: rgba(255,61,166,0.35);
     box-shadow:
-      0 8px 32px rgba(0,0,0,0.6),
-      0 0 0 1px rgba(74,138,255,0.2),
-      0 0 24px rgba(32,96,240,0.12);
+      0 8px 32px rgba(10,0,30,0.6),
+      0 0 0 1px rgba(255,61,166,0.2),
+      0 0 28px rgba(255,61,166,0.15);
     transform: translateY(-3px);
   }
 
-  /* ── ゴールドテキスト ── */
+  /* ── ゴールドテキスト（価格・コイン等の金色アクセントは維持） ── */
   .text-gold {
-    background: linear-gradient(135deg, #e8cc7a, #c9a84c, #e8cc7a);
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
-  /* ── セクション区切り線 ── */
+  /* ── ブランド/見出し用 ネオングラデーション（新規） ── */
+  .text-neon {
+    background: linear-gradient(135deg, var(--magenta-light), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ── 区切り線（マゼンタ→ゴールドのネオン） ── */
   .divider-gold {
     height: 1px;
     background: linear-gradient(90deg,
-      transparent, rgba(201,168,76,0.4), rgba(201,168,76,0.6),
-      rgba(201,168,76,0.4), transparent
+      transparent, rgba(255,61,166,0.5), rgba(255,203,69,0.6),
+      rgba(255,61,166,0.5), transparent
     );
   }
-
 }
