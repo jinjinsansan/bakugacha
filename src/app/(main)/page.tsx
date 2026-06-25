@@ -2,10 +2,12 @@ export const dynamic = 'force-dynamic';
 
 import { HeroSection } from '@/components/home/HeroSection';
 import { CampaignBanner } from '@/components/home/CampaignBanner';
+import { WelcomeGuide } from '@/components/home/WelcomeGuide';
 import { ProductGrid } from '@/components/home/ProductGrid';
 import { NewsSection } from '@/components/home/NewsSection';
 import { WinnerFeed } from '@/components/home/WinnerFeed';
 import { RankingSection } from '@/components/home/RankingSection';
+import { TrustBand } from '@/components/home/TrustBand';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { fetchActiveBanners } from '@/lib/data/banners';
 import type { BannerData } from '@/components/home/CampaignBanner';
@@ -30,6 +32,7 @@ export default async function HomePage() {
     <>
       <HeroSection />
       <CampaignBanner banners={banners} />
+      <WelcomeGuide />
       <div className="py-4 px-0">
         <section id="products" aria-label="ガチャ商品一覧">
           <ProductGrid />
@@ -42,6 +45,7 @@ export default async function HomePage() {
         <section id="winners">
           <WinnerFeed />
         </section>
+        <TrustBand />
         <NewsSection />
         <div className="h-20 md:h-0" />
       </div>
