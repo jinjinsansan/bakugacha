@@ -32,7 +32,7 @@ export function AccessCodeList() {
       <div className="rounded-2xl overflow-hidden mb-6"
         style={{ background: '#0d1020', border: '1px solid rgba(154,123,255,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
-          <h2 className="text-sm font-black text-white tracking-wider">🎟️ 権利コード</h2>
+          <h2 className="text-sm font-black text-white tracking-wider">権利コード</h2>
         </div>
         <div className="px-5 py-8 text-center">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white mx-auto" />
@@ -48,7 +48,7 @@ export function AccessCodeList() {
       style={{ background: '#0d1020', border: '1px solid rgba(154,123,255,0.25)' }}>
       <div className="px-5 py-4 border-b border-white/5">
         <h2 className="text-sm font-black text-white tracking-wider">
-          🎟️ 権利コード
+          権利コード
           <span className="ml-2 text-xs font-bold" style={{ color: '#c0a8ff' }}>{codes.length}件</span>
         </h2>
       </div>

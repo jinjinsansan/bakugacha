@@ -72,9 +72,9 @@ export default async function LinePerkPage({ searchParams }: LinePageProps) {
           <div className="rounded-2xl px-6 py-3 text-center"
             style={{ background: 'rgba(216,177,90,0.1)', border: '1px solid rgba(216,177,90,0.3)' }}>
             <p className="text-[10px] tracking-[0.4em] text-gold uppercase">Bonus</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl">🪙</span>
-              <span className="text-4xl font-black text-gold">{LINE_REWARD_COINS.toLocaleString()}</span>
+            <div className="flex items-baseline justify-center gap-1.5 mt-1">
+              <span className="text-4xl font-black text-gold font-en">{LINE_REWARD_COINS.toLocaleString()}</span>
+              <span className="text-base font-bold" style={{ color: '#d8b15a' }}>C</span>
             </div>
             <p className="text-xs text-gold/80">コイン</p>
           </div>

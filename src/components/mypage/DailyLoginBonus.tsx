@@ -28,7 +28,7 @@ export function DailyLoginBonus({ amount, alreadyClaimed }: DailyLoginBonusProps
             <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-1">
               Daily Login Bonus
             </p>
-            <p className="text-sm font-bold text-white/60">🎁 デイリーログインボーナス</p>
+            <p className="text-sm font-bold text-white/60">デイリーログインボーナス</p>
             <p className="text-xs text-white/40 mt-1">現在準備中です。お楽しみに！</p>
           </div>
         </div>
@@ -86,7 +86,7 @@ export function DailyLoginBonus({ amount, alreadyClaimed }: DailyLoginBonusProps
               : 'btn-gold shrink-0 px-4 py-2 rounded-xl text-xs font-black whitespace-nowrap disabled:opacity-60'
           }
         >
-          {claimed ? '受取済' : isPending ? '処理中...' : '🎁 受け取る'}
+          {claimed ? '受取済' : isPending ? '処理中...' : '受け取る'}
         </button>
       </div>
     </div>

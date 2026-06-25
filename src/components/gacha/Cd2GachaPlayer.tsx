@@ -8,6 +8,7 @@ import { startCd2Gacha } from '@/lib/api/cd2-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
 import { BRAND } from '@/lib/brand';
+import { Home, Gift, Coins, User } from 'lucide-react';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 type VideoItem = {
@@ -171,7 +172,6 @@ function ResultCard({
           style={{ background: '#e53935', color: '#fff' }}
           onClick={onReplayAnimation}
         >
-          <span className="text-2xl flex-shrink-0">🏆</span>
           <div className="flex-1 min-w-0">
             <p className="font-black text-sm leading-tight">当選おめでとう！</p>
             <p className="text-xs mt-0.5" style={{ opacity: 0.85 }}>ガチャ演出をもう一度見る</p>
@@ -229,7 +229,7 @@ function ResultCard({
                 className="mt-2 py-2 px-3 rounded-lg text-sm font-bold flex items-center gap-1.5"
                 style={{ background: '#f5f5f0', color: '#555' }}
               >
-                🪙 {coinCost.toLocaleString()}コイン
+                {coinCost.toLocaleString()}コイン
               </div>
             )}
           </div>
@@ -239,7 +239,7 @@ function ResultCard({
         {isWin && accessCode && (
           <div className="bg-white rounded-2xl p-4 mt-3"
             style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '2px solid #7c3aed' }}>
-            <p className="text-xs font-bold mb-1" style={{ color: '#7c3aed' }}>🎟️ 権利コードを獲得！</p>
+            <p className="text-xs font-bold mb-1" style={{ color: '#7c3aed' }}>権利コードを獲得！</p>
             <p
               className="text-2xl font-black tracking-[0.2em] text-center py-2 cursor-pointer select-all"
               style={{ color: '#7c3aed' }}
@@ -270,18 +270,18 @@ function ResultCard({
           style={{ border: '2px solid #ddd', color: '#555', background: '#fff' }}
           onClick={onRetry}
         >
-          もう一度引く 🪙 {coinCost?.toLocaleString() ?? 0}
+          もう一度引く {coinCost?.toLocaleString() ?? 0}
         </button>
         <div className="grid grid-cols-4 gap-2">
           {([
-            { href: '/home',           icon: '🏠', label: BRAND.name },
-            { href: '/mypage#history', icon: '🎁', label: '獲得商品' },
-            { href: '/purchase',       icon: '🪙', label: 'コイン' },
-            { href: '/mypage',         icon: '👤', label: 'マイページ' },
-          ] as const).map(({ href, icon, label }) => (
+            { href: '/home',           icon: Home,  label: BRAND.name },
+            { href: '/mypage#history', icon: Gift,  label: '獲得商品' },
+            { href: '/purchase',       icon: Coins, label: 'コイン' },
+            { href: '/mypage',         icon: User,  label: 'マイページ' },
+          ] as const).map(({ href, icon: Icon, label }) => (
             <a key={label} href={href} className="flex flex-col items-center gap-1 py-2 rounded-xl"
               style={{ background: '#f5f5f0' }}>
-              <span style={{ fontSize: 20 }}>{icon}</span>
+              <Icon size={20} style={{ color: '#555' }} />
               <span className="text-[10px] font-bold" style={{ color: '#555' }}>{label}</span>
             </a>
           ))}

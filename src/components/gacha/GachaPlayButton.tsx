@@ -43,7 +43,7 @@ export function GachaPlayButton({
     return (
       <a href="/login" className="block">
         <button className="btn-gold w-full py-4 rounded-2xl font-black text-base tracking-wider">
-          🎰 ログインしてガチャを引く
+          ログインしてガチャを引く
         </button>
       </a>
     );
@@ -63,7 +63,7 @@ export function GachaPlayButton({
               border: '1px solid rgba(154,123,255,0.35)',
             }}
           >
-            <p className="text-xs font-bold text-purple-300 mb-2">🎟️ この商品は権利コードが必要です</p>
+            <p className="text-xs font-bold text-purple-300 mb-2">この商品は権利コードが必要です</p>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -86,7 +86,7 @@ export function GachaPlayButton({
                 disabled={!accessCode.trim()}
                 onClick={() => setOpen(true)}
               >
-                🎰 引く
+                引く
               </button>
             </div>
           </div>
@@ -97,11 +97,11 @@ export function GachaPlayButton({
             className="rounded-2xl py-3 px-4 text-center text-sm font-bold"
             style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.35)', color: '#fca5a5' }}
           >
-            コインが不足しています（必要 🪙{price.toLocaleString()} / 所持 🪙{userCoins.toLocaleString()}）
+            コインが不足しています（必要 {price.toLocaleString()}C / 所持 {userCoins.toLocaleString()}C）
           </div>
           <a href="/purchase" className="block">
             <button className="btn-gold w-full py-4 rounded-2xl font-black text-base tracking-wider">
-              🪙 コインをチャージする
+              コインをチャージする
             </button>
           </a>
         </div>
@@ -110,7 +110,7 @@ export function GachaPlayButton({
           className="btn-gold w-full py-4 rounded-2xl font-black text-base tracking-wider"
           onClick={() => setOpen(true)}
         >
-          🎰 ガチャを引く（{price === 0 ? '無料' : `🪙 ${price.toLocaleString()}`}）
+          ガチャを引く（{price === 0 ? '無料' : `${price.toLocaleString()}`}）
         </button>
       )}
 

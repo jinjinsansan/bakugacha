@@ -6,7 +6,6 @@ const LINE_URL = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/tk
 const ITEMS = [
   {
     step: '01',
-    emoji: '💚',
     title: '公式LINEを追加する',
     description: `${BRAND.name}公式LINEを友達追加するだけで300コインプレゼント！まずここからスタート。`,
     accent: '#06C755',
@@ -17,7 +16,6 @@ const ITEMS = [
   },
   {
     step: '02',
-    emoji: '👥',
     title: '友達を紹介する',
     description: 'マイページの紹介リンクをシェアするだけ。紹介するたびに300コイン、紹介された友達にも100コイン。',
     accent: '#38d2ff',
@@ -28,7 +26,6 @@ const ITEMS = [
   },
   {
     step: '03',
-    emoji: '🎟️',
     title: 'プロモコードを入力する',
     description: '特別なプロモーションコードをお持ちの方はマイページで入力するとコインが貰えます。',
     accent: '#d8b15a',

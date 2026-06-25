@@ -55,7 +55,7 @@ export default async function PurchasePage() {
         <p className="text-sm text-gray-500 mt-2">
           現在の残高：
           <span className="text-gold font-black ml-1">
-            🪙 {(user.coins as number).toLocaleString()} コイン
+            {(user.coins as number).toLocaleString()} コイン
           </span>
         </p>
       </div>
@@ -96,7 +96,7 @@ export default async function PurchasePage() {
             </p>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-3xl font-black text-white">
-                🪙 {plan.coins.toLocaleString()}
+                {plan.coins.toLocaleString()}
               </span>
               {plan.bonus > 0 && (
                 <span className="text-sm font-bold" style={{ color: '#8fe8ff' }}>
