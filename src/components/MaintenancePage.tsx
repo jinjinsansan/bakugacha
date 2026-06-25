@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { BRAND } from '@/lib/brand';
 
 interface MaintenancePageProps {
   title: string;
@@ -20,7 +21,7 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
         <div className="mb-8 select-none">
           <Image
             src="/baku_gacha_logo_final.png"
-            alt="爆ガチャ"
+            alt={BRAND.name}
             width={220}
             height={110}
             priority
@@ -117,7 +118,7 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
         </a>
 
         <p className="text-[11px] text-white/30 mt-2">
-          © 爆ガチャ
+          © {BRAND.name}
         </p>
       </div>
     </div>

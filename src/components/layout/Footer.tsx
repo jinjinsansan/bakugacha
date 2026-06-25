@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { footerSections } from '@/lib/data/footerSections';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
+import { BRAND } from '@/lib/brand';
 
 function isAdmin(user: Record<string, unknown> | null): boolean {
   if (!user) return false;
@@ -25,8 +26,8 @@ export async function Footer() {
       <div className="max-w-[860px] w-full mx-auto px-6">
         {/* Logo */}
         <div className="flex items-end gap-3 mb-10">
-          <span className="text-3xl font-black tracking-wider text-gold">爆ガチャ</span>
-          <span className="text-xs font-bold tracking-[0.3em] text-gray-600 mb-1">BAKU GACHA</span>
+          <span className="text-3xl font-black tracking-wider text-gold">{BRAND.name}</span>
+          <span className="text-xs font-bold tracking-[0.3em] text-gray-600 mb-1">{BRAND.nameEn}</span>
         </div>
 
         <div className="divider-gold mb-10" />
@@ -84,7 +85,7 @@ export async function Footer() {
         <div className="divider-gold mb-6" />
 
         <p className="text-[10px] text-center tracking-widest text-gray-600 uppercase">
-          © {new Date().getFullYear()} 爆ガチャ — All Rights Reserved.
+          © {new Date().getFullYear()} {BRAND.name} — All Rights Reserved.
         </p>
       </div>
     </footer>

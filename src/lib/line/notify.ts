@@ -9,13 +9,15 @@ export async function sendLineWinNotification(
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!token || !lineUserId) return;
 
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '');
+
   const text = [
     '🎉 当選おめでとうございます！',
     '',
     `「${prizeName}」に当選しました。`,
     'マイページから受け取り手続きをお願いします。',
     '',
-    '▶ https://www.bakugacha.com/mypage',
+    `▶ ${siteUrl}/mypage`,
   ].join('\n');
 
   try {

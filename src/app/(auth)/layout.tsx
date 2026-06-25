@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BRAND } from '@/lib/brand';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,8 +19,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative w-full max-w-md">
         {/* ロゴ */}
         <Link href="/" className="flex flex-col items-center mb-10">
-          <span className="text-4xl font-black tracking-wider text-gold">爆ガチャ</span>
-          <span className="text-[10px] font-bold tracking-[0.35em] text-gray-600 mt-1">BAKU GACHA</span>
+          <span className="text-4xl font-black tracking-wider text-gold">{BRAND.name}</span>
+          <span className="text-[10px] font-bold tracking-[0.35em] text-gray-600 mt-1">{BRAND.nameEn}</span>
         </Link>
 
         {/* カード */}

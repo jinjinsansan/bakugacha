@@ -1,3 +1,5 @@
+import { BRAND } from '@/lib/brand';
+
 export interface FooterLink {
   readonly id: string;
   readonly label: string;
@@ -13,7 +15,7 @@ export interface FooterSection {
 export const footerSections: FooterSection[] = [
   {
     id: 'about',
-    title: '爆ガチャについて',
+    title: `${BRAND.name}について`,
     links: [
       { id: 'terms', label: '利用規約', href: '/terms' },
       { id: 'privacy', label: 'プライバシーポリシー', href: '/privacy' },

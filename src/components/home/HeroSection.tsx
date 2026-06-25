@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BRAND } from '@/lib/brand';
 
 export function HeroSection() {
   return (
@@ -22,7 +23,7 @@ export function HeroSection() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/baku_gacha_logo_final.png"
-              alt="爆ガチャロゴ"
+              alt={`${BRAND.name}ロゴ`}
               className="w-[240px] h-[240px] md:w-[280px] md:h-[280px] object-contain drop-shadow-[0_0_40px_rgba(201,168,76,0.4)]"
             />
           </div>

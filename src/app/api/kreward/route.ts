@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { findUserByLineId } from '@/lib/data/users';
 import { grantCoins } from '@/lib/data/coins';
+import { BRAND } from '@/lib/brand';
 
 const KREWARD_SECRET = process.env.KREWARD_SECRET ?? '';
 // 1 回の転送で付与できるコインの上限（環境変数で調整可）
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
   const user = await findUserByLineId(supabase, line_user_id);
   if (!user) {
     return NextResponse.json(
-      { success: false, error: '爆ガチャアカウントが見つかりません。爆ガチャにLINEログインしてください。' },
+      { success: false, error: `${BRAND.name}アカウントが見つかりません。${BRAND.name}にLINEログインしてください。` },
       { status: 404 },
     );
   }

@@ -1,3 +1,5 @@
+import { BRAND } from '@/lib/brand';
+
 export default function TermsPage() {
   return (
     <main className="max-w-[860px] mx-auto px-4 py-10">
@@ -5,7 +7,7 @@ export default function TermsPage() {
       <div className="card-premium p-6 text-sm text-white/70 leading-relaxed space-y-6">
         <section>
           <h2 className="text-base font-bold text-white mb-2">第1条（適用）</h2>
-          <p>本規約は、爆ガチャ（以下「当サービス」）の利用に関する条件を定めるものです。ユーザーは本規約に同意の上、当サービスをご利用ください。</p>
+          <p>本規約は、{BRAND.name}（以下「当サービス」）の利用に関する条件を定めるものです。ユーザーは本規約に同意の上、当サービスをご利用ください。</p>
         </section>
         <section>
           <h2 className="text-base font-bold text-white mb-2">第2条（利用登録）</h2>

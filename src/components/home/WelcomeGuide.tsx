@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BRAND } from '@/lib/brand';
 
 const LINE_URL = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/tk6qrdP';
 
@@ -7,7 +8,7 @@ const ITEMS = [
     step: '01',
     emoji: '💚',
     title: '公式LINEを追加する',
-    description: '爆ガチャ公式LINEを友達追加するだけで300コインプレゼント！まずここからスタート。',
+    description: `${BRAND.name}公式LINEを友達追加するだけで300コインプレゼント！まずここからスタート。`,
     accent: '#06C755',
     accentBg: 'rgba(6,199,85,0.08)',
     accentBorder: 'rgba(6,199,85,0.25)',

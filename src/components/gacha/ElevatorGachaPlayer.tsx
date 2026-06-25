@@ -6,6 +6,7 @@ import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startElevatorGacha } from '@/lib/api/elevator-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
+import { BRAND } from '@/lib/brand';
 import type { ElevatorStep } from '@/lib/elevator-gacha/types';
 import { PAUSE_STEPS } from '@/lib/elevator-gacha/types';
 
@@ -152,7 +153,7 @@ function ResultCard({
         </button>
         <div className="grid grid-cols-4 gap-2">
           {([
-            { href: '/home',           icon: '🏠', label: '爆ガチャ' },
+            { href: '/home',           icon: '🏠', label: BRAND.name },
             { href: '/mypage#history', icon: '🎁', label: '獲得商品' },
             { href: '/purchase',       icon: '🪙', label: 'コイン' },
             { href: '/mypage',         icon: '👤', label: 'マイページ' },

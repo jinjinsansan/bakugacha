@@ -3,6 +3,7 @@ import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { logoutAction } from '@/app/(auth)/actions';
 import { LineLoginLink } from '@/components/layout/LineLoginLink';
+import { BRAND } from '@/lib/brand';
 
 const lineLoginEnabled = Boolean(process.env.LINE_LOGIN_CHANNEL_ID);
 const liffId = process.env.NEXT_PUBLIC_LIFF_ID ?? '';
@@ -28,8 +29,8 @@ export async function Header() {
       <div className="flex items-center justify-between max-w-[860px] w-full mx-auto px-4 sm:px-6 py-3">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <span className="text-xl sm:text-2xl font-black tracking-wider text-gold whitespace-nowrap">爆ガチャ</span>
-          <span className="hidden sm:inline text-[10px] font-bold tracking-[0.2em] text-gray-500 mt-1 whitespace-nowrap">BAKU GACHA</span>
+          <span className="text-xl sm:text-2xl font-black tracking-wider text-gold whitespace-nowrap">{BRAND.name}</span>
+          <span className="hidden sm:inline text-[10px] font-bold tracking-[0.2em] text-gray-500 mt-1 whitespace-nowrap">{BRAND.nameEn}</span>
         </Link>
 
         {/* Nav */}

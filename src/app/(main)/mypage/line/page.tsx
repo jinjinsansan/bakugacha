@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { getPublicEnv } from '@/lib/env';
+import { BRAND } from '@/lib/brand';
 
 const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
@@ -56,7 +57,7 @@ export default async function LinePerkPage({ searchParams }: LinePageProps) {
         <p className="text-[10px] font-bold tracking-[0.5em] text-gold uppercase mb-2">LINE BONUS</p>
         <h1 className="text-3xl font-black text-white mb-2">公式LINE友だち追加特典</h1>
         <p className="text-sm text-white/70">
-          爆ガチャ公式LINEを友だち追加すると、コインが即時に付与されます。
+          {BRAND.name}公式LINEを友だち追加すると、コインが即時に付与されます。
         </p>
       </div>
 
