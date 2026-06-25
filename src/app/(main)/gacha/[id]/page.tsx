@@ -6,7 +6,10 @@ import { fetchProductById } from '@/lib/data/gacha';
 import { getUserFromSession } from '@/lib/data/session';
 import { GachaPlayButton } from '@/components/gacha/GachaPlayButton';
 import { AvailabilityCountdown } from '@/components/gacha/AvailabilityCountdown';
+import { DropRateDisclosure } from '@/components/gacha/DropRateDisclosure';
 import { checkAvailability } from '@/lib/gacha/availability';
+import { computeWinRate } from '@/lib/gacha/win-rate';
+import { fetchCd2Settings } from '@/lib/data/cd2-gacha';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -41,6 +44,17 @@ export default async function GachaDetailPage({ params }: Props) {
     stockTotal && stockRemaining != null
       ? Math.round(((stockTotal - stockRemaining) / stockTotal) * 100)
       : null;
+
+  // ── 排出確率（景品表示法に基づく表記）の算出 ──
+  const gachaType: string = (row.gacha_type as string) ?? 'cd2';
+  const winRateOverride: number | null =
+    row.win_rate_override != null ? Number(row.win_rate_override) : null;
+  const prizeName: string = (row.prize_display_name as string) ?? title;
+  const hasCap = row.max_winners != null || stockTotal != null;
+  // cd2 で商品別オーバーライドが無い場合のみ共通設定を取得して実効確率を出す
+  const cd2Settings =
+    gachaType === 'cd2' && winRateOverride == null ? await fetchCd2Settings(supabase) : null;
+  const winRate = computeWinRate({ winRateOverride, gachaType, cd2Settings });
 
   return (
     <main className="min-h-screen pb-20 pt-6 md:pt-10" style={{ background: 'var(--bg-base)' }}>
@@ -120,6 +134,11 @@ export default async function GachaDetailPage({ params }: Props) {
         {/* 受付時間カウントダウン */}
         {(availableFrom || availableUntil) && (
           <AvailabilityCountdown availableFrom={availableFrom} availableUntil={availableUntil} />
+        )}
+
+        {/* 排出確率（景品表示法に基づく表記） */}
+        {winRate && (
+          <DropRateDisclosure rate={winRate} prizeName={prizeName} hasCap={hasCap} />
         )}
 
         {/* ガチャボタン */}
