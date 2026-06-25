@@ -11,7 +11,7 @@ export default function GlobalError({
 
   return (
     <html lang="ja">
-      <body style={{ margin: 0, background: '#0a0613', fontFamily: 'sans-serif' }}>
+      <body style={{ margin: 0, background: '#06070f', fontFamily: 'sans-serif' }}>
         <div
           style={{
             minHeight: '100vh',
@@ -34,7 +34,7 @@ export default function GlobalError({
             onClick={reset}
             style={{
               borderRadius: 9999,
-              background: 'linear-gradient(135deg, #ff3da6, #c026d3)',
+              background: 'linear-gradient(135deg, #ff2e9a, #c01e6e)',
               color: '#fff',
               fontWeight: 800,
               fontSize: 14,

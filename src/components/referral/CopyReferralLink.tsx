@@ -53,9 +53,9 @@ export function CopyReferralLink({ referralCode, bonusAmount }: Props) {
           style={{
             background: copied
               ? 'rgba(74, 222, 128, 0.2)'
-              : 'linear-gradient(135deg, rgba(255,203,69,0.3), rgba(255,203,69,0.1))',
-            border: copied ? '1px solid rgba(74, 222, 128, 0.4)' : '1px solid rgba(255,203,69,0.3)',
-            color: copied ? '#4ade80' : '#ffcb45',
+              : 'linear-gradient(135deg, rgba(216,177,90,0.3), rgba(216,177,90,0.1))',
+            border: copied ? '1px solid rgba(74, 222, 128, 0.4)' : '1px solid rgba(216,177,90,0.3)',
+            color: copied ? '#4ade80' : '#d8b15a',
           }}
         >
           {copied ? 'コピー済み!' : 'コピー'}

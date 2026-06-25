@@ -20,10 +20,10 @@ const ITEMS = [
     emoji: '👥',
     title: '友達を紹介する',
     description: 'マイページの紹介リンクをシェアするだけ。紹介するたびに300コイン、紹介された友達にも100コイン。',
-    accent: '#22d3ee',
-    accentBg: 'rgba(34,211,238,0.08)',
-    accentBorder: 'rgba(34,211,238,0.25)',
-    accentGlow: 'rgba(34,211,238,0.12)',
+    accent: '#38d2ff',
+    accentBg: 'rgba(56,210,255,0.08)',
+    accentBorder: 'rgba(56,210,255,0.25)',
+    accentGlow: 'rgba(56,210,255,0.12)',
     cta: { label: 'マイページへ →', href: '/mypage', external: false },
   },
   {
@@ -31,10 +31,10 @@ const ITEMS = [
     emoji: '🎟️',
     title: 'プロモコードを入力する',
     description: '特別なプロモーションコードをお持ちの方はマイページで入力するとコインが貰えます。',
-    accent: '#ffcb45',
-    accentBg: 'rgba(255,203,69,0.08)',
-    accentBorder: 'rgba(255,203,69,0.25)',
-    accentGlow: 'rgba(255,203,69,0.12)',
+    accent: '#d8b15a',
+    accentBg: 'rgba(216,177,90,0.08)',
+    accentBorder: 'rgba(216,177,90,0.25)',
+    accentGlow: 'rgba(216,177,90,0.12)',
     cta: { label: 'コードを入力する →', href: '/mypage', external: false },
   },
 ] as const;
@@ -44,18 +44,18 @@ export function WelcomeGuide() {
     <section className="max-w-[860px] mx-auto px-3 sm:px-4 mt-1 mb-3">
       {/* ヘッダー */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,61,166,0.3))' }} />
+        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,46,154,0.3))' }} />
         <span
           className="text-[10px] font-black tracking-[0.3em] uppercase px-3 py-1 rounded-full"
           style={{
-            background: 'rgba(255,61,166,0.08)',
-            border: '1px solid rgba(255,61,166,0.25)',
-            color: '#ff6ec0',
+            background: 'rgba(255,46,154,0.08)',
+            border: '1px solid rgba(255,46,154,0.25)',
+            color: '#ff72bf',
           }}
         >
           はじめての方へ
         </span>
-        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, rgba(255,61,166,0.3), transparent)' }} />
+        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, rgba(255,46,154,0.3), transparent)' }} />
       </div>
 
       {/* 3カードグリッド */}

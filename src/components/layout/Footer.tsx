@@ -20,7 +20,7 @@ export async function Footer() {
 
   return (
     <footer
-      style={{ background: '#080411', borderTop: '1px solid rgba(255,61,166,0.12)' }}
+      style={{ background: '#05060d', borderTop: '1px solid rgba(255,46,154,0.12)' }}
       className="text-white pt-14 pb-8"
     >
       <div className="max-w-[860px] w-full mx-auto px-6">
@@ -43,7 +43,7 @@ export async function Footer() {
             <div key={section.id}>
               <h3
                 className="text-[10px] font-bold tracking-[0.25em] uppercase mb-4"
-                style={{ color: '#ff6ec0' }}
+                style={{ color: '#ff72bf' }}
               >
                 {section.title}
               </h3>
@@ -72,9 +72,9 @@ export async function Footer() {
                 href="/admin"
                 className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-widest uppercase rounded-md transition-all hover:scale-105"
                 style={{
-                  background: 'linear-gradient(135deg, #1d1334 0%, #160e26 100%)',
-                  border: '1px solid rgba(255,61,166,0.3)',
-                  color: '#ff6ec0',
+                  background: 'linear-gradient(135deg, #141a2e 0%, #0d1020 100%)',
+                  border: '1px solid rgba(255,46,154,0.3)',
+                  color: '#ff72bf',
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

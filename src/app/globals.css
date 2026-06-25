@@ -1,213 +1,195 @@
 @import "tailwindcss";
 
 /* =====================================================================
-   GACHAPA — Design Direction C "NEO ARCADE"
-   Drop-in replacement for src/app/globals.css (Tailwind v4)
-   - 見た目のみの刷新。クラス名は現行を維持（.btn-gold / .btn-silver /
-     .btn-bronze / .btn-outline / .card-premium / .text-gold / .divider-gold）
-     ので、コンポーネント側の className 変更は基本不要。
-   - 既存トークン名（--gold* / --blue*）も互換のため残し、値を案C化。
+   GACHAPA — Design Direction "LEGENDARY" (cinematic evolution of NEO ARCADE)
+   ヒーローのキービジュアル（実写調3D・ドラゴンカード）に配色とトーンを統一。
+   src/app/globals.css へのドロップイン置換（Tailwind v4）。
+   クラス名は現行維持（.btn-gold/.btn-silver/.btn-bronze/.btn-outline/
+   .card-premium/.text-gold/.divider-gold）＋ 見出し用の明朝クラスを追加。
    ===================================================================== */
 
-/* ── CSS custom properties（トークン集約） ── */
 :root {
-  /* 背景 */
-  --bg-base:     #0a0613;
-  --bg-card:     #160e26;
-  --bg-elevated: #1d1334;
+  /* 背景（より暗くクールな黒） */
+  --bg-base:     #06070f;
+  --bg-card:     #0d1020;
+  --bg-elevated: #141a2e;
 
-  /* マゼンタ（プライマリ / 主CTA） */
-  --magenta:        #ff3da6;
-  --magenta-light:  #ff6ec0;
-  --magenta-dark:   #c026d3;
-  --magenta-glow:   rgba(255,61,166,0.45);
+  /* マゼンタ/ピンク（プライマリ・主CTA） */
+  --magenta:       #ff2e9a;
+  --magenta-light: #ff72bf;
+  --magenta-dark:  #c01e6e;
+  --magenta-glow:  rgba(255,46,154,0.45);
 
-  /* シアン（セカンダリ） */
-  --cyan:        #22d3ee;
-  --cyan-light:  #7df0ff;
+  /* シアン（セカンダリ・情報系） */
+  --cyan:        #38d2ff;
+  --cyan-light:  #8fe8ff;
+  --cyan-glow:   rgba(56,210,255,0.40);
 
-  /* バイオレット（レア/アクセント） */
-  --violet:       #a855f7;
-  --violet-light: #c084fc;
+  /* ゴールド（レア/プレミアム・カード枠・LEGENDARY） */
+  --gold:       #d8b15a;
+  --gold-light: #f0d68a;
+  --gold-dark:  #a8801f;
 
-  /* ゴールド（当たり/価格・互換名を維持） */
-  --gold:       #ffcb45;
-  --gold-light: #ffe08a;
-  --gold-dark:  #d9a520;
+  /* バイオレット（ホログラフィック・レア） */
+  --violet:       #9a7bff;
+  --violet-light: #c0a8ff;
 
-  /* 互換: 旧 --blue 参照を壊さないようシアン系へ寄せる */
-  --blue:       #22d3ee;
-  --blue-light: #7df0ff;
-  --blue-glow:  rgba(34,211,238,0.45);
+  /* 互換: 旧 --blue 参照はシアンへ */
+  --blue:       #38d2ff;
+  --blue-light: #8fe8ff;
+  --blue-glow:  rgba(56,210,255,0.40);
 
   /* テキスト */
-  --text:        #ece9f5;
-  --text-muted:  #b6abd0;
-  --text-dim:    #8a80a4;
+  --text:        #eef1f8;
+  --text-muted:  #a6aecb;
+  --text-dim:    #7c84a3;
 
   /* 罫線 */
-  --hairline:        rgba(255,255,255,0.06);
-  --hairline-magenta:rgba(255,61,166,0.18);
+  --hairline:         rgba(255,255,255,0.07);
+  --hairline-magenta: rgba(255,46,154,0.20);
+
+  /* フォント（layout で <link> 読み込み） */
+  --font-sans:  'Noto Sans JP','Hiragino Kaku Gothic ProN','Meiryo',sans-serif;
+  --font-serif: 'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;
+  --font-en:    'Outfit',var(--font-sans);
 }
 
-/* ── Base reset（utilities が上書きできるよう @layer base） ── */
 @layer base {
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html, body {
-    width: 100%;
-    overflow-x: hidden;
-  }
-
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; overflow-x:hidden; }
   body {
-    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    font-family: var(--font-sans);
     background-color: var(--bg-base);
     color: var(--text);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
-
-  /* アクセシビリティ: フォーカス可視化（キーボード操作時のみ） */
-  :focus-visible {
-    outline: 2px solid var(--magenta-light);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar { width: 5px; }
+  :focus-visible { outline: 2px solid var(--magenta-light); outline-offset: 2px; border-radius: 4px; }
+  ::-webkit-scrollbar { width:5px; }
   ::-webkit-scrollbar-track { background: var(--bg-base); }
-  ::-webkit-scrollbar-thumb { background: rgba(255,61,166,0.35); border-radius: 3px; }
-
-  /* モーション低減設定の尊重 */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+  ::-webkit-scrollbar-thumb { background: rgba(255,46,154,0.35); border-radius:3px; }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
   }
 }
 
-/* ── Utilities ── */
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-  /* ネオン系テキスト */
+  .scrollbar-hide::-webkit-scrollbar { display:none; }
+  .scrollbar-hide { -ms-overflow-style:none; scrollbar-width:none; }
+  .font-serif { font-family: var(--font-serif); }
+  .font-en    { font-family: var(--font-en); }
   .text-magenta { color: var(--magenta-light); }
   .text-cyan    { color: var(--cyan-light); }
 }
 
-/* ── Component classes（utilities が上書きできるよう @layer components） ── */
 @layer components {
 
-  /* ── プライマリ neon ボタン（主CTA・「1回」） ──
-     ※ クラス名は .btn-gold を維持。役割＝最優先アクション。 */
+  /* ── 見出し（明朝・白・字間広め）── ヒーローのキービジュアルに合わせた上質な見出し
+     例: <h1 class="headline-serif">最高の<span class="text-gold">ガチャ</span>体験を、あなたに。</h1> */
+  .headline-serif {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    line-height: 1.5;
+    color: #fff;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.7);
+  }
+  /* 見出し下の細い金ルール＋ダイヤ（キービジュアルのタグライン装飾を踏襲） */
+  .rule-diamond {
+    display:flex; align-items:center; gap:10px;
+  }
+  .rule-diamond::after {
+    content:""; flex:1; height:1px;
+    background: linear-gradient(90deg, rgba(216,177,90,0.7), rgba(216,177,90,0));
+  }
+
+  /* ── プライマリ neon ボタン（主CTA・「1回」）── */
   .btn-gold {
-    background: linear-gradient(135deg, var(--magenta) 0%, var(--magenta-dark) 55%, var(--gold) 100%);
-    box-shadow: 0 0 26px var(--magenta-glow), inset 0 1px 0 rgba(255,255,255,0.3);
-    border: none;
-    color: #ffffff;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-    cursor: pointer;
+    background: linear-gradient(135deg, var(--magenta) 0%, var(--magenta-dark) 55%, var(--violet) 100%);
+    box-shadow: 0 0 26px var(--magenta-glow), inset 0 1px 0 rgba(255,255,255,0.28);
+    border: none; color:#fff; font-weight:800; letter-spacing:0.03em;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; cursor:pointer;
   }
-  .btn-gold:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 34px var(--magenta-glow), inset 0 1px 0 rgba(255,255,255,0.4);
-    filter: saturate(1.08);
-  }
+  .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 0 34px var(--magenta-glow), inset 0 1px 0 rgba(255,255,255,0.4); filter: saturate(1.08); }
   .btn-gold:active { transform: translateY(1px); box-shadow: 0 0 14px var(--magenta-glow); }
 
-  /* ── セカンダリ cyan ボタン（「10回」・補助CTA） ── */
+  /* ── セカンダリ cyan ボタン（「10回」）── */
   .btn-silver {
     background: linear-gradient(135deg, var(--cyan-light) 0%, var(--cyan) 100%);
-    box-shadow: 0 0 18px rgba(34,211,238,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
-    border: none;
-    color: #06222a;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-    cursor: pointer;
+    box-shadow: 0 0 18px var(--cyan-glow), inset 0 1px 0 rgba(255,255,255,0.5);
+    border:none; color:#062430; font-weight:800; letter-spacing:0.03em;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; cursor:pointer;
   }
-  .btn-silver:hover { transform: translateY(-1px); box-shadow: 0 0 26px rgba(34,211,238,0.4); filter: saturate(1.08); }
-  .btn-silver:active { transform: translateY(1px); box-shadow: 0 0 12px rgba(34,211,238,0.3); }
+  .btn-silver:hover { transform: translateY(-1px); box-shadow: 0 0 26px var(--cyan-glow); filter: saturate(1.08); }
+  .btn-silver:active { transform: translateY(1px); }
 
-  /* ── ターシャリ gold ボタン（「100回」・高額枠） ── */
+  /* ── ターシャリ gold ボタン（「100回」・プレミアム）── */
   .btn-bronze {
-    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
-    box-shadow: 0 0 18px rgba(255,203,69,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
-    border: none;
-    color: #3a2a06;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-    cursor: pointer;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 55%, var(--gold-dark) 100%);
+    box-shadow: 0 0 18px rgba(216,177,90,0.3), inset 0 1px 0 rgba(255,255,255,0.45);
+    border:none; color:#2a1e06; font-weight:800; letter-spacing:0.03em;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; cursor:pointer;
   }
-  .btn-bronze:hover { transform: translateY(-1px); box-shadow: 0 0 26px rgba(255,203,69,0.4); filter: saturate(1.08); }
-  .btn-bronze:active { transform: translateY(1px); box-shadow: 0 0 12px rgba(255,203,69,0.3); }
+  .btn-bronze:hover { transform: translateY(-1px); box-shadow: 0 0 26px rgba(216,177,90,0.4); filter: saturate(1.06); }
+  .btn-bronze:active { transform: translateY(1px); }
 
-  /* ── ゴースト/アウトライン ── */
+  /* ── ゴースト ── */
   .btn-outline {
     background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,61,166,0.4);
+    border: 1px solid rgba(255,46,154,0.4);
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    letter-spacing: 0.04em;
-    font-weight: 700;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.18s ease;
+    letter-spacing:0.04em; font-weight:700; color: var(--text-muted); cursor:pointer; transition: all .18s ease;
   }
-  .btn-outline:hover {
-    border-color: var(--magenta-light);
-    color: #ffffff;
-    background: rgba(255,61,166,0.08);
-    box-shadow: 0 0 16px rgba(255,61,166,0.25);
-    transform: translateY(-1px);
-  }
-  .btn-outline:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  .btn-outline:hover { border-color: var(--magenta-light); color:#fff; background: rgba(255,46,154,0.08); box-shadow: 0 0 16px rgba(255,46,154,0.25); transform: translateY(-1px); }
+  .btn-outline:active { transform: translateY(1px); }
 
   /* ── プレミアムカード ── */
   .card-premium {
     background: var(--bg-card);
     border: 1px solid var(--hairline);
-    box-shadow:
-      0 4px 24px rgba(10,0,30,0.5),
-      inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 24px rgba(2,4,12,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: all .2s ease;
   }
   .card-premium:hover {
-    border-color: rgba(255,61,166,0.35);
-    box-shadow:
-      0 8px 32px rgba(10,0,30,0.6),
-      0 0 0 1px rgba(255,61,166,0.2),
-      0 0 28px rgba(255,61,166,0.15);
+    border-color: rgba(255,46,154,0.35);
+    box-shadow: 0 8px 32px rgba(2,4,12,0.7), 0 0 0 1px rgba(255,46,154,0.2), 0 0 28px rgba(255,46,154,0.15);
     transform: translateY(-3px);
   }
 
-  /* ── ゴールドテキスト（価格・コイン等の金色アクセントは維持） ── */
+  /* ── 金テキスト（価格・コイン・レア）── */
   .text-gold {
     background: linear-gradient(135deg, var(--gold-light), var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   }
-
-  /* ── ブランド/見出し用 ネオングラデーション（新規） ── */
+  /* ── ブランド/英字見出しのネオングラデ ── */
   .text-neon {
-    background: linear-gradient(135deg, var(--magenta-light), var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: linear-gradient(135deg, var(--magenta-light), var(--gold-light));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   }
 
-  /* ── 区切り線（マゼンタ→ゴールドのネオン） ── */
-  .divider-gold {
-    height: 1px;
-    background: linear-gradient(90deg,
-      transparent, rgba(255,61,166,0.5), rgba(255,203,69,0.6),
-      rgba(255,61,166,0.5), transparent
-    );
+  /* ── レアリティ・バッジ（LEGENDARY 等。キービジュアルのカードに準拠）── */
+  .rarity-legendary {
+    font-family: var(--font-en); font-weight:800; letter-spacing:0.18em;
+    background: linear-gradient(135deg, #fff4d8, var(--gold-light), var(--gold));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .badge-legendary {
+    border:1px solid rgba(216,177,90,0.6);
+    background: linear-gradient(135deg, rgba(216,177,90,0.18), rgba(216,177,90,0.04));
+    color: var(--gold-light); box-shadow: 0 0 16px rgba(216,177,90,0.2);
+  }
+
+  /* ── 区切り線 ── */
+  .divider-gold { height:1px; background: linear-gradient(90deg, transparent, rgba(255,46,154,0.5), rgba(216,177,90,0.6), rgba(255,46,154,0.5), transparent); }
+
+  /* ── ヒーロー用スクリム（任意のキービジュアル画像の上で文字を読みやすく）──
+     画像レイヤーの上に重ねる。PCは左→暗、モバイルは下→暗。 */
+  .hero-scrim-left {
+    position:absolute; inset:0; pointer-events:none;
+    background: linear-gradient(90deg, rgba(6,7,15,0.92) 0%, rgba(6,7,15,0.72) 32%, rgba(6,7,15,0) 62%);
+  }
+  .hero-scrim-bottom {
+    position:absolute; inset:0; pointer-events:none;
+    background: linear-gradient(0deg, rgba(6,7,15,0.96) 0%, rgba(6,7,15,0.55) 35%, rgba(6,7,15,0) 60%);
   }
 }

@@ -2,86 +2,77 @@ import Link from 'next/link';
 
 // 事実ベースの信頼インジケーター（架空の実績値は使わない）
 const TRUST = [
-  { label: '確率・在庫を公開', accent: '#7df0ff' },
-  { label: 'SSL安全決済', accent: '#ff6ec0' },
-  { label: '20歳以上対象', accent: '#ffcb45' },
+  { label: '確率・在庫を公開', accent: '#8fe8ff' },
+  { label: 'SSL安全決済', accent: '#ff72bf' },
+  { label: '20歳以上対象', accent: '#f0d68a' },
 ] as const;
 
 export function HeroSection() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        background:
-          'radial-gradient(100% 70% at 20% 0%, rgba(255,61,166,0.22), transparent 60%), radial-gradient(90% 70% at 100% 30%, rgba(34,211,238,0.18), transparent 55%), #0a0613',
-      }}
-    >
-      <div className="divider-gold absolute top-0 left-0 right-0" />
+    <section className="relative w-full overflow-hidden" style={{ background: '#06070f' }}>
 
-      <div className="relative max-w-[860px] mx-auto px-5 py-12 md:px-6 md:py-20">
-        <div className="max-w-xl">
-          {/* プレリリースバッジ */}
-          <div className="mb-4">
-            <span
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-[0.16em]"
-              style={{ background: 'rgba(34,211,238,0.12)', border: '1px solid rgba(34,211,238,0.45)', color: '#7df0ff' }}
-            >
-              <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: '#22d3ee', boxShadow: '0 0 8px #22d3ee' }} />
-              PRE-RELEASE β
-            </span>
+      {/* ===== PC（md+）: タグライン焼き込みのキービジュアルをそのまま使い、CTAを左下に重ねる ===== */}
+      <div className="relative hidden md:block">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hero-bg.webp" alt="" aria-hidden="true" className="block w-full h-auto" />
+        <div className="absolute inset-0">
+          <div className="mx-auto flex h-full max-w-[1100px] items-end px-10 pb-12">
+            <Link href="/#products">
+              <button className="btn-gold px-9 py-4 rounded-2xl text-sm font-black shadow-xl">
+                今すぐガチャを引く
+              </button>
+            </Link>
           </div>
+        </div>
+      </div>
 
-          {/* エイブロウ */}
-          <p
-            className="text-[10px] font-black tracking-[0.3em] mb-3"
-            style={{ fontFamily: "'Outfit', sans-serif", color: '#ff6ec0' }}
-          >
-            PREMIUM GACHA EXPERIENCE
-          </p>
-
-          {/* 見出し */}
-          <h1
-            className="text-4xl md:text-5xl font-black leading-[1.16] mb-4 text-white"
-            style={{ letterSpacing: '-0.01em', textShadow: '0 0 30px rgba(255,61,166,0.3)' }}
-          >
-            最高の<span className="text-neon">ガチャ</span>体験を、<br />あなたに。
-          </h1>
-
-          {/* 本文 */}
-          <p className="mb-7 text-sm leading-loose" style={{ color: '#a99fc4' }}>
-            ポケモン・ワンピース・遊戯王・任天堂スイッチ・Amazonギフト券。<br className="hidden md:block" />
-            引くたびに沸き立つ演出。当たりはそのまま発送、確率も在庫もすべて公開。
-          </p>
-
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-7">
-            <Link href="/#products" className="w-full sm:flex-1">
+      {/* ===== モバイル: 文字なし画像＋下スクリム＋明朝見出し＋CTA ===== */}
+      <div className="relative md:hidden">
+        <div className="relative w-full" style={{ aspectRatio: '3 / 4', maxHeight: '72vh' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero-bg-mobile.webp"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: 'center top' }}
+          />
+          <div className="hero-scrim-bottom" />
+          <div className="absolute inset-x-0 bottom-0 px-5 pb-7">
+            <p
+              className="font-en mb-3 text-[10px] font-black tracking-[0.3em]"
+              style={{ color: 'var(--magenta-light)' }}
+            >
+              PREMIUM GACHA EXPERIENCE
+            </p>
+            <h1 className="headline-serif mb-5 text-2xl">
+              最高の<span className="text-gold">ガチャ</span>体験を、あなたに。
+            </h1>
+            <Link href="/#products">
               <button className="btn-gold w-full px-8 py-4 rounded-2xl text-sm font-black shadow-xl">
                 今すぐガチャを引く
               </button>
             </Link>
-            <Link href="/#products" className="w-full sm:w-auto">
-              <button className="btn-outline w-full px-8 py-4 rounded-2xl text-sm font-bold">
-                ガチャ一覧を見る
-              </button>
-            </Link>
           </div>
-
-          {/* 信頼インジケーター */}
-          <div className="flex flex-wrap gap-x-5 gap-y-2 pt-5" style={{ borderTop: '1px solid rgba(255,61,166,0.14)' }}>
-            {TRUST.map((t) => (
-              <div key={t.label} className="flex items-center gap-1.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: t.accent }} />
-                <span className="text-[11px] font-bold" style={{ color: '#b6abd0' }}>{t.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* プレリリース注記 */}
-          <p className="mt-4 text-[11px] leading-relaxed" style={{ color: '#8a80a4' }}>
-            ⚠ 現在プレリリース版として公開中です。機能追加・改善のため予告なくメンテナンスを行う場合があります。
-          </p>
         </div>
+      </div>
+
+      {/* ===== Hero 下: 信頼インジケーター＋プレリリース注記（共通） ===== */}
+      <div className="relative" style={{ background: '#06070f' }}>
+        <div
+          className="mx-auto flex max-w-[860px] flex-wrap justify-center gap-x-6 gap-y-2 px-5 py-4 md:justify-start"
+          style={{ borderTop: '1px solid rgba(255,46,154,0.14)' }}
+        >
+          {TRUST.map((t) => (
+            <div key={t.label} className="flex items-center gap-1.5">
+              <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: t.accent }} />
+              <span className="text-[11px] font-bold" style={{ color: '#a6aecb' }}>{t.label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mx-auto max-w-[860px] px-5 pb-4 text-[11px] leading-relaxed" style={{ color: '#7c84a3' }}>
+          ⚠ 現在プレリリース版として公開中です。機能追加・改善のため予告なくメンテナンスを行う場合があります。
+        </p>
       </div>
 
       <div className="divider-gold absolute bottom-0 left-0 right-0" />
