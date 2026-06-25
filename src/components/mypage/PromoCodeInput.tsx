@@ -32,8 +32,8 @@ export function PromoCodeInput() {
     <div
       className="rounded-2xl p-5 mb-6 overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04))',
-        border: '1px solid rgba(139,92,246,0.35)',
+        background: 'linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04))',
+        border: '1px solid rgba(168,85,247,0.35)',
       }}
     >
       <div className="flex items-start gap-3 mb-3 min-w-0">
@@ -62,8 +62,8 @@ export function PromoCodeInput() {
           disabled={isPending || !code.trim()}
           className="shrink-0 px-4 py-2.5 rounded-lg text-xs font-black whitespace-nowrap text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
-            background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
-            boxShadow: '0 2px 8px rgba(124,58,237,0.35)',
+            background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+            boxShadow: '0 2px 8px rgba(168,85,247,0.35)',
           }}
         >
           {isPending ? '処理中' : '引換'}

@@ -68,11 +68,12 @@ export default async function PurchasePage() {
             className="relative rounded-2xl p-6"
             style={{
               background: plan.badge === 'おすすめ'
-                ? 'linear-gradient(135deg, #0f0f28, #141430)'
-                : '#0a0a1c',
+                ? 'linear-gradient(135deg, #1d1334, #160e26)'
+                : '#160e26',
               border: plan.badge === 'おすすめ'
-                ? '1px solid rgba(201,168,76,0.4)'
+                ? '1px solid rgba(255,61,166,0.4)'
                 : '1px solid rgba(255,255,255,0.07)',
+              boxShadow: plan.badge === 'おすすめ' ? '0 0 24px rgba(255,61,166,0.12)' : undefined,
             }}
           >
             {/* バッジ */}
@@ -81,9 +82,9 @@ export default async function PurchasePage() {
                 className="absolute top-4 right-4 text-[10px] font-black px-2.5 py-1 rounded-full"
                 style={{
                   background: plan.badge === 'おすすめ'
-                    ? 'linear-gradient(135deg, #c9a84c, #8a6e1e)'
-                    : 'rgba(74,222,128,0.2)',
-                  color: plan.badge === 'おすすめ' ? '#0a0800' : '#4ade80',
+                    ? 'linear-gradient(135deg, #ff3da6, #c026d3)'
+                    : 'rgba(34,211,238,0.18)',
+                  color: plan.badge === 'おすすめ' ? '#fff' : '#7df0ff',
                 }}
               >
                 {plan.badge}
@@ -98,7 +99,7 @@ export default async function PurchasePage() {
                 🪙 {plan.coins.toLocaleString()}
               </span>
               {plan.bonus > 0 && (
-                <span className="text-sm font-bold" style={{ color: '#4ade80' }}>
+                <span className="text-sm font-bold" style={{ color: '#7df0ff' }}>
                   +{plan.bonus}
                 </span>
               )}
@@ -124,7 +125,7 @@ export default async function PurchasePage() {
       {/* 注意事項 */}
       <div
         className="rounded-xl p-5 text-xs text-gray-500 leading-relaxed"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(255,255,255,0.05)' }}
+        style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.05)' }}
       >
         <p className="font-bold text-gray-400 mb-2">ご注意</p>
         <ul className="space-y-1 list-disc list-inside">

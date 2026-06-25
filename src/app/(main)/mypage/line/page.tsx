@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
 import { getPublicEnv } from '@/lib/env';
+import { BRAND } from '@/lib/brand';
 
 const LINE_REWARD_COINS = Number(process.env.LINE_REWARD_COINS ?? 300);
 
@@ -52,24 +53,24 @@ export default async function LinePerkPage({ searchParams }: LinePageProps) {
 
       {/* Header */}
       <div className="rounded-2xl p-6 text-center mb-6"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(201,168,76,0.25)' }}>
+        style={{ background: '#160e26', border: '1px solid rgba(255,61,166,0.18)' }}>
         <p className="text-[10px] font-bold tracking-[0.5em] text-gold uppercase mb-2">LINE BONUS</p>
         <h1 className="text-3xl font-black text-white mb-2">公式LINE友だち追加特典</h1>
         <p className="text-sm text-white/70">
-          爆ガチャ公式LINEを友だち追加すると、コインが即時に付与されます。
+          {BRAND.name}公式LINEを友だち追加すると、コインが即時に付与されます。
         </p>
       </div>
 
       {/* Bonus + Action */}
       <div className="rounded-2xl p-6 mb-6"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(255,255,255,0.07)' }}>
+        style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div>
             <p className="text-[10px] tracking-[0.4em] text-gray-500 uppercase">Bonus Coins</p>
             <p className="text-sm text-white/70 mt-1">友だち追加で即時に受け取れます</p>
           </div>
           <div className="rounded-2xl px-6 py-3 text-center"
-            style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)' }}>
+            style={{ background: 'rgba(255,203,69,0.1)', border: '1px solid rgba(255,203,69,0.3)' }}>
             <p className="text-[10px] tracking-[0.4em] text-gold uppercase">Bonus</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-2xl">🪙</span>
@@ -117,7 +118,7 @@ export default async function LinePerkPage({ searchParams }: LinePageProps) {
 
       {/* Steps */}
       <div className="rounded-2xl p-6 mb-6"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(255,255,255,0.07)' }}>
+        style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h2 className="text-sm font-black text-white tracking-wider mb-4">獲得ステップ</h2>
         <ol className="space-y-3 text-sm">
           <li className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -137,7 +138,7 @@ export default async function LinePerkPage({ searchParams }: LinePageProps) {
 
       {/* FAQ */}
       <div className="rounded-2xl p-6"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(255,255,255,0.07)' }}>
+        style={{ background: '#160e26', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h2 className="text-sm font-black text-white tracking-wider mb-4">よくある質問</h2>
         <div className="space-y-3 text-sm">
           <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>

@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { BRAND } from '@/lib/brand';
 
 interface MaintenancePageProps {
   title: string;
@@ -17,15 +17,13 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
       <div className="w-full max-w-md flex-1 flex flex-col items-center justify-center">
 
         {/* ── ロゴ ── */}
-        <div className="mb-8 select-none">
-          <Image
-            src="/baku_gacha_logo_final.png"
-            alt="爆ガチャ"
-            width={220}
-            height={110}
-            priority
-            className="drop-shadow-[0_0_24px_rgba(201,168,76,0.35)]"
-          />
+        <div className="mb-8 select-none text-center">
+          <span
+            className="text-5xl font-black tracking-wide text-neon"
+            style={{ fontFamily: "'Outfit', sans-serif" }}
+          >
+            {BRAND.nameEn}
+          </span>
         </div>
 
         {/* ── メンテナンスカード ── */}
@@ -34,9 +32,9 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
           <div
             className="relative w-20 h-20 flex items-center justify-center rounded-full"
             style={{
-              background: 'linear-gradient(135deg, rgba(201,168,76,0.25), rgba(201,168,76,0.05))',
-              border: '1px solid rgba(201,168,76,0.4)',
-              boxShadow: '0 0 24px rgba(201,168,76,0.2), inset 0 0 12px rgba(201,168,76,0.15)',
+              background: 'linear-gradient(135deg, rgba(255,61,166,0.25), rgba(255,61,166,0.05))',
+              border: '1px solid rgba(255,61,166,0.4)',
+              boxShadow: '0 0 24px rgba(255,61,166,0.2), inset 0 0 12px rgba(255,61,166,0.15)',
             }}
           >
             <svg
@@ -54,9 +52,9 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
           <span
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase"
             style={{
-              background: 'rgba(201,168,76,0.12)',
+              background: 'rgba(255,61,166,0.12)',
               color: 'var(--gold-light)',
-              border: '1px solid rgba(201,168,76,0.35)',
+              border: '1px solid rgba(255,61,166,0.35)',
             }}
           >
             <span
@@ -75,7 +73,7 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
           <div
             className="w-24 h-[1px]"
             style={{
-              background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.6), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(255,61,166,0.6), transparent)',
             }}
           />
 
@@ -117,7 +115,7 @@ export function MaintenancePage({ title, message }: MaintenancePageProps) {
         </a>
 
         <p className="text-[11px] text-white/30 mt-2">
-          © 爆ガチャ
+          © {BRAND.name}
         </p>
       </div>
     </div>

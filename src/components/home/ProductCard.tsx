@@ -35,9 +35,9 @@ export function ProductCard({ product }: ProductCardProps) {
         <div
           className="absolute top-3 right-3 z-10 text-xs font-black px-2.5 py-1 rounded-lg"
           style={{
-            background: 'linear-gradient(135deg, #c9a84c, #8a6e1e)',
-            color: '#0a0800',
-            boxShadow: '0 2px 8px rgba(180,140,40,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
+            background: 'linear-gradient(135deg, #ffe08a, #ffcb45)',
+            color: '#3a2a06',
+            boxShadow: '0 2px 8px rgba(255,203,69,0.4), inset 0 1px 0 rgba(255,255,255,0.3)',
             letterSpacing: '0.03em',
           }}
         >
@@ -109,7 +109,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {isBeforeOpen && (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/60 gap-2">
               <span className="text-xs font-black tracking-widest px-4 py-1.5 rounded-full"
-                style={{ background: 'rgba(201,168,76,0.9)', color: '#0a0800' }}>
+                style={{ background: 'rgba(255,203,69,0.9)', color: '#3a2a06' }}>
                 受付前
               </span>
               {product.opensAt && (
@@ -159,7 +159,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 </div>
               </>
             ) : product.stock?.remaining ? (
-              <p className="text-xs text-right" style={{ color: '#c9a84c' }}>残りあり</p>
+              <p className="text-xs text-right" style={{ color: '#ffcb45' }}>残りあり</p>
             ) : null}
           </div>
         </div>
@@ -168,7 +168,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {isBeforeOpen ? (
           <Link href={product.href}
             className="flex items-center justify-center w-full h-10 rounded-xl text-xs font-black tracking-wider"
-            style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)', color: '#e8c76a' }}>
+            style={{ background: 'rgba(255,203,69,0.15)', border: '1px solid rgba(255,203,69,0.4)', color: '#ffe08a' }}>
             詳細・カウントダウンを見る →
           </Link>
         ) : isAfterClose ? (

@@ -7,6 +7,7 @@ import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startCd2Gacha } from '@/lib/api/cd2-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
+import { BRAND } from '@/lib/brand';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 type VideoItem = {
@@ -273,7 +274,7 @@ function ResultCard({
         </button>
         <div className="grid grid-cols-4 gap-2">
           {([
-            { href: '/home',           icon: '🏠', label: '爆ガチャ' },
+            { href: '/home',           icon: '🏠', label: BRAND.name },
             { href: '/mypage#history', icon: '🎁', label: '獲得商品' },
             { href: '/purchase',       icon: '🪙', label: 'コイン' },
             { href: '/mypage',         icon: '👤', label: 'マイページ' },

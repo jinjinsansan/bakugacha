@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { footerSections } from '@/lib/data/footerSections';
 import { getServiceSupabase } from '@/lib/supabase/service';
 import { getUserFromSession } from '@/lib/data/session';
+import { BRAND } from '@/lib/brand';
 
 function isAdmin(user: Record<string, unknown> | null): boolean {
   if (!user) return false;
@@ -19,14 +20,19 @@ export async function Footer() {
 
   return (
     <footer
-      style={{ background: '#03030c', borderTop: '1px solid rgba(201,168,76,0.15)' }}
+      style={{ background: '#080411', borderTop: '1px solid rgba(255,61,166,0.12)' }}
       className="text-white pt-14 pb-8"
     >
       <div className="max-w-[860px] w-full mx-auto px-6">
         {/* Logo */}
         <div className="flex items-end gap-3 mb-10">
-          <span className="text-3xl font-black tracking-wider text-gold">爆ガチャ</span>
-          <span className="text-xs font-bold tracking-[0.3em] text-gray-600 mb-1">BAKU GACHA</span>
+          <span
+            className="text-3xl font-black tracking-wide text-neon"
+            style={{ fontFamily: "'Outfit', sans-serif" }}
+          >
+            {BRAND.nameEn}
+          </span>
+          <span className="text-xs font-bold tracking-[0.3em] text-gray-600 mb-1.5">{BRAND.name}</span>
         </div>
 
         <div className="divider-gold mb-10" />
@@ -37,7 +43,7 @@ export async function Footer() {
             <div key={section.id}>
               <h3
                 className="text-[10px] font-bold tracking-[0.25em] uppercase mb-4"
-                style={{ color: '#c9a84c' }}
+                style={{ color: '#ff6ec0' }}
               >
                 {section.title}
               </h3>
@@ -66,9 +72,9 @@ export async function Footer() {
                 href="/admin"
                 className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold tracking-widest uppercase rounded-md transition-all hover:scale-105"
                 style={{
-                  background: 'linear-gradient(135deg, #1a1a3e 0%, #0f0f28 100%)',
-                  border: '1px solid rgba(201,168,76,0.3)',
-                  color: '#c9a84c',
+                  background: 'linear-gradient(135deg, #1d1334 0%, #160e26 100%)',
+                  border: '1px solid rgba(255,61,166,0.3)',
+                  color: '#ff6ec0',
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -83,8 +89,8 @@ export async function Footer() {
 
         <div className="divider-gold mb-6" />
 
-        <p className="text-[10px] text-center tracking-widest text-gray-600 uppercase">
-          © {new Date().getFullYear()} 爆ガチャ — All Rights Reserved.
+        <p className="text-[10px] text-center tracking-wide text-gray-600 leading-relaxed">
+          © {new Date().getFullYear()} {BRAND.nameEn}. 20歳以上対象。表示価格は税込。当選確率・在庫は各ガチャ詳細に明記。
         </p>
       </div>
     </footer>

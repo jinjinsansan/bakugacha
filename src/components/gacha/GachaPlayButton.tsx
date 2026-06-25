@@ -59,8 +59,8 @@ export function GachaPlayButton({
           <div
             className="rounded-xl p-4"
             style={{
-              background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04))',
-              border: '1px solid rgba(139,92,246,0.35)',
+              background: 'linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.04))',
+              border: '1px solid rgba(168,85,247,0.35)',
             }}
           >
             <p className="text-xs font-bold text-purple-300 mb-2">🎟️ この商品は権利コードが必要です</p>
@@ -80,7 +80,7 @@ export function GachaPlayButton({
                 className="shrink-0 px-5 py-2.5 rounded-lg font-black text-sm text-white disabled:opacity-50"
                 style={{
                   background: accessCode.trim()
-                    ? 'linear-gradient(135deg, #7c3aed, #5b21b6)'
+                    ? 'linear-gradient(135deg, #a855f7, #7c3aed)'
                     : 'rgba(255,255,255,0.1)',
                 }}
                 disabled={!accessCode.trim()}

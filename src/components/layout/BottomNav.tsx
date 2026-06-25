@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Sparkles, Trophy, User } from 'lucide-react';
+import { Home, LayoutGrid, Trophy, User } from 'lucide-react';
 
 const ITEMS = [
   { href: '/', label: 'ホーム', icon: Home },
-  { href: '/#products', label: 'ガチャ', icon: Sparkles },
-  { href: '/#ranking', label: 'ランキング', icon: Trophy },
+  { href: '/#products', label: '一覧', icon: LayoutGrid },
+  { href: '/#winners', label: '当選', icon: Trophy },
   { href: '/mypage', label: 'マイページ', icon: User },
 ] as const;
 
@@ -23,8 +23,12 @@ export function BottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t border-white/10 bg-black/90 backdrop-blur-sm"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 backdrop-blur-sm"
+      style={{
+        background: 'rgba(12,7,24,0.96)',
+        borderTop: '1px solid rgba(255,61,166,0.22)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
       aria-label="メインナビゲーション"
     >
       <div className="grid grid-cols-4 max-w-[860px] mx-auto">
@@ -35,7 +39,7 @@ export function BottomNav() {
               key={href}
               href={href}
               className="flex flex-col items-center justify-center gap-1 py-2.5"
-              style={{ color: active ? 'var(--gold, #c9a84c)' : 'rgba(255,255,255,0.55)' }}
+              style={{ color: active ? 'var(--magenta-light, #ff6ec0)' : '#8a80a4' }}
               aria-current={active ? 'page' : undefined}
             >
               <Icon size={20} strokeWidth={active ? 2.4 : 1.8} />

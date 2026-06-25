@@ -1,3 +1,5 @@
+import { BRAND } from '@/lib/brand';
+
 export interface NewsItem {
   readonly id: string;
   readonly date: string;
@@ -9,7 +11,7 @@ export const newsItems: NewsItem[] = [
   {
     id: 'news-1',
     date: '2026年2月28日',
-    title: '爆ガチャ オープンのお知らせ',
+    title: `${BRAND.name} オープンのお知らせ`,
     href: '/news/1',
   },
   {

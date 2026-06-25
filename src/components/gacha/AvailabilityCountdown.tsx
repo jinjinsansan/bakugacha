@@ -44,14 +44,14 @@ export function AvailabilityCountdown({ availableFrom, availableUntil }: Props) 
       <div
         className="rounded-2xl p-4 text-center"
         style={{
-          background: 'linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04))',
-          border: '1px solid rgba(201,168,76,0.4)',
+          background: 'linear-gradient(135deg, rgba(255,203,69,0.12), rgba(255,203,69,0.04))',
+          border: '1px solid rgba(255,203,69,0.4)',
         }}
       >
         <p className="text-[10px] tracking-[0.3em] text-yellow-500/70 uppercase font-bold mb-1">受付開始まで</p>
         <p
           className="text-4xl font-black tabular-nums tracking-widest"
-          style={{ color: '#e8c76a', textShadow: '0 0 20px rgba(201,168,76,0.4)' }}
+          style={{ color: '#ffe08a', textShadow: '0 0 20px rgba(255,203,69,0.4)' }}
         >
           {formatCountdown(remaining)}
         </p>

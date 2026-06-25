@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BRAND } from '@/lib/brand';
 
 const LINE_URL = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/tk6qrdP';
 
@@ -7,7 +8,7 @@ const ITEMS = [
     step: '01',
     emoji: '💚',
     title: '公式LINEを追加する',
-    description: '爆ガチャ公式LINEを友達追加するだけで300コインプレゼント！まずここからスタート。',
+    description: `${BRAND.name}公式LINEを友達追加するだけで300コインプレゼント！まずここからスタート。`,
     accent: '#06C755',
     accentBg: 'rgba(6,199,85,0.08)',
     accentBorder: 'rgba(6,199,85,0.25)',
@@ -19,10 +20,10 @@ const ITEMS = [
     emoji: '👥',
     title: '友達を紹介する',
     description: 'マイページの紹介リンクをシェアするだけ。紹介するたびに300コイン、紹介された友達にも100コイン。',
-    accent: '#a78bfa',
-    accentBg: 'rgba(139,92,246,0.08)',
-    accentBorder: 'rgba(139,92,246,0.25)',
-    accentGlow: 'rgba(139,92,246,0.12)',
+    accent: '#22d3ee',
+    accentBg: 'rgba(34,211,238,0.08)',
+    accentBorder: 'rgba(34,211,238,0.25)',
+    accentGlow: 'rgba(34,211,238,0.12)',
     cta: { label: 'マイページへ →', href: '/mypage', external: false },
   },
   {
@@ -30,10 +31,10 @@ const ITEMS = [
     emoji: '🎟️',
     title: 'プロモコードを入力する',
     description: '特別なプロモーションコードをお持ちの方はマイページで入力するとコインが貰えます。',
-    accent: '#c9a84c',
-    accentBg: 'rgba(201,168,76,0.08)',
-    accentBorder: 'rgba(201,168,76,0.25)',
-    accentGlow: 'rgba(201,168,76,0.12)',
+    accent: '#ffcb45',
+    accentBg: 'rgba(255,203,69,0.08)',
+    accentBorder: 'rgba(255,203,69,0.25)',
+    accentGlow: 'rgba(255,203,69,0.12)',
     cta: { label: 'コードを入力する →', href: '/mypage', external: false },
   },
 ] as const;
@@ -43,18 +44,18 @@ export function WelcomeGuide() {
     <section className="max-w-[860px] mx-auto px-3 sm:px-4 mt-1 mb-3">
       {/* ヘッダー */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.3))' }} />
+        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,61,166,0.3))' }} />
         <span
           className="text-[10px] font-black tracking-[0.3em] uppercase px-3 py-1 rounded-full"
           style={{
-            background: 'rgba(201,168,76,0.08)',
-            border: '1px solid rgba(201,168,76,0.25)',
-            color: '#e8c76a',
+            background: 'rgba(255,61,166,0.08)',
+            border: '1px solid rgba(255,61,166,0.25)',
+            color: '#ff6ec0',
           }}
         >
           はじめての方へ
         </span>
-        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, rgba(201,168,76,0.3), transparent)' }} />
+        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, rgba(255,61,166,0.3), transparent)' }} />
       </div>
 
       {/* 3カードグリッド */}

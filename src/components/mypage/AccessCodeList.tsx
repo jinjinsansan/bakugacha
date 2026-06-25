@@ -30,7 +30,7 @@ export function AccessCodeList() {
   if (loading) {
     return (
       <div className="rounded-2xl overflow-hidden mb-6"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(139,92,246,0.25)' }}>
+        style={{ background: '#160e26', border: '1px solid rgba(168,85,247,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">🎟️ 権利コード</h2>
         </div>
@@ -45,11 +45,11 @@ export function AccessCodeList() {
 
   return (
     <div className="rounded-2xl overflow-hidden mb-6"
-      style={{ background: '#0a0a1c', border: '1px solid rgba(139,92,246,0.25)' }}>
+      style={{ background: '#160e26', border: '1px solid rgba(168,85,247,0.25)' }}>
       <div className="px-5 py-4 border-b border-white/5">
         <h2 className="text-sm font-black text-white tracking-wider">
           🎟️ 権利コード
-          <span className="ml-2 text-xs font-bold" style={{ color: '#a78bfa' }}>{codes.length}件</span>
+          <span className="ml-2 text-xs font-bold" style={{ color: '#c084fc' }}>{codes.length}件</span>
         </h2>
       </div>
 
@@ -61,7 +61,7 @@ export function AccessCodeList() {
                 <p className="text-xs text-gray-400 mb-1">対象: {ac.targetProductTitle}</p>
                 <p
                   className="text-lg font-black tracking-[0.15em] cursor-pointer select-all"
-                  style={{ color: '#a78bfa' }}
+                  style={{ color: '#c084fc' }}
                   onClick={() => handleCopy(ac.code)}
                   title="タップでコピー"
                 >
@@ -74,7 +74,7 @@ export function AccessCodeList() {
               <a
                 href={`/gacha/${ac.targetProductId}`}
                 className="shrink-0 px-4 py-2 rounded-xl text-xs font-black text-white transition hover:scale-[1.02]"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}
+                style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}
               >
                 ガチャへ
               </a>

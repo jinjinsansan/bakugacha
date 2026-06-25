@@ -9,24 +9,36 @@ export function CategoryTabs() {
   return (
     <div
       className="sticky z-40 top-[52px] w-full overflow-x-auto scrollbar-hide"
-      style={{ background: '#07071a', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+      style={{ background: '#0c0718', borderBottom: '1px solid rgba(255,61,166,0.12)' }}
     >
-      <div role="tablist" className="flex sm:justify-center max-w-[860px] min-w-max w-full mx-auto px-2 sm:px-0">
-        {categories.map((cat, i) => (
-          <button
-            key={cat.id}
-            role="tab"
-            type="button"
-            className="shrink-0 text-center px-4 sm:px-6 py-3.5 transition-all duration-200 text-xs font-bold tracking-widest uppercase whitespace-nowrap"
-            style={{
-              color: activeTab === i ? '#c9a84c' : 'rgba(255,255,255,0.3)',
-              borderBottom: activeTab === i ? '2px solid #c9a84c' : '2px solid transparent',
-            }}
-            onClick={() => setActiveTab(i)}
-          >
-            {cat.label}
-          </button>
-        ))}
+      <div role="tablist" className="flex sm:justify-center max-w-[860px] min-w-max w-full mx-auto gap-2 px-3 sm:px-0 py-2.5">
+        {categories.map((cat, i) => {
+          const active = activeTab === i;
+          return (
+            <button
+              key={cat.id}
+              role="tab"
+              type="button"
+              className="shrink-0 text-center px-4 sm:px-5 py-2 rounded-full transition-all duration-200 text-xs font-bold tracking-wide whitespace-nowrap"
+              style={
+                active
+                  ? {
+                      color: '#fff',
+                      background: 'linear-gradient(135deg, #ff3da6, #c026d3)',
+                      boxShadow: '0 0 14px rgba(255,61,166,0.4)',
+                    }
+                  : {
+                      color: '#b6abd0',
+                      background: 'var(--bg-card)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                    }
+              }
+              onClick={() => setActiveTab(i)}
+            >
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
