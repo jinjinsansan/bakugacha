@@ -488,8 +488,8 @@ function ActivePlayer({
               flexShrink: 0,
               borderRadius: 12,
               overflow: 'hidden',
-              border: '2px solid rgba(255,255,255,0.3)',
-              boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.9)',
+              border: '2px solid rgba(255,61,166,0.4)',
+              boxShadow: '0 0 0 1px rgba(255,61,166,0.12), 0 0 28px rgba(255,61,166,0.25), 0 8px 40px rgba(0,0,0,0.9)',
               background: '#000',
             }}>
               {playState.status === 'loading' && (
