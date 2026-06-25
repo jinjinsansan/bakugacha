@@ -5,13 +5,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ background: '#05050f' }}
+      style={{ background: '#0a0613' }}
     >
-      {/* ゴールドグロー */}
+      {/* ネオングロー */}
       <div
-        className="fixed top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full pointer-events-none opacity-10"
+        className="fixed top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full pointer-events-none opacity-20"
         style={{
-          background: 'radial-gradient(circle, rgba(201,168,76,0.5) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,61,166,0.4) 0%, transparent 70%)',
           filter: 'blur(80px)',
         }}
       />
@@ -27,9 +27,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div
           className="rounded-3xl p-8"
           style={{
-            background: '#0a0a1c',
-            border: '1px solid rgba(201,168,76,0.2)',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.6)',
+            background: '#160e26',
+            border: '1px solid rgba(255,61,166,0.18)',
+            boxShadow: '0 24px 48px rgba(20,0,40,0.6)',
           }}
         >
           {children}

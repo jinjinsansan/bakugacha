@@ -26,9 +26,9 @@ export async function ProductGrid() {
       {featuredProducts.length > 0 && (
         <div
           className="relative mb-10 rounded-2xl overflow-hidden p-px"
-          style={{ background: 'linear-gradient(135deg, rgba(201,168,76,0.5), rgba(32,96,240,0.3), rgba(201,168,76,0.2))' }}
+          style={{ background: 'linear-gradient(135deg, rgba(255,61,166,0.5), rgba(34,211,238,0.3), rgba(255,61,166,0.2))' }}
         >
-          <div className="rounded-2xl p-3 sm:p-6" style={{ background: '#080820' }}>
+          <div className="rounded-2xl p-3 sm:p-6" style={{ background: '#0a0613' }}>
             <div className="flex items-center justify-center gap-3 mb-6">
               <div className="divider-gold flex-1" />
               <p className="text-xs font-black tracking-[0.3em] text-gold uppercase whitespace-nowrap">

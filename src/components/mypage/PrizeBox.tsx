@@ -81,7 +81,7 @@ export function PrizeBox() {
   if (loading) {
     return (
       <div className="rounded-2xl overflow-hidden mb-6"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(74,222,128,0.25)' }}>
+        style={{ background: '#160e26', border: '1px solid rgba(74,222,128,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">🎁 当選品ボックス</h2>
         </div>
@@ -105,7 +105,7 @@ export function PrizeBox() {
   return (
     <>
       <div className="rounded-2xl overflow-hidden mb-6"
-        style={{ background: '#0a0a1c', border: '1px solid rgba(74,222,128,0.25)' }}>
+        style={{ background: '#160e26', border: '1px solid rgba(74,222,128,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">
             🎁 当選品ボックス
@@ -169,7 +169,7 @@ export function PrizeBox() {
                         {claim.exchangeCoins > 0 && (
                           <button
                             className="w-full py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.02]"
-                            style={{ background: 'linear-gradient(135deg, #c9a84c, #8a6e1e)', color: '#0a0800' }}
+                            style={{ background: 'linear-gradient(135deg, #ffe08a, #ffcb45)', color: '#3a2a06' }}
                             onClick={() => setConfirmExchange(claim)}
                           >
                             🪙 コイン交換 ({claim.exchangeCoins})
@@ -189,7 +189,7 @@ export function PrizeBox() {
                       </button>
                       <button
                         className="flex-1 py-2.5 rounded-xl text-xs font-bold transition hover:scale-[1.02]"
-                        style={{ background: 'linear-gradient(135deg, #c9a84c, #8a6e1e)', color: '#0a0800' }}
+                        style={{ background: 'linear-gradient(135deg, #ffe08a, #ffcb45)', color: '#3a2a06' }}
                         onClick={() => {
                           if (claim.exchangeCoins <= 0) { alert('この商品はコイン交換が設定されていません。'); return; }
                           setConfirmExchange(claim);
@@ -211,7 +211,7 @@ export function PrizeBox() {
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/85" onClick={() => setDeliveryTarget(null)}>
           <div
             className="rounded-2xl p-6 max-w-sm w-[90vw]"
-            style={{ background: '#0a0a1c', border: '1px solid rgba(74,222,128,0.3)' }}
+            style={{ background: '#160e26', border: '1px solid rgba(74,222,128,0.3)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-black text-white mb-1">配送先を入力</h3>
@@ -281,7 +281,7 @@ export function PrizeBox() {
         <div className="fixed inset-0 z-[350] flex items-center justify-center bg-black/90" onClick={() => setConfirmExchange(null)}>
           <div
             className="rounded-2xl p-6 max-w-sm w-[90vw] text-center"
-            style={{ background: '#0a0a1c', border: '1px solid rgba(201,168,76,0.4)' }}
+            style={{ background: '#160e26', border: '1px solid rgba(255,203,69,0.4)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-lg font-black text-white mb-2">コイン交換</p>
@@ -294,7 +294,7 @@ export function PrizeBox() {
             <div className="flex gap-3 justify-center">
               <button
                 className="px-6 py-2 rounded-xl text-sm font-bold"
-                style={{ background: 'linear-gradient(135deg, #c9a84c, #8a6e1e)', color: '#0a0800' }}
+                style={{ background: 'linear-gradient(135deg, #ffe08a, #ffcb45)', color: '#3a2a06' }}
                 onClick={() => handleExchange(confirmExchange)}
                 disabled={actionLoading}
               >

@@ -137,7 +137,7 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
             className="h-1.5 rounded-full transition-all duration-300"
             style={{
               width: i === current ? '20px' : '6px',
-              background: i === current ? '#c9a84c' : 'rgba(255,255,255,0.2)',
+              background: i === current ? '#ff6ec0' : 'rgba(255,255,255,0.2)',
             }}
           />
         ))}
