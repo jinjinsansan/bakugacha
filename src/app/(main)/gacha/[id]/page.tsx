@@ -98,11 +98,12 @@ export default async function GachaDetailPage({ params }: Props) {
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${stockPct}%`,
+                  // 残量で色分け（少=マゼンタ警告 / 中=ゴールド / 多=シアン）
                   background: (stockPct ?? 0) > 80
-                    ? '#ca8a04'
+                    ? 'linear-gradient(90deg, #c026d3, #ff3da6)'
                     : (stockPct ?? 0) > 50
-                    ? '#eab308'
-                    : '#22c55e',
+                    ? 'linear-gradient(90deg, #d9a520, #ffcb45)'
+                    : 'linear-gradient(90deg, #22d3ee, #7df0ff)',
                 }}
               />
             </div>
