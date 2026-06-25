@@ -20,6 +20,7 @@ export const footerSections: FooterSection[] = [
       { id: 'terms', label: '利用規約', href: '/terms' },
       { id: 'privacy', label: 'プライバシーポリシー', href: '/privacy' },
       { id: 'tradelaw', label: '特定商取引法に基づく表記', href: '/tradelaw' },
+      { id: 'fund-settlement', label: '資金決済法に基づく表示', href: '/fund-settlement' },
       { id: 'anti-social', label: '反社会的勢力に対する基本方針', href: '/anti-social-policy' },
     ],
   },
