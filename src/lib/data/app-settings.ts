@@ -13,7 +13,6 @@ export interface AppSettings {
   id: string;
   referralBonusReferrer: number;
   referralBonusReferee: number;
-  winnerDummyEnabled: boolean;
   maintenanceMode: boolean;
   maintenanceTitle: string;
   maintenanceMessage: string;
@@ -32,7 +31,6 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
       id: APP_SETTINGS_ID,
       referralBonusReferrer: 200,
       referralBonusReferee: 100,
-      winnerDummyEnabled: false,
       maintenanceMode: false,
       maintenanceTitle: DEFAULT_MAINTENANCE_TITLE,
       maintenanceMessage: DEFAULT_MAINTENANCE_MESSAGE,
@@ -45,7 +43,6 @@ export async function fetchAppSettings(client: SupabaseClient): Promise<AppSetti
     id: String(row.id ?? APP_SETTINGS_ID),
     referralBonusReferrer: Number(row.referral_bonus_referrer ?? 200),
     referralBonusReferee: Number(row.referral_bonus_referee ?? 100),
-    winnerDummyEnabled: Boolean(row.winner_dummy_enabled ?? false),
     maintenanceMode: Boolean(row.maintenance_mode ?? false),
     maintenanceTitle: String(row.maintenance_title ?? DEFAULT_MAINTENANCE_TITLE),
     maintenanceMessage: String(row.maintenance_message ?? DEFAULT_MAINTENANCE_MESSAGE),
@@ -76,7 +73,6 @@ export async function upsertAppSettings(
   };
   if (updates.referralBonusReferrer !== undefined) patch.referral_bonus_referrer = updates.referralBonusReferrer;
   if (updates.referralBonusReferee !== undefined) patch.referral_bonus_referee = updates.referralBonusReferee;
-  if (updates.winnerDummyEnabled !== undefined) patch.winner_dummy_enabled = updates.winnerDummyEnabled;
   if (updates.maintenanceMode !== undefined) patch.maintenance_mode = updates.maintenanceMode;
   if (updates.maintenanceTitle !== undefined) patch.maintenance_title = updates.maintenanceTitle;
   if (updates.maintenanceMessage !== undefined) patch.maintenance_message = updates.maintenanceMessage;

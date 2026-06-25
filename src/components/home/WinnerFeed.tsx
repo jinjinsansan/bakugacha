@@ -1,5 +1,4 @@
 import { getServiceSupabase } from '@/lib/supabase/service';
-import { fetchAppSettings } from '@/lib/data/app-settings';
 import { WinnerTicker, type WinnerItem } from './WinnerTicker';
 
 function maskName(name: string): string {
@@ -20,51 +19,21 @@ function timeAgo(date: string): string {
   return `${days}日前`;
 }
 
-// Dummy names and products for placeholder mode
-const DUMMY_NAMES = [
-  'ゆ**', 'た**', 'さ**', 'み**', 'け**',
-  'あ**', 'は**', 'り**', 'な**', 'こ**',
-  'ま**', 'し**', 'か**', 'と**', 'や**',
-];
-
-const DUMMY_PRODUCTS = [
-  'ポケモンカード 151 BOX', 'ワンピースカード ブースターBOX',
-  '遊戯王 レアリティコレクション', 'ポケモン バイオレットex BOX',
-  'ワンピース 新時代の主役 BOX', 'ポケモン スカーレットex BOX',
-  '遊戯王 エイジオブオーバーロード', 'ポケモン 黒炎の支配者 BOX',
-];
-
-function generateDummyItems(count: number): WinnerItem[] {
-  const items: WinnerItem[] = [];
-  for (let i = 0; i < count; i++) {
-    const minsAgo = Math.floor(Math.random() * 180) + 1; // 1-180 min ago
-    items.push({
-      id: `dummy-${i}`,
-      maskedName: DUMMY_NAMES[i % DUMMY_NAMES.length],
-      productTitle: DUMMY_PRODUCTS[i % DUMMY_PRODUCTS.length],
-      timeAgo: minsAgo < 60 ? `${minsAgo}分前` : `${Math.floor(minsAgo / 60)}時間前`,
-    });
-  }
-  return items;
-}
-
 export async function WinnerFeed() {
   const supabase = getServiceSupabase();
 
-  const [{ data }, appSettings] = await Promise.all([
-    supabase
-      .from('gacha_results')
-      .select('id, played_at, app_users(display_name, line_display_name, email), gacha_products(title)')
-      .eq('result', 'win')
-      .order('played_at', { ascending: false })
-      .limit(10),
-    fetchAppSettings(supabase),
-  ]);
+  // 実際の当選結果のみを表示する（架空＝ダミー当選者は廃止）
+  const { data } = await supabase
+    .from('gacha_results')
+    .select('id, played_at, app_users(display_name, line_display_name, email), gacha_products(title)')
+    .eq('result', 'win')
+    .order('played_at', { ascending: false })
+    .limit(10);
 
   type UserRow = { display_name: string | null; line_display_name: string | null; email: string };
   type ProductRow = { title: string };
 
-  const realItems: WinnerItem[] = (data ?? []).map((row) => {
+  const items: WinnerItem[] = (data ?? []).map((row) => {
     const uRaw = row.app_users as unknown;
     const u: UserRow | null = (Array.isArray(uRaw) ? uRaw[0] : uRaw) as UserRow | null;
     const pRaw = row.gacha_products as unknown;
@@ -78,15 +47,7 @@ export async function WinnerFeed() {
     };
   });
 
-  // ダミーモードONの場合は10件になるよう補完
-  let items = realItems;
-  if (appSettings.winnerDummyEnabled) {
-    const needed = Math.max(0, 10 - realItems.length);
-    if (needed > 0) {
-      items = [...realItems, ...generateDummyItems(needed)];
-    }
-  }
-
+  // 実当選が無い場合はフィード自体を表示しない
   if (items.length === 0) return null;
 
   return (
