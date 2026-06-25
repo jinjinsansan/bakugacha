@@ -76,6 +76,11 @@ export function HeroSection() {
               </div>
             ))}
           </div>
+
+          {/* プレリリース注記 */}
+          <p className="mt-4 text-[11px] leading-relaxed" style={{ color: '#8a80a4' }}>
+            ⚠ 現在プレリリース版として公開中です。機能追加・改善のため予告なくメンテナンスを行う場合があります。
+          </p>
         </div>
       </div>
 
