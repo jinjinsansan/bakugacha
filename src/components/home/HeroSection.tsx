@@ -12,9 +12,16 @@ export function HeroSection() {
     <section className="relative w-full overflow-hidden" style={{ background: '#06070f' }}>
 
       {/* ===== PC（md+）: タグライン焼き込みのキービジュアルをそのまま使い、CTAを左下に重ねる ===== */}
-      <div className="relative hidden md:block">
+      {/* 広い画面で過大な高さにならないよう上限つき。タグラインは縦中央のため object-cover で保持 */}
+      <div className="relative hidden md:block w-full" style={{ height: 'min(56.25vw, 560px)' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/hero-bg.webp" alt="" aria-hidden="true" className="block w-full h-auto" />
+        <img
+          src="/hero-bg.webp"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 block h-full w-full object-cover"
+          style={{ objectPosition: 'center' }}
+        />
         <div className="absolute inset-0">
           <div className="mx-auto flex h-full max-w-[1100px] items-end px-10 pb-12">
             <Link href="/#products">
