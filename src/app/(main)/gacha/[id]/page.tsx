@@ -77,10 +77,10 @@ export default async function GachaDetailPage({ params }: Props) {
         <div>
           <h1 className="text-xl font-black text-white leading-snug">{title}</h1>
           <p className="mt-2 text-2xl font-black" style={{ color: 'var(--gold)' }}>
-            {price === 0 ? '無料' : `🪙 ${price.toLocaleString()} コイン`}
+            {price === 0 ? '無料' : `${price.toLocaleString()} コイン`}
           </p>
           {isLoggedIn && (
-            <p className="mt-1 text-xs text-white/50">所持コイン: 🪙 {userCoins.toLocaleString()}</p>
+            <p className="mt-1 text-xs text-white/50">所持コイン: {userCoins.toLocaleString()}</p>
           )}
         </div>
 

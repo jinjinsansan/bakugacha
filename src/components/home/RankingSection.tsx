@@ -34,9 +34,7 @@ export async function RankingSection() {
   return (
     <section className="px-4 py-6">
       <div className="max-w-[860px] w-full mx-auto">
-        <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--gold)' }}>
-          🔥 人気ランキング
-        </h2>
+        <h2 className="headline-serif text-xl mb-4">人気ランキング</h2>
         <div className="flex flex-col gap-2">
         {top5.map(([productId, count], i) => {
           const product = productMap.get(productId);

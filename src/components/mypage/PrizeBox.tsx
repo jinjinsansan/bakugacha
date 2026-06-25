@@ -83,7 +83,7 @@ export function PrizeBox() {
       <div className="rounded-2xl overflow-hidden mb-6"
         style={{ background: '#0d1020', border: '1px solid rgba(74,222,128,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
-          <h2 className="text-sm font-black text-white tracking-wider">🎁 当選品ボックス</h2>
+          <h2 className="text-sm font-black text-white tracking-wider">当選品ボックス</h2>
         </div>
         <div className="px-5 py-8 text-center">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white mx-auto" />
@@ -108,7 +108,7 @@ export function PrizeBox() {
         style={{ background: '#0d1020', border: '1px solid rgba(74,222,128,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">
-            🎁 当選品ボックス
+            当選品ボックス
             <span className="ml-2 text-xs font-bold" style={{ color: '#4ade80' }}>{claims.length}件</span>
           </h2>
         </div>
@@ -120,7 +120,7 @@ export function PrizeBox() {
               <div key={claim.id} className="px-5 py-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white truncate">🏆 {claim.prizeName}</p>
+                    <p className="text-sm font-bold text-white truncate">{claim.prizeName}</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">
                       {new Date(claim.createdAt).toLocaleDateString('ja-JP')} 当選
                     </p>
@@ -172,7 +172,7 @@ export function PrizeBox() {
                             style={{ background: 'linear-gradient(135deg, #f0d68a, #d8b15a)', color: '#2a1e06' }}
                             onClick={() => setConfirmExchange(claim)}
                           >
-                            🪙 コイン交換 ({claim.exchangeCoins})
+                            コイン交換 ({claim.exchangeCoins})
                           </button>
                         )}
                       </div>
@@ -195,7 +195,7 @@ export function PrizeBox() {
                           setConfirmExchange(claim);
                         }}
                       >
-                        🪙 コイン交換 {claim.exchangeCoins > 0 ? `(${claim.exchangeCoins})` : ''}
+                        コイン交換 {claim.exchangeCoins > 0 ? `(${claim.exchangeCoins})` : ''}
                       </button>
                     </div>
                   );

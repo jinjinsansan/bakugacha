@@ -137,7 +137,7 @@ export function KeibaCardCollection() {
         style={{ background: '#0d1020', border: '1px solid rgba(216,177,90,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">
-            🃏 競馬ガチャ カードコレクション
+            競馬ガチャ カードコレクション
             {cards.length > 0 && (
               <span className="ml-2 text-xs font-bold text-gold">{cards.length}枚</span>
             )}
@@ -280,7 +280,7 @@ export function KeibaCardCollection() {
                       setConfirmExchange(selected);
                     }}
                   >
-                    🪙 ポイント交換 {exchangeRates[selected.charaId] ? `(${exchangeRates[selected.charaId]}コイン)` : ''}
+                    ポイント交換 {exchangeRates[selected.charaId] ? `(${exchangeRates[selected.charaId]}コイン)` : ''}
                   </button>
                   <button
                     className="px-4 py-2 rounded-xl text-xs font-bold transition hover:scale-105 bg-amber-600 text-black"

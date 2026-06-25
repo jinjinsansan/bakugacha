@@ -69,11 +69,11 @@ export default async function MyPage() {
         <div className="rounded-2xl p-5"
           style={{ background: '#0d1020', border: '1px solid rgba(255,46,154,0.18)' }}>
           <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-2">コイン残高</p>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🪙</span>
-            <span className="text-3xl font-black text-gold">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-3xl font-black text-gold font-en">
               {(user.coins as number).toLocaleString()}
             </span>
+            <span className="text-sm font-bold" style={{ color: '#d8b15a' }}>C</span>
           </div>
           <Link href="/purchase">
             <button className="btn-gold w-full mt-4 py-2 rounded-xl text-xs font-black tracking-wider">
@@ -158,7 +158,7 @@ export default async function MyPage() {
       <div className="rounded-2xl overflow-hidden mb-6"
         style={{ background: '#0d1020', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="px-5 py-4 border-b border-white/5">
-          <h2 className="text-sm font-black text-white tracking-wider">🎰 ガチャ履歴</h2>
+          <h2 className="text-sm font-black text-white tracking-wider">ガチャ履歴</h2>
         </div>
         {(history ?? []).length === 0 ? (
           <div className="px-5 py-8 text-center text-gray-600 text-sm">
@@ -180,7 +180,7 @@ export default async function MyPage() {
                   </p>
                 </div>
                 <span className="text-xs font-black text-gray-400">
-                  🪙 {(h.coins_spent as number).toLocaleString()}
+                  {(h.coins_spent as number).toLocaleString()}
                 </span>
               </li>
             ))}
@@ -192,7 +192,7 @@ export default async function MyPage() {
       <div className="rounded-2xl overflow-hidden"
         style={{ background: '#0d1020', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="px-5 py-4 border-b border-white/5">
-          <h2 className="text-sm font-black text-white tracking-wider">🪙 コイン履歴</h2>
+          <h2 className="text-sm font-black text-white tracking-wider">コイン履歴</h2>
         </div>
         {(transactions ?? []).length === 0 ? (
           <div className="px-5 py-8 text-center text-gray-600 text-sm">履歴がありません</div>

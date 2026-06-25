@@ -41,7 +41,7 @@ export function PromoCodeInput() {
           <p className="text-[10px] tracking-[0.3em] text-gray-500 uppercase mb-1">
             Promo Code
           </p>
-          <p className="text-sm font-bold text-white mb-1">🎫 プロモコード</p>
+          <p className="text-sm font-bold text-white mb-1">プロモコード</p>
           <p className="text-xs text-white/60">
             特別なコードを入力してコインを受け取れます
           </p>

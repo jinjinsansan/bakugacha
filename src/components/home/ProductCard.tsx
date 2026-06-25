@@ -141,9 +141,8 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center gap-1.5">
             {product.price !== null ? (
               <>
-                <span className="text-base">🪙</span>
-                <span className="text-xl font-black text-white">{product.price.toLocaleString()}</span>
-                <span className="text-xs text-gray-500">/1回</span>
+                <span className="text-xl font-black text-white font-en">{product.price.toLocaleString()}</span>
+                <span className="text-xs font-bold" style={{ color: '#d8b15a' }}>C / 回</span>
               </>
             ) : (
               <div className="h-7 w-20 rounded-lg bg-white/5" />

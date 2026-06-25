@@ -6,7 +6,6 @@ const LINE_URL = process.env.NEXT_PUBLIC_LINE_OFFICIAL_URL ?? 'https://lin.ee/tk
 const ITEMS = [
   {
     step: '01',
-    emoji: '💚',
     title: '公式LINEを追加する',
     description: `${BRAND.name}公式LINEを友達追加するだけで300コインプレゼント！まずここからスタート。`,
     accent: '#06C755',
@@ -17,7 +16,6 @@ const ITEMS = [
   },
   {
     step: '02',
-    emoji: '👥',
     title: '友達を紹介する',
     description: 'マイページの紹介リンクをシェアするだけ。紹介するたびに300コイン、紹介された友達にも100コイン。',
     accent: '#38d2ff',
@@ -28,7 +26,6 @@ const ITEMS = [
   },
   {
     step: '03',
-    emoji: '🎟️',
     title: 'プロモコードを入力する',
     description: '特別なプロモーションコードをお持ちの方はマイページで入力するとコインが貰えます。',
     accent: '#d8b15a',
@@ -41,21 +38,15 @@ const ITEMS = [
 
 export function WelcomeGuide() {
   return (
-    <section className="max-w-[860px] mx-auto px-3 sm:px-4 mt-1 mb-3">
-      {/* ヘッダー */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,46,154,0.3))' }} />
-        <span
-          className="text-[10px] font-black tracking-[0.3em] uppercase px-3 py-1 rounded-full"
-          style={{
-            background: 'rgba(255,46,154,0.08)',
-            border: '1px solid rgba(255,46,154,0.25)',
-            color: '#ff72bf',
-          }}
-        >
-          はじめての方へ
-        </span>
-        <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg, rgba(255,46,154,0.3), transparent)' }} />
+    <section className="max-w-[860px] mx-auto px-3 sm:px-4 mt-2 mb-4">
+      {/* 見出し（明朝） */}
+      <div className="mb-5 px-1">
+        <h2 className="headline-serif text-xl">はじめての方へ</h2>
+        <div className="rule-diamond mt-2">
+          <span className="font-en text-[9px] font-bold tracking-[0.3em]" style={{ color: 'var(--gold)' }}>
+            HOW TO START
+          </span>
+        </div>
       </div>
 
       {/* 3カードグリッド */}
@@ -70,24 +61,12 @@ export function WelcomeGuide() {
               boxShadow: `0 4px 24px ${item.accentGlow}`,
             }}
           >
-            {/* ステップバッジ */}
-            <span
-              className="absolute top-3 right-3 text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded"
-              style={{
-                background: `${item.accent}20`,
-                color: item.accent,
-                border: `1px solid ${item.accent}40`,
-              }}
-            >
-              STEP {item.step}
-            </span>
-
-            {/* アイコン */}
+            {/* 番号バッジ */}
             <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl"
-              style={{ background: `${item.accent}15`, border: `1px solid ${item.accent}30` }}
+              className="font-en w-11 h-11 rounded-xl flex items-center justify-center text-xl font-black"
+              style={{ background: `${item.accent}15`, border: `1px solid ${item.accent}30`, color: item.accent }}
             >
-              {item.emoji}
+              {item.step.replace(/^0/, '')}
             </div>
 
             {/* テキスト */}

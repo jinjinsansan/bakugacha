@@ -140,7 +140,7 @@ export function RaiseCardCollection() {
       <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#0d1020', border: '1px solid rgba(154,123,255,0.25)' }}>
         <div className="px-5 py-4 border-b border-white/5">
           <h2 className="text-sm font-black text-white tracking-wider">
-            🔮 来世ガチャ カードコレクション
+            来世ガチャ カードコレクション
             {cards.length > 0 && <span className="ml-2 text-xs font-bold" style={{ color: '#c0a8ff' }}>{cards.length}枚</span>}
           </h2>
         </div>
@@ -263,7 +263,7 @@ export function RaiseCardCollection() {
                       if (rate <= 0) { alert('このカードは交換できません。'); return; }
                       setConfirmExchange(selected);
                     }}>
-                    🪙 交換 {currentRates[selected.cardId] ? `(${currentRates[selected.cardId]}コイン)` : ''}
+                    交換 {currentRates[selected.cardId] ? `(${currentRates[selected.cardId]}コイン)` : ''}
                   </button>
                   <button className="px-4 py-2 rounded-xl text-xs font-bold transition hover:scale-105 bg-amber-600 text-black"
                     onClick={() => handleBuyback(selected)} disabled={actionLoading}>

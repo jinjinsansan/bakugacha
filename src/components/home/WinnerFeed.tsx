@@ -92,8 +92,13 @@ export async function WinnerFeed() {
   return (
     <section className="px-4 py-6">
       <div className="max-w-[860px] w-full mx-auto">
-        <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--gold)' }}>
-          &#127942; 最近の当選者
+        <h2 className="headline-serif text-xl mb-4 flex items-center gap-2.5">
+          <span
+            className="inline-block h-2 w-2 rounded-full animate-pulse"
+            style={{ background: '#38d2ff', boxShadow: '0 0 8px #38d2ff' }}
+            aria-hidden="true"
+          />
+          リアルタイム当選
         </h2>
         <WinnerTicker items={items} />
       </div>

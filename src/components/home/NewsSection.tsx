@@ -6,7 +6,7 @@ export function NewsSection() {
       className="max-w-[800px] w-full mt-8 mx-auto pt-4 pb-2 px-4 rounded-xl border"
       style={{ background: '#0d1020', borderColor: 'rgba(255,46,154,0.15)' }}
     >
-      <h2 className="text-base font-bold text-white leading-7 mb-4">📢 お知らせ一覧</h2>
+      <h2 className="text-base font-bold text-white leading-7 mb-4">お知らせ一覧</h2>
       <ul className="list-none pl-0">
         {newsItems.map((item, index) => (
           <li key={item.id} className={`py-2 ${index !== 0 ? 'border-t border-white/5' : ''}`}>
