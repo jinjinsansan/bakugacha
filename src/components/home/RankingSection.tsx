@@ -43,7 +43,18 @@ export async function RankingSection() {
           if (!product) return null;
           return (
             <Link key={productId} href={`/gacha/${productId}`}>
-              <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 hover:bg-white/10 transition-colors">
+              <div
+                className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-white/10"
+                style={
+                  i === 0
+                    ? {
+                        background: 'linear-gradient(135deg, rgba(255,203,69,0.14), rgba(255,203,69,0.04))',
+                        border: '1px solid rgba(255,203,69,0.45)',
+                        boxShadow: '0 0 18px rgba(255,203,69,0.18)',
+                      }
+                    : { background: 'rgba(255,255,255,0.05)' }
+                }
+              >
                 <span className={`text-lg font-black w-6 text-center shrink-0 ${RANK_COLORS[i]}`}>
                   {i + 1}
                 </span>

@@ -12,7 +12,8 @@ export function FilterTags() {
       {filterTags.map((tag) => (
         <button
           key={tag.id}
-          className="btn-silver text-[11px] sm:text-xs px-5 py-2 sm:py-2.5 rounded-full shrink-0 text-nowrap shadow-sm"
+          className="text-[11px] sm:text-xs font-bold px-5 py-2 sm:py-2.5 rounded-full shrink-0 text-nowrap transition-colors"
+          style={{ background: 'var(--bg-card)', border: '1px solid rgba(255,255,255,0.08)', color: '#b6abd0' }}
         >
           {tag.label}
         </button>
