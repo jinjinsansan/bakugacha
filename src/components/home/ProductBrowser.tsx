@@ -57,6 +57,14 @@ export function ProductBrowser({ featured, regular }: { featured: Product[]; reg
 
   return (
     <div className="max-w-[860px] w-full mx-auto px-2 sm:px-4">
+      {/* 見出し（明朝） */}
+      <div className="mb-5 px-1">
+        <h2 className="headline-serif text-xl">ガチャ一覧</h2>
+        <div className="rule-diamond mt-2">
+          <span className="font-en text-[9px] font-bold tracking-[0.3em]" style={{ color: 'var(--gold)' }}>LINEUP</span>
+        </div>
+      </div>
+
       {/* ── カテゴリタブ（実フィルタ） ── */}
       <div
         role="tablist"

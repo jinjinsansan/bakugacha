@@ -21,11 +21,15 @@ export function WinnerTicker({ items }: { items: WinnerItem[] }) {
             key={`${item.id}-${i}`}
             className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 shrink-0"
           >
-            <span className="text-yellow-300 text-lg shrink-0">&#127942;</span>
+            <span
+              className="h-1.5 w-1.5 rounded-full shrink-0"
+              style={{ background: '#38d2ff', boxShadow: '0 0 6px #38d2ff' }}
+              aria-hidden="true"
+            />
             <div className="flex-1 min-w-0 text-sm truncate">
               <span className="font-bold text-white">{item.maskedName}</span>
               <span className="text-white/50 text-xs mx-1">さんが</span>
-              <span className="text-yellow-200 font-medium">{item.productTitle}</span>
+              <span className="font-medium" style={{ color: '#f0d68a' }}>{item.productTitle}</span>
               <span className="text-white/50 text-xs ml-1">に当選</span>
             </div>
             <span className="text-xs text-white/40 shrink-0">{item.timeAgo}</span>
