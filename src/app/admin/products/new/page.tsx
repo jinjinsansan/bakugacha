@@ -14,7 +14,8 @@ function toLocalDatetimeValue(iso: string): string {
   return jst.toISOString().slice(0, 16);
 }
 
-const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ギフト券', 'ゲーム機', 'その他'];
+// Amazonギフト景品の排除に伴い「ギフト券」カテゴリを除外（復活時は配列に戻す）
+const CATEGORIES = ['ポケモン', 'ワンピース', '遊戯王', 'ゲーム機', 'その他'];
 
 export const GACHA_TYPES = [
   { value: 'cd2', label: 'カウントダウンチャレンジ2' },
@@ -257,7 +258,7 @@ export function ProductFormFields({
       <Field
         name="prize_display_name"
         label="当選品表示名（任意）"
-        placeholder="例: 【第二会場】Amazonギフト券10,000円分"
+        placeholder="例: 【第二会場】ポケモンカード151 BOX"
         defaultValue={(defaults?.prize_display_name as string) ?? ''}
       />
       <p className="text-xs text-white/40 -mt-2">当選品ボックスやガチャ結果に表示する名前。空欄なら商品タイトルが使われます。</p>

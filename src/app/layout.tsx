@@ -6,7 +6,8 @@ import './globals.css';
 
 const SITE_URL = getPublicEnv().NEXT_PUBLIC_SITE_URL;
 const SITE_TITLE = `${BRAND.name} | ${BRAND.tagline}`;
-const SITE_DESCRIPTION = 'ポケモン・ワンピース・遊戯王・任天堂スイッチ・Amazonギフト券。厳選されたガチャがここに集結。';
+// Amazonギフト景品の排除に伴い説明文からも除外
+const SITE_DESCRIPTION = 'ポケモン・ワンピース・遊戯王・任天堂スイッチ。厳選されたガチャがここに集結。';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -31,7 +31,8 @@ export const footerSections: FooterSection[] = [
       { id: 'pokemon', label: 'ポケモンカードガチャ', href: '/#products' },
       { id: 'onepiece', label: 'ワンピースカードガチャ', href: '/#products' },
       { id: 'yugioh', label: '遊戯王ガチャ', href: '/#products' },
-      { id: 'gift', label: 'Amazonギフト券ガチャ', href: '/#products' },
+      // Amazonギフト景品の排除に伴い非表示（復活時はコメント解除）
+      // { id: 'gift', label: 'Amazonギフト券ガチャ', href: '/#products' },
       { id: 'game', label: 'ゲーム機ガチャ', href: '/#products' },
     ],
   },

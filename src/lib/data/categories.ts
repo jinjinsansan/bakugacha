@@ -8,6 +8,7 @@ export const categories: Category[] = [
   { id: 'pokemon', label: 'ポケモン' },
   { id: 'onepiece', label: 'ワンピース' },
   { id: 'yugioh', label: '遊戯王' },
-  { id: 'gift', label: 'ギフト券' },
+  // Amazonギフト景品の排除に伴い非表示（復活時はコメント解除）
+  // { id: 'gift', label: 'ギフト券' },
   { id: 'game', label: 'ゲーム機' },
 ] as const;
