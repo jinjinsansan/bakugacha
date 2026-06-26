@@ -280,6 +280,7 @@ export async function createBanner(formData: FormData) {
     link_url:    formData.get('link_url') ? String(formData.get('link_url')) : null,
     sort_order:  Number(formData.get('sort_order') ?? 0),
     is_active:   formData.get('is_active') === 'on',
+    show_text:   formData.get('show_text') === 'on',
   });
 
   revalidatePath('/admin/banners');
@@ -302,6 +303,7 @@ export async function updateBanner(id: string, formData: FormData) {
     link_url:    formData.get('link_url') ? String(formData.get('link_url')) : null,
     sort_order:  Number(formData.get('sort_order') ?? 0),
     is_active:   formData.get('is_active') === 'on',
+    show_text:   formData.get('show_text') === 'on',
     updated_at:  new Date().toISOString(),
   }).eq('id', id);
 

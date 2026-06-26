@@ -23,9 +23,19 @@ export function BannerFormFields({ defaults }: BannerFormFieldsProps) {
         name="image_url"
         label="バナー画像"
         prefix="banners"
-        aspectHint="4:1 推奨 (800×200px)"
+        aspectHint="4:1 推奨 (1600×400px)"
         defaultValue={defaults?.image_url as string}
       />
+
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          name="show_text"
+          defaultChecked={defaults?.show_text !== undefined ? (defaults.show_text as boolean) : true}
+          className="w-4 h-4 accent-yellow-400"
+        />
+        <span className="text-sm text-white">バナー上にテキストを表示する（OFFで画像のみ）</span>
+      </label>
 
       <Field
         name="overlay"

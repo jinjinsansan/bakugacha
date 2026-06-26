@@ -12,6 +12,7 @@ export interface BannerData {
   image_url: string | null;
   overlay: string | null;
   link_url: string | null;
+  show_text: boolean;
 }
 
 interface CampaignBannerProps {
@@ -74,41 +75,43 @@ export function CampaignBanner({ banners: propBanners }: CampaignBannerProps) {
           style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%)' }}
         />
 
-        {/* コンテンツ */}
-        <div className="relative z-10 h-full flex items-center justify-between px-4 sm:px-6 md:px-8">
-          <div>
-            {b.tag && (
-              <span className="text-[10px] font-bold tracking-[0.25em] uppercase mb-1 block text-gold">
-                {b.tag}
-              </span>
-            )}
-            <h3
-              className="text-white font-black text-base sm:text-lg md:text-2xl leading-tight mb-1"
-              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
-            >
-              {b.title}
-            </h3>
-            {b.subtitle && (
-              <p className="text-white/50 text-xs tracking-wide">{b.subtitle}</p>
+        {/* コンテンツ（テキスト表示が ON のときのみ。画像に文字を焼き込む場合は OFF） */}
+        {b.show_text && (
+          <div className="relative z-10 h-full flex items-center justify-between px-4 sm:px-6 md:px-8">
+            <div>
+              {b.tag && (
+                <span className="text-[10px] font-bold tracking-[0.25em] uppercase mb-1 block text-gold">
+                  {b.tag}
+                </span>
+              )}
+              <h3
+                className="text-white font-black text-base sm:text-lg md:text-2xl leading-tight mb-1"
+                style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+              >
+                {b.title}
+              </h3>
+              {b.subtitle && (
+                <p className="text-white/50 text-xs tracking-wide">{b.subtitle}</p>
+              )}
+            </div>
+
+            {b.badge && (
+              <div className="flex-shrink-0 ml-4">
+                <span
+                  className="text-xs font-black px-3 py-1.5 rounded-full"
+                  style={{
+                    background: b.badge_color,
+                    color: '#fff',
+                    boxShadow: `0 0 14px ${b.badge_color}99, inset 0 1px 0 rgba(255,255,255,0.25)`,
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {b.badge}
+                </span>
+              </div>
             )}
           </div>
-
-          {b.badge && (
-            <div className="flex-shrink-0 ml-4">
-              <span
-                className="text-xs font-black px-3 py-1.5 rounded-full"
-                style={{
-                  background: b.badge_color,
-                  color: '#fff',
-                  boxShadow: `0 0 14px ${b.badge_color}99, inset 0 1px 0 rgba(255,255,255,0.25)`,
-                  letterSpacing: '0.05em',
-                }}
-              >
-                {b.badge}
-              </span>
-            </div>
-          )}
-        </div>
+        )}
 
       </BannerShell>
 

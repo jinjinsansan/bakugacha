@@ -26,6 +26,7 @@ export default async function HomePage() {
     image_url: b.image_url,
     overlay: b.overlay,
     link_url: b.link_url,
+    show_text: b.show_text ?? true,
   }));
 
   return (
