@@ -10,7 +10,8 @@ const ID_TO_LABEL: Record<string, string> = {
   pokemon: 'ポケモン',
   onepiece: 'ワンピース',
   yugioh: '遊戯王',
-  gift: 'ギフト券',
+  // Amazonギフト景品の排除に伴い非表示（復活時はコメント解除）
+  // gift: 'ギフト券',
   game: 'ゲーム機',
 };
 
