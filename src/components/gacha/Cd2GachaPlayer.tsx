@@ -7,8 +7,7 @@ import { RoundMetalButton } from '@/components/gacha/controls/RoundMetalButton';
 import { startCd2Gacha } from '@/lib/api/cd2-gacha';
 import { useSignedAssetResolver } from '@/lib/gacha/client-assets';
 import { buildGachaAssetPath } from '@/lib/gacha/assets';
-import { BRAND } from '@/lib/brand';
-import { Home, Gift, Coins, User } from 'lucide-react';
+import { Home, Gift, Coins, User, X, Copy, Play, Sparkles } from 'lucide-react';
 import type { Cd2Step } from '@/lib/cd2-gacha/types';
 
 type VideoItem = {
@@ -148,141 +147,171 @@ function ResultCard({
   onReplayAnimation?: () => void;
   accessCode?: string;
 }) {
+  // 当選カードのメディア（実商品画像 → 絵文字 → カード裏のフォールバック）
+  const prizeMedia = prizeImageUrl ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={prizeImageUrl} alt={prizeName ?? ''} className="block w-full object-cover" style={{ aspectRatio: '3 / 4', borderRadius: 13 }} />
+  ) : prizeEmoji ? (
+    <div className="flex w-full items-center justify-center" style={{ aspectRatio: '3 / 4', borderRadius: 13, background: prizeGradient ?? 'linear-gradient(135deg,#1a1a2e,#16213e)' }}>
+      <span style={{ fontSize: 56 }}>{prizeEmoji}</span>
+    </div>
+  ) : (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/card-back.png" alt="" className="block w-full" style={{ borderRadius: 13 }} />
+  );
+
+  const sparks: { top: number; left?: number; right?: number; c: string; s: number; d: string; delay: string }[] = [
+    { top: 120, left: 58, c: '#f0d68a', s: 6, d: '2.4s', delay: '0s' },
+    { top: 200, right: 50, c: '#ff72bf', s: 5, d: '2s', delay: '.4s' },
+    { top: 330, left: 40, c: '#8fe8ff', s: 4, d: '2.8s', delay: '.8s' },
+    { top: 300, right: 44, c: '#f0d68a', s: 6, d: '2.2s', delay: '1.1s' },
+  ];
+
   return (
-    <div className="absolute inset-0 flex flex-col" style={{ background: '#f2f2ed' }}>
+    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: '#06070f', color: '#eef1f8' }}>
 
-      {/* ── ヘッダー ── */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white"
-        style={{ borderBottom: '1px solid #e8e8e8' }}>
-        <div className="w-12" />
-        <h2 className="text-sm font-bold" style={{ color: '#1a1a2e' }}>ガチャ結果</h2>
-        <button
-          className="text-sm font-medium"
-          style={{ color: '#888' }}
-          onClick={onClose}
-        >
-          あとで
-        </button>
-      </div>
+      {/* 背景グロー */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: isWin
+            ? 'radial-gradient(70% 42% at 50% 30%, rgba(216,177,90,0.22), transparent 60%), radial-gradient(90% 50% at 50% 6%, rgba(255,46,154,0.2), transparent 55%), radial-gradient(80% 50% at 50% 40%, rgba(56,210,255,0.12), transparent 60%)'
+            : 'radial-gradient(80% 45% at 50% 22%, rgba(56,210,255,0.1), transparent 58%), radial-gradient(70% 40% at 50% 4%, rgba(154,123,255,0.1), transparent 55%)',
+        }}
+      />
 
-      {/* ── 当選バナー（当たり時のみ） ── */}
+      {/* 回転光線＋粒子（当選時のみ） */}
       {isWin && (
-        <button
-          className="flex items-center gap-3 w-full text-left px-4 py-3"
-          style={{ background: '#e53935', color: '#fff' }}
-          onClick={onReplayAnimation}
-        >
-          <div className="flex-1 min-w-0">
-            <p className="font-black text-sm leading-tight">当選おめでとう！</p>
-            <p className="text-xs mt-0.5" style={{ opacity: 0.85 }}>ガチャ演出をもう一度見る</p>
-          </div>
-          <span className="text-xl flex-shrink-0" style={{ opacity: 0.8 }}>›</span>
-        </button>
+        <>
+          <div
+            className="pointer-events-none absolute"
+            style={{
+              top: 150, left: '50%', width: 560, height: 560, transform: 'translateX(-50%)', borderRadius: '50%',
+              background: 'repeating-conic-gradient(from 0deg, rgba(240,214,138,0.14) 0deg 6deg, transparent 6deg 18deg)',
+              WebkitMaskImage: 'radial-gradient(circle, #000 0%, transparent 62%)',
+              maskImage: 'radial-gradient(circle, #000 0%, transparent 62%)',
+              animation: 'gr-rays 60s linear infinite',
+            }}
+          />
+          {sparks.map((p, i) => (
+            <span key={i} className="pointer-events-none absolute rounded-full"
+              style={{ top: p.top, left: p.left, right: p.right, width: p.s, height: p.s, background: p.c, boxShadow: `0 0 12px ${p.c}`, animation: `gr-spark ${p.d} infinite ${p.delay}` }} />
+          ))}
+        </>
       )}
 
-      {/* ── スクロールコンテンツ ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-
-        {/* 結果カード行 */}
-        <div className="bg-white rounded-2xl p-3 flex gap-3"
-          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
-
-          {/* 商品画像 */}
-          <div
-            className="w-20 flex-shrink-0 rounded-xl overflow-hidden flex items-center justify-center"
-            style={{
-              aspectRatio: '3/4',
-              background: prizeGradient ?? 'linear-gradient(135deg,#1a1a2e,#16213e)',
-            }}
-          >
-            {prizeImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={prizeImageUrl}
-                alt={prizeName ?? ''}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span style={{ fontSize: 28 }}>{prizeEmoji ?? '🎰'}</span>
-            )}
-          </div>
-
-          {/* 商品情報 */}
-          <div className="flex-1 flex flex-col justify-between min-w-0">
-            <div>
-              <span
-                className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
-                style={{
-                  background: isWin ? '#fff3cd' : '#f0f0f0',
-                  color: isWin ? '#92400e' : '#666',
-                  border: isWin ? '1px solid #f59e0b' : '1px solid #ddd',
-                }}
-              >
-                {isWin ? '当選' : '未当選'}
-              </span>
-              <p className="text-sm font-bold leading-snug" style={{ color: '#1a1a2e' }}>
-                {prizeName ?? (isWin ? '当たりカード' : 'またチャレンジ！')}
-              </p>
-            </div>
-            {coinCost != null && (
-              <div
-                className="mt-2 py-2 px-3 rounded-lg text-sm font-bold flex items-center gap-1.5"
-                style={{ background: '#f5f5f0', color: '#555' }}
-              >
-                {coinCost.toLocaleString()}コイン
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 権利コード（当選 + コード発行時） */}
-        {isWin && accessCode && (
-          <div className="bg-white rounded-2xl p-4 mt-3"
-            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '2px solid #7c3aed' }}>
-            <p className="text-xs font-bold mb-1" style={{ color: '#7c3aed' }}>権利コードを獲得！</p>
-            <p
-              className="text-2xl font-black tracking-[0.2em] text-center py-2 cursor-pointer select-all"
-              style={{ color: '#7c3aed' }}
-              onClick={() => navigator.clipboard?.writeText(accessCode)}
-              title="タップでコピー"
-            >
-              {accessCode}
-            </p>
-            <p className="text-[10px] text-center" style={{ color: '#999' }}>
-              タップでコピー / マイページの当選品ボックスからも確認できます
-            </p>
-          </div>
-        )}
-
-        {/* ハズレ時メッセージ */}
-        {!isWin && (
-          <p className="text-center text-sm mt-4" style={{ color: '#999' }}>
-            次回のチャレンジに期待しましょう！
-          </p>
-        )}
+      {/* ヘッダー */}
+      <div className="relative z-[3] flex items-center justify-between px-[18px] py-4">
+        <span className="font-serif" style={{ fontWeight: 600, fontSize: 15, letterSpacing: '0.1em', color: '#fff' }}>ガチャ結果</span>
+        <button onClick={onClose} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold"
+          style={{ color: '#a6aecb', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          あとで <X size={13} />
+        </button>
       </div>
 
-      {/* ── 下部ボタン ── */}
-      <div className="px-4 pt-3 flex flex-col gap-3 bg-white"
-        style={{ borderTop: '1px solid #e8e8e8', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
-        <button
-          className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
-          style={{ border: '2px solid #ddd', color: '#555', background: '#fff' }}
-          onClick={onRetry}
-        >
-          もう一度引く {coinCost?.toLocaleString() ?? 0}
+      {/* コンテンツ */}
+      <div className="relative z-[3] flex flex-1 flex-col items-center overflow-y-auto px-5">
+        {isWin ? (
+          <>
+            <div className="mb-3 text-center" style={{ animation: 'gr-rise .6s ease both' }}>
+              <div className="font-en mb-2" style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.4em', color: '#ff72bf' }}>CONGRATULATIONS</div>
+              <div className="font-serif" style={{ fontWeight: 600, fontSize: 25, letterSpacing: '0.06em', background: 'linear-gradient(135deg,#f0d68a 0%,#ffffff 50%,#ff9ed0 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>当選おめでとう</div>
+            </div>
+
+            {/* 当選カード（タップで演出リプレイ） */}
+            <button onClick={onReplayAnimation} aria-label="演出をもう一度見る" className="relative mb-4 block w-[230px]" style={{ animation: 'gr-floaty 5s ease-in-out infinite' }}>
+              <span className="pointer-events-none absolute" style={{ inset: -14, borderRadius: 22, background: 'radial-gradient(circle, rgba(216,177,90,0.4), transparent 70%)', filter: 'blur(6px)' }} />
+              <span className="relative block" style={{ borderRadius: 13, boxShadow: '0 16px 44px rgba(0,0,0,0.6), 0 0 30px rgba(216,177,90,0.3)' }}>
+                {prizeMedia}
+              </span>
+              <span className="absolute left-2.5 top-2.5 z-[2] rounded-lg px-2.5 py-1 text-[10px] font-black"
+                style={{ letterSpacing: '0.1em', background: 'linear-gradient(135deg,#f0d68a,#d8b15a)', color: '#2a1e06', boxShadow: '0 0 16px rgba(216,177,90,0.45)' }}>当選</span>
+              <span className="absolute -bottom-2 left-1/2 z-[2] inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] font-bold"
+                style={{ color: '#eef1f8', background: 'rgba(6,7,15,0.8)', border: '1px solid rgba(216,177,90,0.4)', boxShadow: '0 4px 14px rgba(0,0,0,0.5)' }}>
+                <Play size={10} color="#ff72bf" fill="#ff72bf" /> 演出をもう一度見る
+              </span>
+            </button>
+
+            {/* 商品名＋コスト */}
+            <div className="mb-4 mt-2 text-center">
+              <div className="mb-2 inline-flex items-center gap-1.5">
+                <span style={{ height: 1, width: 24, background: 'linear-gradient(90deg,transparent,#d8b15a)' }} />
+                <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.16em', color: '#f0d68a' }}>WINNER</span>
+                <span style={{ height: 1, width: 24, background: 'linear-gradient(90deg,#d8b15a,transparent)' }} />
+              </div>
+              <div className="mb-1.5" style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{prizeName ?? '当たり'}</div>
+              {coinCost != null && (
+                <div style={{ fontSize: 11, color: '#7c84a3' }}>消費コイン <span className="font-en" style={{ fontSize: 14, fontWeight: 800, verticalAlign: '-1px', background: 'linear-gradient(135deg,#f0d68a,#d8b15a)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{coinCost.toLocaleString()} C</span></div>
+              )}
+            </div>
+
+            {/* 権利コード */}
+            {accessCode && (
+              <button onClick={() => navigator.clipboard?.writeText(accessCode)} title="タップでコピー"
+                className="mb-4 flex w-full items-center justify-between gap-2.5 rounded-[14px] px-4 py-3 text-left"
+                style={{ background: 'rgba(20,26,46,0.7)', border: '1px solid rgba(154,123,255,0.4)' }}>
+                <span>
+                  <span className="mb-1 block" style={{ fontSize: 9, color: '#c0a8ff', letterSpacing: '0.12em' }}>権利コード</span>
+                  <span className="font-en block" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.16em', color: '#eef1f8' }}>{accessCode}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-[11px] font-extrabold"
+                  style={{ color: '#c0a8ff', background: 'rgba(154,123,255,0.16)', border: '1px solid rgba(154,123,255,0.45)' }}>
+                  <Copy size={13} /> コピー
+                </span>
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="my-[18px] text-center">
+              <div className="font-en mb-2.5" style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.4em', color: '#7c84a3' }}>NEXT TIME</div>
+              <div className="font-serif" style={{ fontWeight: 600, fontSize: 25, letterSpacing: '0.06em', color: '#eef1f8' }}>またチャレンジ</div>
+              <div className="mt-2.5" style={{ fontSize: 13, color: '#a6aecb', lineHeight: 1.8 }}>次回のチャレンジに期待しましょう！</div>
+            </div>
+
+            {/* カード裏（未当選） */}
+            <div className="relative mb-5 w-[210px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/card-back.png" alt="" className="block w-full" style={{ borderRadius: 13, boxShadow: '0 14px 36px rgba(0,0,0,0.55)' }} />
+              <span className="absolute left-2.5 top-2.5 rounded-lg px-2.5 py-1 text-[10px] font-black"
+                style={{ letterSpacing: '0.1em', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', color: '#a6aecb' }}>未当選</span>
+            </div>
+
+            {coinCost != null && (
+              <div className="mb-[18px] text-center" style={{ fontSize: 11, color: '#7c84a3' }}>消費コイン <span className="font-en" style={{ fontSize: 14, fontWeight: 800, verticalAlign: '-1px', color: '#a6aecb' }}>{coinCost.toLocaleString()} C</span></div>
+            )}
+
+            {/* 励ましバンド（架空の確率は出さない） */}
+            <div className="flex w-full items-center gap-3 rounded-[14px] px-4 py-3.5"
+              style={{ background: 'linear-gradient(120deg, rgba(56,210,255,0.08), rgba(154,123,255,0.06))', border: '1px solid rgba(56,210,255,0.22)' }}>
+              <Sparkles size={22} className="flex-shrink-0" style={{ color: '#8fe8ff' }} />
+              <div style={{ fontSize: 12, color: '#a6aecb', lineHeight: 1.7 }}>当選確率は各ガチャ詳細に明記しています。連続チャレンジで当選のチャンスが広がります。</div>
+            </div>
+          </>
+        )}
+        <div className="h-2 shrink-0" />
+      </div>
+
+      {/* 下部固定: もう一度引く＋4導線 */}
+      <div className="relative z-[3] px-[18px] pt-3.5"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 18px)', background: 'linear-gradient(0deg, #06070f 76%, transparent)' }}>
+        <button onClick={onRetry} className="mb-3 w-full rounded-[15px] py-4 text-[15px] font-black text-white"
+          style={{ background: 'linear-gradient(135deg,#ff2e9a,#c01e6e 55%,#9a7bff)', boxShadow: '0 0 28px rgba(255,46,154,0.5)' }}>
+          もう一度引く（{coinCost?.toLocaleString() ?? 0} C）
         </button>
         <div className="grid grid-cols-4 gap-2">
           {([
-            { href: '/home',           icon: Home,  label: BRAND.name },
-            { href: '/mypage#history', icon: Gift,  label: '獲得商品' },
-            { href: '/purchase',       icon: Coins, label: 'コイン' },
-            { href: '/mypage',         icon: User,  label: 'マイページ' },
-          ] as const).map(({ href, icon: Icon, label }) => (
-            <a key={label} href={href} className="flex flex-col items-center gap-1 py-2 rounded-xl"
-              style={{ background: '#f5f5f0' }}>
-              <Icon size={20} style={{ color: '#555' }} />
-              <span className="text-[10px] font-bold" style={{ color: '#555' }}>{label}</span>
+            { href: '/home',           icon: Home,  label: 'ホーム',     accent: false },
+            { href: '/mypage#history', icon: Gift,  label: '獲得商品',   accent: true },
+            { href: '/purchase',       icon: Coins, label: 'コイン',     accent: false },
+            { href: '/mypage',         icon: User,  label: 'マイページ', accent: false },
+          ] as const).map(({ href, icon: Icon, label, accent }) => (
+            <a key={label} href={href} className="flex flex-col items-center gap-1.5 rounded-xl py-2.5"
+              style={accent
+                ? { background: 'rgba(216,177,90,0.1)', border: '1px solid rgba(216,177,90,0.32)', color: '#f0d68a' }
+                : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: '#a6aecb' }}>
+              <Icon size={18} />
+              <span style={{ fontSize: 9, fontWeight: 700 }}>{label}</span>
             </a>
           ))}
         </div>
