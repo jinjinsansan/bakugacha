@@ -148,13 +148,16 @@ function ResultCard({
   accessCode?: string;
 }) {
   // 当選カードのメディア（実商品画像 → 絵文字 → カード裏のフォールバック）
-  // 商品画像は縦横比が様々なため object-contain で全体を表示（切り取らない）。
-  // 3:4 の枠は維持し、余白は商品グラデ/近黒で埋める。
+  // 景品は縦横比が様々（カード/ゲーム機/ギフト券等）。固定枠に押し込むと切れる/余白が出るため、
+  // 商品画像は自然な縦横比でそのまま表示する。過大な高さのみ上限を設け contain で安全に収める。
   const prizeMedia = prizeImageUrl ? (
-    <div className="flex w-full items-center justify-center overflow-hidden" style={{ aspectRatio: '3 / 4', borderRadius: 13, background: prizeGradient ?? 'linear-gradient(135deg,#0d1020,#141a2e)' }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={prizeImageUrl} alt={prizeName ?? ''} className="max-h-full max-w-full object-contain" />
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={prizeImageUrl}
+      alt={prizeName ?? ''}
+      className="block w-full"
+      style={{ borderRadius: 13, maxHeight: '46vh', objectFit: 'contain' }}
+    />
   ) : prizeEmoji ? (
     <div className="flex w-full items-center justify-center" style={{ aspectRatio: '3 / 4', borderRadius: 13, background: prizeGradient ?? 'linear-gradient(135deg,#1a1a2e,#16213e)' }}>
       <span style={{ fontSize: 56 }}>{prizeEmoji}</span>
