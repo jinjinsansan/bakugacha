@@ -193,3 +193,10 @@
     background: linear-gradient(0deg, rgba(6,7,15,0.96) 0%, rgba(6,7,15,0.55) 35%, rgba(6,7,15,0) 60%);
   }
 }
+
+/* ── ガチャ結果画面（リザルト）の演出用キーフレーム ──
+   インライン style で参照するためグローバル定義。reduced-motion 時は base レイヤーで停止される。 */
+@keyframes gr-floaty { 0%,100%{ transform:translateY(0) rotate(-1deg);} 50%{ transform:translateY(-10px) rotate(1deg);} }
+@keyframes gr-spark  { 0%,100%{ opacity:.25; transform:scale(.7);} 50%{ opacity:1; transform:scale(1.15);} }
+@keyframes gr-rays   { 0%{ transform:translateX(-50%) rotate(0deg);} 100%{ transform:translateX(-50%) rotate(360deg);} }
+@keyframes gr-rise   { 0%{ transform:translateY(14px); opacity:0;} 100%{ transform:translateY(0); opacity:1;} }
